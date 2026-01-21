@@ -46,9 +46,9 @@
             width: 100%;
         }
 
-        /* Corrección específica para el campo concepto en modo día */
+        /* Corrección para el campo concepto */
         #input-concepto {
-            background-color: #f0f7ff !important; /* Un azul muy suave */
+            background-color: #f0f7ff !important;
             color: #1e293b !important;
         }
         .dark #input-concepto {
@@ -146,15 +146,15 @@
             <h3 class="font-bold mb-4 text-xs text-gray-400 uppercase tracking-widest">Añadir Nueva Categoría</h3>
             <div class="flex flex-col gap-3">
                 <div class="flex flex-col">
-                    <label class="text-[10px] font-bold ml-2 mb-1 opacity-50">TIPO DE MOVIMIENTO</label>
+                    <label class="text-[10px] font-bold ml-2 mb-1 opacity-50 uppercase">Tipo</label>
                     <select id="nueva-cat-tipo" class="font-bold"><option value="Gasto">Gasto</option><option value="Ingreso">Ingreso</option></select>
                 </div>
                 <div class="flex flex-col">
-                    <label class="text-[10px] font-bold ml-2 mb-1 opacity-50">NOMBRE CATEGORÍA</label>
+                    <label class="text-[10px] font-bold ml-2 mb-1 opacity-50 uppercase">Nombre</label>
                     <input type="text" id="nueva-cat-input" placeholder="Ej: Supermercado..." class="font-bold">
                 </div>
                 <div class="flex flex-col">
-                    <label class="text-[10px] font-bold ml-2 mb-1 opacity-50">PRESUPUESTO MENSUAL (€)</label>
+                    <label class="text-[10px] font-bold ml-2 mb-1 opacity-50 uppercase">Presupuesto (€)</label>
                     <div class="flex gap-2">
                         <input type="number" id="nueva-cat-pres" placeholder="0.00" class="font-bold flex-1">
                         <button onclick="añadirCatManual()" class="bg-blue-800 text-white w-14 h-12 rounded-xl font-black text-xl shadow-lg">+</button>
@@ -345,7 +345,35 @@
         function guardarYRefrescar() { localStorage.setItem(KEY_CONFIG, JSON.stringify(config)); localStorage.setItem(KEY_MOVS, JSON.stringify(movimientos)); actualizarUI(); }
         function borrarTodo() { if(confirm("¿Resetear?")) { localStorage.clear(); location.reload(); } }
         function exportarBackup() { const d = JSON.stringify({config, movimientos}); const b = new Blob([d], {type: 'application/json'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `backup_finanzas.json`; a.click(); }
-        function importarDatos() { /* ... mismo código de importación ... */ }
+        
+        function importarDatos() {
+            const rawData = document.getElementById('import-area').value;
+            if(!rawData.trim()) return;
+            const filas = rawData.split('\n');
+            let contador = 0;
+            filas.forEach(fil => {
+                if(!fil.trim()) return;
+                const col = fil.split('\t');
+                if(col.length >= 11) {
+                    const fechaRaw = col[0].trim();
+                    const categoria = col[5]?.trim() || 'Varios';
+                    const concepto = col[6]?.trim() || 'Sin concepto';
+                    const limpiarNum = (v) => v ? parseFloat(v.trim().replace(/\./g, '').replace(',', '.')) || 0 : 0;
+                    const ingMonto = limpiarNum(col[9]);
+                    const gasMonto = limpiarNum(col[10]);
+                    let montoFinal = 0, tipoFinal = '';
+                    if(ingMonto > 0) { montoFinal = ingMonto; tipoFinal = 'Ingresos'; }
+                    else if(gasMonto > 0) { montoFinal = gasMonto; tipoFinal = 'Gastos'; }
+                    if(montoFinal > 0) {
+                        let fFinal = fechaRaw;
+                        if(fechaRaw.includes('/')) { const p = fechaRaw.split('/'); if(p[2]) fFinal = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`; }
+                        movimientos.push({ id: Date.now()+Math.random(), tipo: tipoFinal, cat: categoria, monto: montoFinal, fecha: fFinal, concepto: concepto, metodo: 'BANCO' });
+                        contador++;
+                    }
+                }
+            });
+            if(contador > 0) { alert(`Cargados ${contador} registros.`); document.getElementById('import-area').value = ''; guardarYRefrescar(); }
+        }
 
         document.getElementById('input-fecha').valueAsDate = new Date();
         actualizarUI();
