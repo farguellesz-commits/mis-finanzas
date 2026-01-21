@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS PRO 5.7</title>
+    <title>FINANZAS PRO 5.8</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,32 +23,31 @@
         .nav-active { color: #1e40af; font-weight: 800; }
         .btn-tipo.active { background-color: #1e40af; color: white; border-color: #1e40af; }
         input, select, textarea { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; font-size: 14px; }
-        .progress-bg { background-color: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; }
-        .progress-fill { height: 100%; transition: width 0.3s ease; }
+        .progress-bg { background-color: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.4s ease-out; }
     </style>
 </head>
 <body>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t flex justify-around p-3 z-50">
         <button onclick="showTab('inicio')" id="nav-inicio" class="flex flex-col items-center text-gray-400 nav-active"><i class="fas fa-wallet text-xl"></i><span class="text-[10px] mt-1 uppercase">Inicio</span></button>
-        <button onclick="showTab('graficos')" id="nav-graficos" class="flex flex-col items-center text-gray-400"><i class="fas fa-chart-line text-xl"></i><span class="text-[10px] mt-1 uppercase">Análisis</span></button>
+        <button onclick="showTab('graficos')" id="nav-graficos" class="flex flex-col items-center text-gray-400"><i class="fas fa-chart-pie text-xl"></i><span class="text-[10px] mt-1 uppercase">Análisis</span></button>
         <button onclick="showTab('config')" id="nav-config" class="flex flex-col items-center text-gray-400"><i class="fas fa-cog text-xl"></i><span class="text-[10px] mt-1 uppercase">Ajustes</span></button>
     </nav>
 
     <div id="inicio" class="tab-content active p-4">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-xl font-black text-blue-900 italic uppercase">Control 2026</h1>
-            <select id="filtro-mes" onchange="actualizarUI()" class="bg-blue-600 text-white font-bold py-1 px-3 text-[10px] border-none rounded-full"></select>
+            <h1 class="text-xl font-black text-blue-900 italic uppercase tracking-tighter">Control 2026</h1>
+            <select id="filtro-mes" onchange="actualizarUI()" class="bg-blue-600 text-white font-bold py-1 px-3 text-[10px] border-none rounded-full shadow-lg"></select>
         </div>
 
-        <div class="card bg-slate-900 text-white border-none shadow-2xl mb-6">
-            <p class="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">Resultado Neto Mensual</p>
+        <div class="card bg-slate-900 text-white border-none shadow-2xl mb-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fas fa-vault text-6xl"></i></div>
+            <p class="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">Resultado Neto</p>
             <h2 id="total-balance" class="text-4xl font-black italic mb-4">0.00 €</h2>
             <div class="grid grid-cols-2 gap-y-3 gap-x-4 border-t border-white/10 pt-4">
                 <div><p class="text-[8px] text-green-400 font-bold uppercase italic">Ingresos</p><p class="text-lg font-bold"><span id="res-ing">0</span>€</p></div>
                 <div><p class="text-[8px] text-red-400 font-bold uppercase italic">Gastos</p><p class="text-lg font-bold"><span id="res-gas">0</span>€</p></div>
-                <div><p class="text-[8px] text-amber-400 font-bold uppercase italic">Compras</p><p class="text-lg font-bold"><span id="res-com">0</span>€</p></div>
-                <div><p class="text-[8px] text-emerald-400 font-bold uppercase italic">Inversión</p><p class="text-lg font-bold"><span id="res-inv">0</span>€</p></div>
             </div>
         </div>
 
@@ -80,25 +79,30 @@
     </div>
 
     <div id="graficos" class="tab-content p-4">
-        <h2 class="text-2xl font-black text-slate-800 uppercase italic mb-6">Análisis Mensual</h2>
-        <div id="analisis-ingresos" class="card border-l-4 border-green-500 mb-6 space-y-4 pt-8"></div>
-        <div id="analisis-gastos" class="card border-l-4 border-red-500 mb-6 space-y-4 pt-8"></div>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black text-slate-800 uppercase italic">Análisis</h2>
+            <div id="mes-visualizar-tag" class="text-[10px] font-black bg-slate-200 px-3 py-1 rounded-full uppercase">Enero 2026</div>
+        </div>
+
+        <div id="analisis-ingresos" class="card border-l-4 border-green-500 mb-6 bg-green-50/30"></div>
+
+        <div id="analisis-gastos" class="card border-l-4 border-red-500 mb-6 bg-red-50/30"></div>
     </div>
 
     <div id="config" class="tab-content p-4">
         <h2 class="text-xl font-black mb-4 uppercase text-blue-900">Ajustes</h2>
         
         <div class="card border-t-4 border-green-600 mb-6">
-            <h3 class="font-bold mb-1 text-xs text-gray-800 uppercase">Importar desde tu Excel</h3>
-            <p class="text-[9px] text-gray-500 mb-3 italic">Detectando: Fecha(1), Cat(6), Conc(7), Pago(8), Ing(10), Gas(11)</p>
-            <textarea id="import-area" rows="3" class="w-full text-[10px] bg-gray-50 p-2 mb-2" placeholder="Copia de la Columna 1 a la 12 y pega aquí..."></textarea>
-            <button onclick="importarDatos()" class="w-full bg-green-600 text-white py-2 rounded-xl font-bold text-[10px] uppercase">Procesar Importación</button>
+            <h3 class="font-bold mb-1 text-xs text-gray-800 uppercase">Importar desde Excel</h3>
+            <p class="text-[9px] text-gray-500 mb-3">Mapeo: Fecha(1), Cat(6), Conc(7), Pago(8), Ing(10), Gas(11)</p>
+            <textarea id="import-area" rows="3" class="w-full text-[10px] bg-gray-50 p-2 mb-2" placeholder="Pega aquí las 12 columnas del Excel..."></textarea>
+            <button onclick="importarDatos()" class="w-full bg-green-600 text-white py-2 rounded-xl font-bold text-[10px] uppercase shadow-md">Procesar Importación</button>
         </div>
 
         <div class="card">
             <h3 class="font-bold mb-4 text-xs text-gray-400 uppercase">Presupuestos Mensuales</h3>
             <div id="lista-cats-admin" class="space-y-2 max-h-60 overflow-y-auto mb-4 pr-1"></div>
-            <div class="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+            <div class="p-4 bg-blue-50/50 rounded-2xl border border-dashed border-blue-200">
                 <div class="grid grid-cols-2 gap-2 mb-2">
                     <select id="nueva-cat-tipo" class="text-[10px] font-bold"><option value="Gasto">Gasto</option><option value="Ingreso">Ingreso</option></select>
                     <input type="text" id="nueva-cat-input" placeholder="Nombre..." class="text-xs">
@@ -122,148 +126,53 @@
         let config = JSON.parse(localStorage.getItem(KEY_CONFIG)) || { categorias: [] };
         let movimientos = JSON.parse(localStorage.getItem(KEY_MOVS)) || [];
 
-        // --- IMPORTACIÓN AJUSTADA A TUS 12 COLUMNAS ---
+        // --- IMPORTACIÓN 12 COLUMNAS ---
         function importarDatos() {
             const rawData = document.getElementById('import-area').value;
             if(!rawData.trim()) return;
-
             const filas = rawData.split('\n');
             let contador = 0;
-
             filas.forEach(fil => {
                 if(!fil.trim()) return;
                 const col = fil.split('\t');
-                
-                // Verificamos que al menos lleguemos a la columna 11 (Gastos)
                 if(col.length >= 11) {
                     const fechaRaw = col[0].trim();
                     const categoria = col[5] ? col[5].trim() : 'Varios';
                     const concepto = col[6] ? col[6].trim() : 'Sin concepto';
                     const formaPago = col[7] ? col[7].trim().toUpperCase() : 'BANCO';
-                    
-                    const limpiarNum = (val) => {
-                        if(!val) return 0;
-                        let n = val.trim().replace(/\./g, '').replace(',', '.');
-                        return parseFloat(n) || 0;
-                    };
-
-                    const ingMonto = limpiarNum(col[9]);  // Columna 10
-                    const gasMonto = limpiarNum(col[10]); // Columna 11
-
-                    let montoFinal = 0;
-                    let tipoFinal = '';
-
-                    if(ingMonto > 0) {
-                        montoFinal = ingMonto;
-                        tipoFinal = 'Ingresos';
-                    } else if(gasMonto > 0) {
-                        montoFinal = gasMonto;
-                        tipoFinal = 'Gastos';
-                    }
-
+                    const limpiarNum = (v) => v ? parseFloat(v.trim().replace(/\./g, '').replace(',', '.')) || 0 : 0;
+                    const ingMonto = limpiarNum(col[9]);
+                    const gasMonto = limpiarNum(col[10]);
+                    let montoFinal = 0; let tipoFinal = '';
+                    if(ingMonto > 0) { montoFinal = ingMonto; tipoFinal = 'Ingresos'; }
+                    else if(gasMonto > 0) { montoFinal = gasMonto; tipoFinal = 'Gastos'; }
                     if(montoFinal > 0) {
-                        // Fecha DD/MM/YYYY a YYYY-MM-DD
                         let fechaFinal = fechaRaw;
                         if(fechaRaw.includes('/')) {
                             const p = fechaRaw.split('/');
                             if(p[2] && p[2].length === 4) fechaFinal = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
                         }
-
-                        // Mapeo simple de forma de pago
                         let metodo = 'BANCO';
                         if(formaPago.includes('TARJETA')) metodo = 'TARJETA';
                         if(formaPago.includes('EFECTIVO')) metodo = 'EFECTIVO';
-
-                        movimientos.push({
-                            id: Date.now() + Math.random(),
-                            tipo: tipoFinal,
-                            cat: categoria,
-                            monto: montoFinal,
-                            fecha: fechaFinal,
-                            concepto: concepto,
-                            metodo: metodo
-                        });
+                        movimientos.push({ id: Date.now() + Math.random(), tipo: tipoFinal, cat: categoria, monto: montoFinal, fecha: fechaFinal, concepto: concepto, metodo: metodo });
                         contador++;
                     }
                 }
             });
-
-            if(contador > 0) {
-                alert(`¡Éxito! Importados ${contador} movimientos.`);
-                document.getElementById('import-area').value = '';
-                guardarYRefrescar();
-            } else {
-                alert("No se detectaron datos. Asegúrate de copiar las filas completas de tu Excel (de la columna 1 a la 12).");
-            }
+            if(contador > 0) { alert(`¡Éxito! ${contador} movimientos cargados.`); document.getElementById('import-area').value = ''; guardarYRefrescar(); }
         }
 
-        // --- FUNCIONES CORE ---
-        function setTipo(t) {
-            tipoActual = t;
-            document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active'));
-            document.getElementById('t-'+t).classList.add('active');
-            actualizarSelectCategorias();
-        }
-
-        function actualizarSelectCategorias() {
-            const select = document.getElementById('select-cat');
-            const filtro = (tipoActual === 'Ingresos') ? 'Ingreso' : 'Gasto';
-            const filtradas = config.categorias.filter(c => c.tipo === filtro);
-            select.innerHTML = filtradas.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
-            if(filtradas.length === 0) select.innerHTML = '<option value="Varios">Varios</option>';
-        }
-
-        function registrar() {
-            const editId = document.getElementById('edit-id').value;
-            const monto = parseFloat(document.getElementById('input-monto').value);
-            const fecha = document.getElementById('input-fecha').value;
-            const cat = document.getElementById('select-cat').value || 'Varios';
-            const concepto = document.getElementById('input-concepto').value || "Varios";
-            const metodo = document.getElementById('select-metodo').value;
-
-            if (!monto || !fecha) return alert("Faltan datos");
-
-            if(editId) {
-                const idx = movimientos.findIndex(m => m.id == editId);
-                movimientos[idx] = { ...movimientos[idx], tipo: tipoActual, cat, monto, fecha, concepto, metodo };
-                document.getElementById('edit-id').value = "";
-                document.getElementById('btn-guardar').innerText = "Guardar Movimiento";
-                document.getElementById('btn-guardar').classList.replace('bg-amber-600', 'bg-blue-700');
-            } else {
-                movimientos.unshift({ id: Date.now(), tipo: tipoActual, cat, monto, fecha, concepto, metodo });
-            }
-            document.getElementById('input-monto').value = '';
-            document.getElementById('input-concepto').value = '';
-            guardarYRefrescar();
-        }
-
-        function cargarEdicion(id) {
-            const m = movimientos.find(mov => mov.id === id);
-            if(!m) return;
-            document.getElementById('edit-id').value = m.id;
-            setTipo(m.tipo);
-            document.getElementById('input-monto').value = m.monto;
-            document.getElementById('input-fecha').value = m.fecha;
-            document.getElementById('select-cat').value = m.cat;
-            document.getElementById('input-concepto').value = m.concepto;
-            document.getElementById('btn-guardar').innerText = "Actualizar";
-            document.getElementById('btn-guardar').classList.replace('bg-blue-700', 'bg-amber-600');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function eliminarMovimiento(id) {
-            if(confirm("¿Borrar?")) {
-                movimientos = movimientos.filter(m => m.id !== id);
-                guardarYRefrescar();
-            }
-        }
-
+        // --- UI Y ANÁLISIS ---
         function actualizarUI() {
             const selectorMes = document.getElementById('filtro-mes');
             const meses = [...new Set(movimientos.map(m => m.fecha.substring(0, 7)))].sort().reverse();
             if (meses.length === 0) meses.push(new Date().toISOString().substring(0, 7));
             const mesSel = selectorMes.value || meses[0];
             selectorMes.innerHTML = meses.map(m => `<option value="${m}" ${m===mesSel?'selected':''}>${m}</option>`).join('');
+
+            // Actualizar tag de mes en Análisis
+            document.getElementById('mes-visualizar-tag').innerText = mesSel;
 
             const filtrados = movimientos.filter(m => m.fecha.startsWith(mesSel));
             let ing=0, gas=0, com=0, inv=0;
@@ -274,11 +183,9 @@
                 else if(m.tipo === 'Inversiones') inv += m.monto;
             });
 
-            document.getElementById('total-balance').innerText = (ing - gas).toFixed(2) + " €";
+            document.getElementById('total-balance').innerText = (ing - gas - com - inv).toFixed(2) + " €";
             document.getElementById('res-ing').innerText = ing.toLocaleString();
-            document.getElementById('res-gas').innerText = gas.toLocaleString();
-            document.getElementById('res-com').innerText = com.toLocaleString();
-            document.getElementById('res-inv').innerText = inv.toLocaleString();
+            document.getElementById('res-gas').innerText = (gas + com + inv).toLocaleString();
 
             document.getElementById('lista-movimientos').innerHTML = filtrados.map(m => `
                 <div class="card flex justify-between items-center py-3 mb-1 border-l-4 ${m.tipo==='Ingresos'?'border-green-500':'border-red-400'}">
@@ -303,15 +210,23 @@
         function renderizarAnalisis(movsFiltrados) {
             const renderSeccion = (tipoCat, tipoMov, containerId, titulo) => {
                 const container = document.getElementById(containerId);
-                let html = `<h3 class="text-xs font-black uppercase italic mb-4">${titulo}</h3>`;
                 const cats = config.categorias.filter(c => c.tipo === tipoCat);
                 
+                // Calcular Totales de la Sección
+                let sumaRealTotal = 0;
+                let sumaPresuTotal = 0;
+
+                let catsHtml = "";
                 cats.forEach(cat => {
                     const real = movsFiltrados.filter(m => m.cat === cat.nombre && (m.tipo === tipoMov || (tipoMov === 'Gastos' && (m.tipo === 'Compras' || m.tipo === 'Inversiones')))).reduce((s, m) => s + m.monto, 0);
                     const plan = cat.presupuesto || 0;
+                    sumaRealTotal += real;
+                    sumaPresuTotal += plan;
+
                     const porc = plan > 0 ? Math.min((real / plan) * 100, 100) : (real > 0 ? 100 : 0);
                     const exceso = (tipoCat === 'Gasto' && real > plan && plan > 0);
-                    html += `<div class="mb-3">
+                    
+                    catsHtml += `<div class="mb-4">
                         <div class="flex justify-between items-end mb-1">
                             <span class="text-[10px] font-black text-slate-700 uppercase">${cat.nombre}</span>
                             <span class="text-[10px] font-bold ${exceso?'text-red-600':'text-slate-800'}">${real.toFixed(0)}€ <small class="text-gray-400">/ ${plan}€</small></span>
@@ -319,20 +234,34 @@
                         <div class="progress-bg"><div class="progress-fill ${exceso?'bg-red-500':(tipoCat==='Ingreso'?'bg-green-500':'bg-blue-600')}" style="width: ${porc}%"></div></div>
                     </div>`;
                 });
-                container.innerHTML = html || "<p class='text-[10px] text-gray-400 italic'>Sin categorías configuradas</p>";
+
+                // Cabecera con el RESUMEN MENSUAL totalizado
+                let headerHtml = `
+                    <div class="flex justify-between items-start border-b border-gray-100 pb-4 mb-4">
+                        <div>
+                            <h3 class="text-xs font-black uppercase italic text-slate-400">${titulo}</h3>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[14px] font-black text-slate-800 leading-none">${sumaRealTotal.toFixed(0)}€</p>
+                            <p class="text-[9px] font-bold text-gray-400 uppercase">Pto: ${sumaPresuTotal.toFixed(0)}€</p>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = headerHtml + (catsHtml || "<p class='text-[10px] text-gray-400 italic'>Sin datos en este mes</p>");
             };
-            renderSeccion('Ingreso', 'Ingresos', 'analisis-ingresos', '📈 Ingresos');
-            renderSeccion('Gasto', 'Gastos', 'analisis-gastos', '📉 Gastos');
+            
+            renderSeccion('Ingreso', 'Ingresos', 'analisis-ingresos', 'Resumen Ingresos');
+            renderSeccion('Gasto', 'Gastos', 'analisis-gastos', 'Resumen Gastos');
         }
 
-        function renderizarAdminCats() {
-            document.getElementById('lista-cats-admin').innerHTML = config.categorias.map((c, i) => `
-                <div class="bg-gray-50 p-2 rounded-xl border border-gray-100 mb-1 flex justify-between items-center">
-                    <div class="flex-1"><span class="text-[7px] font-black uppercase ${c.tipo==='Ingreso'?'text-green-500':'text-red-400'}">${c.tipo}</span><span class="text-[10px] font-bold block text-slate-700">${c.nombre}</span></div>
-                    <div class="flex items-center gap-1"><input type="number" value="${c.presupuesto}" onchange="updatePresupuesto(${i}, this.value)" class="w-16 h-7 text-[10px] font-bold text-right p-1"><button onclick="eliminarCat(${i})" class="text-gray-300 px-2"><i class="fas fa-trash"></i></button></div>
-                </div>`).join('');
-        }
-
+        // --- OTROS ---
+        function setTipo(t) { tipoActual = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectCategorias(); }
+        function actualizarSelectCategorias() { const s = document.getElementById('select-cat'); const f = (tipoActual === 'Ingresos') ? 'Ingreso' : 'Gasto'; const filtradas = config.categorias.filter(c => c.tipo === f); s.innerHTML = filtradas.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join(''); if(filtradas.length === 0) s.innerHTML = '<option value="Varios">Varios</option>'; }
+        function registrar() { const id = document.getElementById('edit-id').value; const m = parseFloat(document.getElementById('input-monto').value); const f = document.getElementById('input-fecha').value; const c = document.getElementById('select-cat').value || 'Varios'; const con = document.getElementById('input-concepto').value || "Varios"; const met = document.getElementById('select-metodo').value; if (!m || !f) return alert("Faltan datos"); if(id) { const idx = movimientos.findIndex(mov => mov.id == id); movimientos[idx] = { ...movimientos[idx], tipo: tipoActual, cat: c, monto: m, fecha: f, concepto: con, metodo: met }; document.getElementById('edit-id').value = ""; document.getElementById('btn-guardar').innerText = "Guardar"; } else { movimientos.unshift({ id: Date.now(), tipo: tipoActual, cat: c, monto: m, fecha: f, concepto: con, metodo: met }); } document.getElementById('input-monto').value = ''; document.getElementById('input-concepto').value = ''; guardarYRefrescar(); }
+        function cargarEdicion(id) { const m = movimientos.find(mov => mov.id === id); if(!m) return; document.getElementById('edit-id').value = m.id; setTipo(m.tipo); document.getElementById('input-monto').value = m.monto; document.getElementById('input-fecha').value = m.fecha; document.getElementById('select-cat').value = m.cat; document.getElementById('input-concepto').value = m.concepto; document.getElementById('btn-guardar').innerText = "Actualizar"; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        function eliminarMovimiento(id) { if(confirm("¿Borrar?")) { movimientos = movimientos.filter(m => m.id !== id); guardarYRefrescar(); } }
+        function renderizarAdminCats() { document.getElementById('lista-cats-admin').innerHTML = config.categorias.map((c, i) => `<div class="bg-gray-50 p-2 rounded-xl border border-gray-100 mb-1 flex justify-between items-center"><div class="flex-1"><span class="text-[7px] font-black uppercase ${c.tipo==='Ingreso'?'text-green-500':'text-red-400'}">${c.tipo}</span><span class="text-[10px] font-bold block text-slate-700">${c.nombre}</span></div><div class="flex items-center gap-1"><input type="number" value="${c.presupuesto}" onchange="updatePresupuesto(${i}, this.value)" class="w-16 h-7 text-[10px] font-bold text-right p-1"><button onclick="eliminarCat(${i})" class="text-gray-300 px-2"><i class="fas fa-trash"></i></button></div></div>`).join(''); }
         function updatePresupuesto(i, v) { config.categorias[i].presupuesto = parseFloat(v)||0; guardarYRefrescar(); }
         function añadirCatManual() { const n=document.getElementById('nueva-cat-input').value.trim(); const t=document.getElementById('nueva-cat-tipo').value; const p=parseFloat(document.getElementById('nueva-cat-pres').value)||0; if(n){ config.categorias.push({nombre:n,tipo:t,presupuesto:p}); document.getElementById('nueva-cat-input').value=''; document.getElementById('nueva-cat-pres').value=''; guardarYRefrescar(); } }
         function eliminarCat(i) { if(confirm("¿Borrar?")){ config.categorias.splice(i,1); guardarYRefrescar(); } }
