@@ -3,13 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS PRO 6.0</title>
+    <title>FINANZAS PRO 6.1</title>
     
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1e40af">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -21,6 +16,7 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
+            --input-bg: #ffffff;
         }
 
         .dark {
@@ -29,29 +25,36 @@
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --border-color: #334155;
+            --input-bg: #1e293b;
         }
 
-        body { background-color: var(--bg-main); color: var(--text-main); transition: all 0.3s ease; padding-bottom: 100px; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-main); color: var(--text-main); transition: all 0.2s ease; padding-bottom: 100px; font-family: sans-serif; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .card { background: var(--bg-card); border-radius: 20px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 12px; border: 1px solid var(--border-color); }
-        .nav-active { color: #3b82f6; font-weight: 800; }
-        .btn-tipo.active { background-color: #1e40af; color: white; border-color: #1e40af; }
         
+        /* Corregidos tamaños y colores de inputs */
         input, select, textarea { 
-            background: var(--bg-card); 
-            color: var(--text-main); 
-            border: 1px solid var(--border-color); 
-            border-radius: 10px; padding: 8px; font-size: 14px; 
+            background: var(--input-bg) !important; 
+            color: var(--text-main) !important; 
+            border: 1px solid var(--border-color) !important; 
+            border-radius: 12px; 
+            height: 45px; /* Altura uniforme */
+            padding: 0 12px;
+            font-size: 14px;
         }
+
+        .btn-tipo { background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); height: 40px; }
+        .btn-tipo.active { background-color: #1e40af !important; color: white !important; border-color: #1e40af !important; }
         
         .progress-bg { background-color: var(--border-color); height: 8px; border-radius: 4px; overflow: hidden; }
         .progress-fill { height: 100%; transition: width 0.4s ease-out; }
-
         nav { background: var(--bg-card); border-top: 1px solid var(--border-color); }
+        
+        canvas { max-height: 220px !important; } /* Ajuste para ver ambos gráficos */
     </style>
 </head>
-<body class="">
+<body>
 
     <header class="p-4 flex justify-between items-center bg-blue-700 text-white shadow-lg mb-2">
         <div>
@@ -60,7 +63,7 @@
         </div>
         <div class="flex items-center gap-4">
             <button onclick="toggleDarkMode()" class="text-xl p-2"><i id="dark-icon" class="fas fa-moon"></i></button>
-            <select id="filtro-mes" onchange="actualizarUI()" class="bg-blue-800 text-white border-none text-[10px] font-bold rounded-full px-3 py-1"></select>
+            <select id="filtro-mes" onchange="actualizarUI()" class="bg-blue-800 text-white border-none text-[10px] font-bold h-8"></select>
         </div>
     </header>
 
@@ -72,39 +75,40 @@
     </nav>
 
     <div id="inicio" class="tab-content active p-4">
-        <div class="card bg-slate-900 text-white border-none shadow-2xl mb-6 relative overflow-hidden">
-            <p class="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">Resultado Neto Mensual</p>
+        <div class="card bg-slate-900 text-white border-none shadow-2xl mb-6">
+            <p class="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">Resultado Neto</p>
             <h2 id="total-balance" class="text-4xl font-black italic mb-4">0.00 €</h2>
-            <div class="grid grid-cols-2 gap-y-3 gap-x-4 border-t border-white/10 pt-4">
+            <div class="grid grid-cols-2 gap-y-4 gap-x-4 border-t border-white/10 pt-4">
                 <div><p class="text-[8px] text-green-400 font-bold uppercase italic">Ingresos</p><p class="text-lg font-bold"><span id="res-ing">0</span>€</p></div>
                 <div><p class="text-[8px] text-red-400 font-bold uppercase italic">Gastos</p><p class="text-lg font-bold"><span id="res-gas">0</span>€</p></div>
+                <div><p class="text-[8px] text-amber-400 font-bold uppercase italic">Compras</p><p class="text-lg font-bold"><span id="res-com">0</span>€</p></div>
+                <div><p class="text-[8px] text-emerald-400 font-bold uppercase italic">Inversión</p><p class="text-lg font-bold"><span id="res-inv">0</span>€</p></div>
             </div>
         </div>
 
         <div class="card border-t-4 border-blue-600">
             <input type="hidden" id="edit-id">
             <div class="grid grid-cols-4 gap-1 mb-4">
-                <button onclick="setTipo('Ingresos')" id="t-Ingresos" class="btn-tipo p-2 rounded-lg bg-gray-50 dark:bg-slate-700 border text-[8px] font-bold">INGRESOS</button>
-                <button onclick="setTipo('Gastos')" id="t-Gastos" class="btn-tipo active p-2 rounded-lg bg-gray-50 dark:bg-slate-700 border text-[8px] font-bold">GASTOS</button>
-                <button onclick="setTipo('Compras')" id="t-Compras" class="btn-tipo p-2 rounded-lg bg-gray-50 dark:bg-slate-700 border text-[8px] font-bold">COMPRAS</button>
-                <button onclick="setTipo('Inversiones')" id="t-Inversiones" class="btn-tipo p-2 rounded-lg bg-gray-50 dark:bg-slate-700 border text-[8px] font-bold">INV.</button>
+                <button onclick="setTipo('Ingresos')" id="t-Ingresos" class="btn-tipo rounded-lg text-[8px] font-bold">INGRESOS</button>
+                <button onclick="setTipo('Gastos')" id="t-Gastos" class="btn-tipo active rounded-lg text-[8px] font-bold">GASTOS</button>
+                <button onclick="setTipo('Compras')" id="t-Compras" class="btn-tipo rounded-lg text-[8px] font-bold">COMPRAS</button>
+                <button onclick="setTipo('Inversiones')" id="t-Inversiones" class="btn-tipo rounded-lg text-[8px] font-bold">INV.</button>
             </div>
             <div class="grid grid-cols-2 gap-2 mb-3">
-                <input type="date" id="input-fecha" class="text-xs font-bold">
-                <input type="number" id="input-monto" placeholder="0.00 €" class="font-black text-right text-lg text-blue-500">
+                <input type="date" id="input-fecha" class="w-full font-bold">
+                <input type="number" id="input-monto" placeholder="0.00 €" class="w-full font-black text-right text-lg text-blue-500">
             </div>
             <div class="grid grid-cols-2 gap-2 mb-3">
-                <select id="select-cat" class="font-bold text-xs"></select>
-                <select id="select-metodo" class="font-bold text-xs">
+                <select id="select-cat" class="w-full font-bold"></select>
+                <select id="select-metodo" class="w-full font-bold">
                     <option value="BANCO">🏦 BANCO</option>
                     <option value="TARJETA">💳 TARJETA</option>
                     <option value="EFECTIVO">💵 EFECTIVO</option>
                 </select>
             </div>
-            <input type="text" id="input-concepto" placeholder="Concepto..." class="w-full p-3 bg-blue-50 dark:bg-slate-800 rounded-xl mb-4 text-sm font-medium border-none">
-            <button id="btn-guardar" onclick="registrar()" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg">Guardar Movimiento</button>
+            <input type="text" id="input-concepto" placeholder="Concepto..." class="w-full mb-4 !h-12 !bg-blue-50 dark:!bg-slate-800">
+            <button id="btn-guardar" onclick="registrar()" class="w-full bg-blue-700 text-white h-14 rounded-2xl font-black text-xs uppercase shadow-lg">Guardar Movimiento</button>
         </div>
-        
         <div id="lista-movimientos" class="space-y-2 pb-10 mt-4"></div>
     </div>
 
@@ -115,42 +119,45 @@
     </div>
 
     <div id="graficos" class="tab-content p-4">
-        <h2 class="text-xl font-black mb-6 uppercase italic text-center">Distribución del Dinero</h2>
-        <div class="card p-6 mb-6">
-            <h3 class="text-center font-bold text-red-500 text-xs uppercase mb-4">Origen de Gastos</h3>
-            <canvas id="chartGastos"></canvas>
-        </div>
-        <div class="card p-6 mb-6">
-            <h3 class="text-center font-bold text-green-500 text-xs uppercase mb-4">Origen de Ingresos</h3>
-            <canvas id="chartIngresos"></canvas>
+        <h2 class="text-xl font-black mb-4 uppercase italic text-center">Distribución</h2>
+        <div class="grid grid-cols-1 gap-4">
+            <div class="card p-4 flex flex-col items-center">
+                <h3 class="font-bold text-red-500 text-[10px] uppercase mb-2">Gastos</h3>
+                <canvas id="chartGastos"></canvas>
+            </div>
+            <div class="card p-4 flex flex-col items-center">
+                <h3 class="font-bold text-green-500 text-[10px] uppercase mb-2">Ingresos</h3>
+                <canvas id="chartIngresos"></canvas>
+            </div>
         </div>
     </div>
 
     <div id="config" class="tab-content p-4">
         <h2 class="text-xl font-black mb-4 uppercase text-blue-600">Configuración</h2>
+        
         <div class="card border-t-4 border-green-600 mb-6">
-            <h3 class="font-bold mb-1 text-xs uppercase">Importar 12 Columnas</h3>
-            <textarea id="import-area" rows="3" class="w-full text-[10px] p-2 mb-2" placeholder="Pega aquí desde el Excel..."></textarea>
-            <button onclick="importarDatos()" class="w-full bg-green-600 text-white py-2 rounded-xl font-bold text-[10px] uppercase">Cargar Excel</button>
+            <h3 class="font-bold mb-1 text-xs uppercase text-gray-400">Importar Excel (12 Col)</h3>
+            <textarea id="import-area" class="w-full !h-20 text-[10px] p-2 mb-2" placeholder="Pega aquí..."></textarea>
+            <button onclick="importarDatos()" class="w-full bg-green-600 text-white h-10 rounded-xl font-bold text-[10px] uppercase">Cargar Datos</button>
         </div>
 
         <div class="card">
-            <h3 class="font-bold mb-4 text-xs text-gray-400 uppercase">Gestión de Categorías</h3>
-            <div id="lista-cats-admin" class="space-y-2 max-h-60 overflow-y-auto mb-4"></div>
-            <div class="p-4 bg-blue-50 dark:bg-slate-800 rounded-2xl border border-dashed border-blue-200">
-                <div class="grid grid-cols-2 gap-2 mb-2">
-                    <select id="nueva-cat-tipo" class="text-[10px] font-bold"><option value="Gasto">Gasto</option><option value="Ingreso">Ingreso</option></select>
-                    <input type="text" id="nueva-cat-input" placeholder="Nombre..." class="text-xs">
+            <h3 class="font-bold mb-4 text-xs text-gray-400 uppercase tracking-widest">Nueva Categoría</h3>
+            <div class="space-y-3 p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-dashed border-gray-300 dark:border-slate-600">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="nueva-cat-tipo" class="!text-sm font-bold"><option value="Gasto">Gasto</option><option value="Ingreso">Ingreso</option></select>
+                    <input type="text" id="nueva-cat-input" placeholder="Nombre..." class="!text-sm font-bold">
                 </div>
                 <div class="flex gap-2">
-                    <input type="number" id="nueva-cat-pres" placeholder="Pto €" class="flex-1 text-xs">
-                    <button onclick="añadirCatManual()" class="bg-blue-800 text-white px-6 rounded-xl font-bold">+</button>
+                    <input type="number" id="nueva-cat-pres" placeholder="Pto €" class="flex-1 !text-sm font-bold">
+                    <button onclick="añadirCatManual()" class="bg-blue-800 text-white px-6 rounded-xl font-bold h-11">+</button>
                 </div>
             </div>
+            <div id="lista-cats-admin" class="space-y-2 mt-6 max-h-80 overflow-y-auto"></div>
         </div>
         
-        <button onclick="exportarBackup()" class="w-full mt-4 p-3 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold rounded-xl uppercase">Backup .JSON</button>
-        <button onclick="borrarTodo()" class="w-full mt-2 p-3 text-red-400 text-[10px] font-bold uppercase italic">Reset Completo</button>
+        <button onclick="exportarBackup()" class="w-full mt-4 h-12 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold rounded-xl uppercase">Backup .JSON</button>
+        <button onclick="borrarTodo()" class="w-full mt-2 h-12 text-red-400 text-[10px] font-bold uppercase italic">Reset App</button>
     </div>
 
     <script>
@@ -163,17 +170,15 @@
         let movimientos = JSON.parse(localStorage.getItem(KEY_MOVS)) || [];
         let myChartG, myChartI;
 
-        // --- MODO OSCURO ---
         function toggleDarkMode() {
             document.body.classList.toggle('dark');
             const isDark = document.body.classList.contains('dark');
             localStorage.setItem(KEY_DARK, isDark);
             document.getElementById('dark-icon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-            if(myChartG) actualizarUI(); // Refrescar colores de gráficos
+            if(myChartG) actualizarUI();
         }
         if(localStorage.getItem(KEY_DARK) === 'true') toggleDarkMode();
 
-        // --- IMPORTACIÓN 12 COLUMNAS ---
         function importarDatos() {
             const rawData = document.getElementById('import-area').value;
             if(!rawData.trim()) return;
@@ -184,8 +189,8 @@
                 const col = fil.split('\t');
                 if(col.length >= 11) {
                     const fechaRaw = col[0].trim();
-                    const categoria = col[5] ? col[5].trim() : 'Varios';
-                    const concepto = col[6] ? col[6].trim() : 'Sin concepto';
+                    const categoria = col[5]?.trim() || 'Varios';
+                    const concepto = col[6]?.trim() || 'Sin concepto';
                     const limpiarNum = (v) => v ? parseFloat(v.trim().replace(/\./g, '').replace(',', '.')) || 0 : 0;
                     const ingMonto = limpiarNum(col[9]);
                     const gasMonto = limpiarNum(col[10]);
@@ -193,20 +198,16 @@
                     if(ingMonto > 0) { montoFinal = ingMonto; tipoFinal = 'Ingresos'; }
                     else if(gasMonto > 0) { montoFinal = gasMonto; tipoFinal = 'Gastos'; }
                     if(montoFinal > 0) {
-                        let fechaFinal = fechaRaw;
-                        if(fechaRaw.includes('/')) {
-                            const p = fechaRaw.split('/');
-                            if(p[2]) fechaFinal = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
-                        }
-                        movimientos.push({ id: Date.now()+Math.random(), tipo: tipoFinal, cat: categoria, monto: montoFinal, fecha: fechaFinal, concepto: concepto, metodo: 'BANCO' });
+                        let fFinal = fechaRaw;
+                        if(fechaRaw.includes('/')) { const p = fechaRaw.split('/'); if(p[2]) fFinal = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`; }
+                        movimientos.push({ id: Date.now()+Math.random(), tipo: tipoFinal, cat: categoria, monto: montoFinal, fecha: fFinal, concepto: concepto, metodo: 'BANCO' });
                         contador++;
                     }
                 }
             });
-            if(contador > 0) { alert(`Importados ${contador} registros.`); document.getElementById('import-area').value = ''; guardarYRefrescar(); }
+            if(contador > 0) { alert(`Cargados ${contador} registros.`); document.getElementById('import-area').value = ''; guardarYRefrescar(); }
         }
 
-        // --- NÚCLEO DE LA UI ---
         function actualizarUI() {
             const selectorMes = document.getElementById('filtro-mes');
             const meses = [...new Set(movimientos.map(m => m.fecha.substring(0, 7)))].sort().reverse();
@@ -226,7 +227,9 @@
 
             document.getElementById('total-balance').innerText = (ing - gas - com - inv).toFixed(2) + " €";
             document.getElementById('res-ing').innerText = ing.toLocaleString();
-            document.getElementById('res-gas').innerText = (gas + com + inv).toLocaleString();
+            document.getElementById('res-gas').innerText = gas.toLocaleString();
+            document.getElementById('res-com').innerText = com.toLocaleString();
+            document.getElementById('res-inv').innerText = inv.toLocaleString();
 
             document.getElementById('lista-movimientos').innerHTML = filtrados.map(m => `
                 <div class="card flex justify-between items-center py-3 mb-1 border-l-4 ${m.tipo==='Ingresos'?'border-green-500':'border-red-400'}">
@@ -236,7 +239,10 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="font-black text-xs">${m.monto.toFixed(2)}€</span>
-                        <button onclick="eliminarMovimiento(${m.id})" class="text-red-200 p-1"><i class="fas fa-trash"></i></button>
+                        <div class="flex gap-2">
+                             <button onclick="cargarEdicion(${m.id})" class="text-blue-400 p-1"><i class="fas fa-pen"></i></button>
+                             <button onclick="eliminarMovimiento(${m.id})" class="text-red-200 p-1"><i class="fas fa-trash"></i></button>
+                        </div>
                     </div>
                 </div>`).join('');
 
@@ -246,13 +252,11 @@
             actualizarSelectCategorias();
         }
 
-        // Pestaña Análisis: Listas de Progreso
         function renderizarPresupuestos(movs) {
             const renderSeccion = (tipoCat, tipoMov, containerId, titulo) => {
                 const container = document.getElementById(containerId);
                 const cats = config.categorias.filter(c => c.tipo === tipoCat);
                 let totalR = 0, totalP = 0, html = "";
-                
                 cats.forEach(cat => {
                     const real = movs.filter(m => m.cat === cat.nombre && (m.tipo === tipoMov || (tipoMov === 'Gastos' && (m.tipo === 'Compras' || m.tipo === 'Inversiones')))).reduce((s, m) => s + m.monto, 0);
                     const plan = cat.presupuesto || 0;
@@ -265,14 +269,13 @@
                 });
                 container.innerHTML = `<div class="flex justify-between border-b border-gray-100 dark:border-slate-700 pb-2 mb-4">
                     <span class="text-xs font-black uppercase italic text-blue-500">${titulo}</span>
-                    <span class="text-xs font-black">${totalR.toFixed(0)}€ <small class="opacity-40">de ${totalP}€</small></span>
-                </div>` + (html || "<p class='text-[10px] opacity-40 italic'>Sin categorías</p>");
+                    <span class="text-xs font-black">${totalR.toFixed(0)}€ <small class="opacity-40">pto: ${totalP}€</small></span>
+                </div>` + (html || "<p class='text-[10px] opacity-40 italic'>Sin datos</p>");
             };
             renderSeccion('Ingreso', 'Ingresos', 'analisis-ingresos', 'Entradas');
             renderSeccion('Gasto', 'Gastos', 'analisis-gastos', 'Salidas');
         }
 
-        // Pestaña Gráficos: Chart.js
         function renderizarGraficos(movs) {
             const agrupar = (tipo) => {
                 const data = {};
@@ -280,51 +283,79 @@
                     .forEach(m => data[m.cat] = (data[m.cat] || 0) + m.monto);
                 return data;
             };
-
             const draw = (canvasId, data, colorScheme) => {
                 const ctx = document.getElementById(canvasId).getContext('2d');
                 if (canvasId === 'chartGastos' && myChartG) myChartG.destroy();
                 if (canvasId === 'chartIngresos' && myChartI) myChartI.destroy();
-
-                const configChart = {
+                return new Chart(ctx, {
                     type: 'doughnut',
-                    data: {
-                        labels: Object.keys(data),
-                        datasets: [{
-                            data: Object.values(data),
-                            backgroundColor: colorScheme,
-                            borderWidth: 0
-                        }]
-                    },
-                    options: { 
-                        plugins: { legend: { position: 'bottom', labels: { color: document.body.classList.contains('dark') ? '#f1f5f9' : '#1e293b', font: { size: 10 } } } },
-                        cutout: '70%'
-                    }
-                };
-                return new Chart(ctx, configChart);
+                    data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: colorScheme, borderWidth: 0 }] },
+                    options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: document.body.classList.contains('dark') ? '#94a3b8' : '#1e293b', font: { size: 9 } } } } }
+                });
             };
-
-            const dataG = agrupar('Gastos');
-            const dataI = agrupar('Ingresos');
-            const colG = ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4'];
-            const colI = ['#10b981', '#34d399', '#059669', '#6ee7b7'];
-
-            myChartG = draw('chartGastos', dataG, colG);
-            myChartI = draw('chartIngresos', dataI, colI);
+            myChartG = draw('chartGastos', agrupar('Gastos'), ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4']);
+            myChartI = draw('chartIngresos', agrupar('Ingresos'), ['#10b981', '#34d399', '#059669', '#6ee7b7']);
         }
 
-        // --- UTILIDADES ---
         function setTipo(t) { tipoActual = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectCategorias(); }
         function actualizarSelectCategorias() { const s = document.getElementById('select-cat'); const f = (tipoActual === 'Ingresos') ? 'Ingreso' : 'Gasto'; const filtradas = config.categorias.filter(c => c.tipo === f); s.innerHTML = filtradas.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join(''); if(filtradas.length === 0) s.innerHTML = '<option value="Varios">Varios</option>'; }
-        function registrar() { const id = document.getElementById('edit-id').value; const m = parseFloat(document.getElementById('input-monto').value); const f = document.getElementById('input-fecha').value; const c = document.getElementById('select-cat').value || 'Varios'; const con = document.getElementById('input-concepto').value || "Varios"; const met = document.getElementById('select-metodo').value; if (!m || !f) return alert("Datos incompletos"); if(id) { const idx = movimientos.findIndex(mov => mov.id == id); movimientos[idx] = { ...movimientos[idx], tipo: tipoActual, cat: c, monto: m, fecha: f, concepto: con, metodo: met }; document.getElementById('edit-id').value = ""; } else { movimientos.unshift({ id: Date.now(), tipo: tipoActual, cat: c, monto: m, fecha: f, concepto: con, metodo: met }); } document.getElementById('input-monto').value = ''; document.getElementById('input-concepto').value = ''; guardarYRefrescar(); }
+        
+        function registrar() { 
+            const id = document.getElementById('edit-id').value; 
+            const m = parseFloat(document.getElementById('input-monto').value); 
+            const f = document.getElementById('input-fecha').value; 
+            const c = document.getElementById('select-cat').value || 'Varios'; 
+            const con = document.getElementById('input-concepto').value || "Varios"; 
+            const met = document.getElementById('select-metodo').value; 
+            if (!m || !f) return alert("Faltan datos"); 
+            if(id) { 
+                const idx = movimientos.findIndex(mov => mov.id == id); 
+                movimientos[idx] = { ...movimientos[idx], tipo: tipoActual, cat: c, monto: m, fecha: f, concepto: con, metodo: met }; 
+                document.getElementById('edit-id').value = ""; 
+                document.getElementById('btn-guardar').innerText = "Guardar Movimiento";
+            } else { 
+                movimientos.unshift({ id: Date.now(), tipo: tipoActual, cat: c, monto: m, fecha: f, concepto: con, metodo: met }); 
+            } 
+            document.getElementById('input-monto').value = ''; 
+            document.getElementById('input-concepto').value = ''; 
+            guardarYRefrescar(); 
+        }
+
+        function cargarEdicion(id) {
+            const m = movimientos.find(mov => mov.id === id);
+            if(!m) return;
+            document.getElementById('edit-id').value = m.id;
+            setTipo(m.tipo);
+            document.getElementById('input-monto').value = m.monto;
+            document.getElementById('input-fecha').value = m.fecha;
+            document.getElementById('select-cat').value = m.cat;
+            document.getElementById('input-concepto').value = m.concepto;
+            document.getElementById('btn-guardar').innerText = "Actualizar";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         function eliminarMovimiento(id) { if(confirm("¿Borrar?")) { movimientos = movimientos.filter(m => m.id !== id); guardarYRefrescar(); } }
-        function renderizarAdminCats() { document.getElementById('lista-cats-admin').innerHTML = config.categorias.map((c, i) => `<div class="bg-gray-50 dark:bg-slate-700 p-2 rounded-xl border border-gray-100 dark:border-slate-600 mb-1 flex justify-between items-center"><div class="flex-1"><span class="text-[7px] font-black uppercase ${c.tipo==='Ingreso'?'text-green-500':'text-red-400'}">${c.tipo}</span><span class="text-[10px] font-bold block">${c.nombre}</span></div><div class="flex items-center gap-1"><input type="number" value="${c.presupuesto}" onchange="updatePresupuesto(${i}, this.value)" class="w-16 h-7 text-[10px] text-right p-1"><button onclick="eliminarCat(${i})" class="text-gray-300 px-2"><i class="fas fa-trash"></i></button></div></div>`).join(''); }
+        
+        function renderizarAdminCats() { 
+            document.getElementById('lista-cats-admin').innerHTML = config.categorias.map((c, i) => `
+                <div class="card !p-3 mb-2 flex justify-between items-center bg-gray-50 dark:bg-slate-800">
+                    <div class="flex-1">
+                        <span class="text-[8px] font-black uppercase ${c.tipo==='Ingreso'?'text-green-500':'text-red-400'}">${c.tipo}</span>
+                        <span class="text-sm font-bold block">${c.nombre}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <input type="number" value="${c.presupuesto}" onchange="updatePresupuesto(${i}, this.value)" class="w-20 !h-8 text-right font-bold !text-xs">
+                        <button onclick="eliminarCat(${i})" class="text-red-300 px-2"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`).join(''); 
+        }
+
         function updatePresupuesto(i, v) { config.categorias[i].presupuesto = parseFloat(v)||0; guardarYRefrescar(); }
         function añadirCatManual() { const n=document.getElementById('nueva-cat-input').value.trim(); const t=document.getElementById('nueva-cat-tipo').value; const p=parseFloat(document.getElementById('nueva-cat-pres').value)||0; if(n){ config.categorias.push({nombre:n,tipo:t,presupuesto:p}); document.getElementById('nueva-cat-input').value=''; document.getElementById('nueva-cat-pres').value=''; guardarYRefrescar(); } }
         function eliminarCat(i) { if(confirm("¿Borrar?")){ config.categorias.splice(i,1); guardarYRefrescar(); } }
         function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); actualizarUI(); }
         function guardarYRefrescar() { localStorage.setItem(KEY_CONFIG, JSON.stringify(config)); localStorage.setItem(KEY_MOVS, JSON.stringify(movimientos)); actualizarUI(); }
-        function borrarTodo() { if(confirm("¿Borrar todo?")) { movimientos=[]; localStorage.clear(); location.reload(); } }
+        function borrarTodo() { if(confirm("¿Resetear?")) { localStorage.clear(); location.reload(); } }
         function exportarBackup() { const d = JSON.stringify({config, movimientos}); const b = new Blob([d], {type: 'application/json'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `backup_finanzas.json`; a.click(); }
 
         document.getElementById('input-fecha').valueAsDate = new Date();
