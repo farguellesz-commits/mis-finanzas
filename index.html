@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS 2026</title>
+    <title>FINANZAS PRO 5.7</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,23 +22,12 @@
         .card { background: white; border-radius: 20px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 12px; }
         .nav-active { color: #1e40af; font-weight: 800; }
         .btn-tipo.active { background-color: #1e40af; color: white; border-color: #1e40af; }
-        input, select { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; font-size: 14px; }
+        input, select, textarea { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; font-size: 14px; }
         .progress-bg { background-color: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; }
         .progress-fill { height: 100%; transition: width 0.3s ease; }
     </style>
 </head>
 <body>
-
-    <div id="install-banner" class="hidden fixed top-4 left-4 right-4 z-[100] bg-blue-700 text-white p-4 rounded-2xl shadow-2xl flex justify-between items-center animate-pulse">
-        <div class="flex items-center gap-3">
-            <i class="fas fa-cloud-download-alt text-2xl"></i>
-            <div>
-                <p class="text-xs font-black uppercase">Instalar App</p>
-                <p class="text-[10px] opacity-80">Añade FINANZAS a tu pantalla</p>
-            </div>
-        </div>
-        <button id="btn-install-now" class="bg-white text-blue-700 px-4 py-2 rounded-xl font-black text-[10px] uppercase">Instalar</button>
-    </div>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t flex justify-around p-3 z-50">
         <button onclick="showTab('inicio')" id="nav-inicio" class="flex flex-col items-center text-gray-400 nav-active"><i class="fas fa-wallet text-xl"></i><span class="text-[10px] mt-1 uppercase">Inicio</span></button>
@@ -53,7 +42,7 @@
         </div>
 
         <div class="card bg-slate-900 text-white border-none shadow-2xl mb-6">
-            <p class="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">Resultado Neto</p>
+            <p class="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">Resultado Neto Mensual</p>
             <h2 id="total-balance" class="text-4xl font-black italic mb-4">0.00 €</h2>
             <div class="grid grid-cols-2 gap-y-3 gap-x-4 border-t border-white/10 pt-4">
                 <div><p class="text-[8px] text-green-400 font-bold uppercase italic">Ingresos</p><p class="text-lg font-bold"><span id="res-ing">0</span>€</p></div>
@@ -87,88 +76,128 @@
             <button id="btn-guardar" onclick="registrar()" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg">Guardar Movimiento</button>
         </div>
         
-        <div id="lista-movimientos" class="space-y-2 pb-10"></div>
+        <div id="lista-movimientos" class="space-y-2 pb-10 mt-4"></div>
     </div>
 
     <div id="graficos" class="tab-content p-4">
-        <div class="flex justify-between items-end mb-6">
-            <h2 class="text-2xl font-black text-slate-800 uppercase italic">Análisis</h2>
-            <span id="analisis-fecha" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">---</span>
-        </div>
-        <div id="seccion-analisis-ing" class="card border-l-4 border-green-500 mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xs font-black text-green-700 uppercase italic">📈 Ingresos</h3>
-                <div class="text-right">
-                    <p class="text-[10px] font-bold text-slate-800">Real: <span id="total-ing-real">0</span>€</p>
-                    <p class="text-[8px] text-gray-400">Plan: <span id="total-ing-plan">0</span>€</p>
-                </div>
-            </div>
-            <div id="analisis-ingresos" class="space-y-4"></div>
-        </div>
-        <div id="seccion-analisis-gas" class="card border-l-4 border-red-500 mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xs font-black text-red-700 uppercase italic">📉 Gastos</h3>
-                <div class="text-right">
-                    <p class="text-[10px] font-bold text-slate-800">Real: <span id="total-gas-real">0</span>€</p>
-                    <p class="text-[8px] text-gray-400">Plan: <span id="total-gas-plan">0</span>€</p>
-                </div>
-            </div>
-            <div id="analisis-gastos" class="space-y-4"></div>
-        </div>
+        <h2 class="text-2xl font-black text-slate-800 uppercase italic mb-6">Análisis Mensual</h2>
+        <div id="analisis-ingresos" class="card border-l-4 border-green-500 mb-6 space-y-4 pt-8"></div>
+        <div id="analisis-gastos" class="card border-l-4 border-red-500 mb-6 space-y-4 pt-8"></div>
     </div>
 
     <div id="config" class="tab-content p-4">
         <h2 class="text-xl font-black mb-4 uppercase text-blue-900">Ajustes</h2>
+        
+        <div class="card border-t-4 border-green-600 mb-6">
+            <h3 class="font-bold mb-1 text-xs text-gray-800 uppercase">Importar desde tu Excel</h3>
+            <p class="text-[9px] text-gray-500 mb-3 italic">Detectando: Fecha(1), Cat(6), Conc(7), Pago(8), Ing(10), Gas(11)</p>
+            <textarea id="import-area" rows="3" class="w-full text-[10px] bg-gray-50 p-2 mb-2" placeholder="Copia de la Columna 1 a la 12 y pega aquí..."></textarea>
+            <button onclick="importarDatos()" class="w-full bg-green-600 text-white py-2 rounded-xl font-bold text-[10px] uppercase">Procesar Importación</button>
+        </div>
+
         <div class="card">
             <h3 class="font-bold mb-4 text-xs text-gray-400 uppercase">Presupuestos Mensuales</h3>
-            <div id="lista-cats-admin" class="space-y-2 max-h-80 overflow-y-auto mb-4 pr-1"></div>
+            <div id="lista-cats-admin" class="space-y-2 max-h-60 overflow-y-auto mb-4 pr-1"></div>
             <div class="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
                 <div class="grid grid-cols-2 gap-2 mb-2">
                     <select id="nueva-cat-tipo" class="text-[10px] font-bold"><option value="Gasto">Gasto</option><option value="Ingreso">Ingreso</option></select>
-                    <input type="text" id="nueva-cat-input" placeholder="Categoría..." class="text-xs">
+                    <input type="text" id="nueva-cat-input" placeholder="Nombre..." class="text-xs">
                 </div>
                 <div class="flex gap-2">
-                    <input type="number" id="nueva-cat-pres" placeholder="€" class="flex-1 text-xs">
+                    <input type="number" id="nueva-cat-pres" placeholder="Presupuesto €" class="flex-1 text-xs">
                     <button onclick="añadirCatManual()" class="bg-blue-800 text-white px-6 rounded-xl font-bold">+</button>
                 </div>
             </div>
         </div>
-        <button onclick="borrarTodo()" class="w-full mt-6 p-4 text-red-300 text-[10px] font-bold uppercase italic">Borrar historial completo</button>
+        
+        <button onclick="exportarBackup()" class="w-full mt-4 p-3 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-xl uppercase">Descargar Copia .JSON</button>
+        <button onclick="borrarTodo()" class="w-full mt-2 p-3 text-red-300 text-[10px] font-bold uppercase italic">Borrar historial</button>
     </div>
 
     <script>
         const KEY_CONFIG = 'fin_config_v4_8';
         const KEY_MOVS = 'fin_movs_v4_8';
 
-        // LÓGICA DE INSTALACIÓN PWA
-        const manifest = {
-            "name": "FINANZAS", "short_name": "FINANZAS", "start_url": "./", "display": "standalone",
-            "background_color": "#f8fafc", "theme_color": "#1e40af",
-            "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/2845/2845812.png", "sizes": "512x512", "type": "image/png"}]
-        };
-        const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-        document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${URL.createObjectURL(blob)}">`);
-
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            document.getElementById('install-banner').classList.remove('hidden');
-        });
-
-        document.getElementById('btn-install-now')?.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') document.getElementById('install-banner').classList.add('hidden');
-                deferredPrompt = null;
-            }
-        });
-
-        // LÓGICA DE DATOS
         let tipoActual = 'Gastos';
         let config = JSON.parse(localStorage.getItem(KEY_CONFIG)) || { categorias: [] };
         let movimientos = JSON.parse(localStorage.getItem(KEY_MOVS)) || [];
 
+        // --- IMPORTACIÓN AJUSTADA A TUS 12 COLUMNAS ---
+        function importarDatos() {
+            const rawData = document.getElementById('import-area').value;
+            if(!rawData.trim()) return;
+
+            const filas = rawData.split('\n');
+            let contador = 0;
+
+            filas.forEach(fil => {
+                if(!fil.trim()) return;
+                const col = fil.split('\t');
+                
+                // Verificamos que al menos lleguemos a la columna 11 (Gastos)
+                if(col.length >= 11) {
+                    const fechaRaw = col[0].trim();
+                    const categoria = col[5] ? col[5].trim() : 'Varios';
+                    const concepto = col[6] ? col[6].trim() : 'Sin concepto';
+                    const formaPago = col[7] ? col[7].trim().toUpperCase() : 'BANCO';
+                    
+                    const limpiarNum = (val) => {
+                        if(!val) return 0;
+                        let n = val.trim().replace(/\./g, '').replace(',', '.');
+                        return parseFloat(n) || 0;
+                    };
+
+                    const ingMonto = limpiarNum(col[9]);  // Columna 10
+                    const gasMonto = limpiarNum(col[10]); // Columna 11
+
+                    let montoFinal = 0;
+                    let tipoFinal = '';
+
+                    if(ingMonto > 0) {
+                        montoFinal = ingMonto;
+                        tipoFinal = 'Ingresos';
+                    } else if(gasMonto > 0) {
+                        montoFinal = gasMonto;
+                        tipoFinal = 'Gastos';
+                    }
+
+                    if(montoFinal > 0) {
+                        // Fecha DD/MM/YYYY a YYYY-MM-DD
+                        let fechaFinal = fechaRaw;
+                        if(fechaRaw.includes('/')) {
+                            const p = fechaRaw.split('/');
+                            if(p[2] && p[2].length === 4) fechaFinal = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                        }
+
+                        // Mapeo simple de forma de pago
+                        let metodo = 'BANCO';
+                        if(formaPago.includes('TARJETA')) metodo = 'TARJETA';
+                        if(formaPago.includes('EFECTIVO')) metodo = 'EFECTIVO';
+
+                        movimientos.push({
+                            id: Date.now() + Math.random(),
+                            tipo: tipoFinal,
+                            cat: categoria,
+                            monto: montoFinal,
+                            fecha: fechaFinal,
+                            concepto: concepto,
+                            metodo: metodo
+                        });
+                        contador++;
+                    }
+                }
+            });
+
+            if(contador > 0) {
+                alert(`¡Éxito! Importados ${contador} movimientos.`);
+                document.getElementById('import-area').value = '';
+                guardarYRefrescar();
+            } else {
+                alert("No se detectaron datos. Asegúrate de copiar las filas completas de tu Excel (de la columna 1 a la 12).");
+            }
+        }
+
+        // --- FUNCIONES CORE ---
         function setTipo(t) {
             tipoActual = t;
             document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active'));
@@ -181,13 +210,31 @@
             const filtro = (tipoActual === 'Ingresos') ? 'Ingreso' : 'Gasto';
             const filtradas = config.categorias.filter(c => c.tipo === filtro);
             select.innerHTML = filtradas.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
+            if(filtradas.length === 0) select.innerHTML = '<option value="Varios">Varios</option>';
         }
 
-        function eliminarMovimiento(id) {
-            if(confirm("¿Borrar este movimiento?")) {
-                movimientos = movimientos.filter(m => m.id !== id);
-                guardarYRefrescar();
+        function registrar() {
+            const editId = document.getElementById('edit-id').value;
+            const monto = parseFloat(document.getElementById('input-monto').value);
+            const fecha = document.getElementById('input-fecha').value;
+            const cat = document.getElementById('select-cat').value || 'Varios';
+            const concepto = document.getElementById('input-concepto').value || "Varios";
+            const metodo = document.getElementById('select-metodo').value;
+
+            if (!monto || !fecha) return alert("Faltan datos");
+
+            if(editId) {
+                const idx = movimientos.findIndex(m => m.id == editId);
+                movimientos[idx] = { ...movimientos[idx], tipo: tipoActual, cat, monto, fecha, concepto, metodo };
+                document.getElementById('edit-id').value = "";
+                document.getElementById('btn-guardar').innerText = "Guardar Movimiento";
+                document.getElementById('btn-guardar').classList.replace('bg-amber-600', 'bg-blue-700');
+            } else {
+                movimientos.unshift({ id: Date.now(), tipo: tipoActual, cat, monto, fecha, concepto, metodo });
             }
+            document.getElementById('input-monto').value = '';
+            document.getElementById('input-concepto').value = '';
+            guardarYRefrescar();
         }
 
         function cargarEdicion(id) {
@@ -204,53 +251,11 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function registrar() {
-            const editId = document.getElementById('edit-id').value;
-            const monto = parseFloat(document.getElementById('input-monto').value);
-            const fecha = document.getElementById('input-fecha').value;
-            const cat = document.getElementById('select-cat').value;
-            const concepto = document.getElementById('input-concepto').value || "Varios";
-            if (!monto || !fecha) return alert("Faltan datos");
-
-            if(editId) {
-                const idx = movimientos.findIndex(m => m.id == editId);
-                movimientos[idx] = { ...movimientos[idx], tipo: tipoActual, cat, monto, fecha, concepto };
-                document.getElementById('edit-id').value = "";
-                document.getElementById('btn-guardar').innerText = "Guardar Movimiento";
-                document.getElementById('btn-guardar').classList.replace('bg-amber-600', 'bg-blue-700');
-            } else {
-                movimientos.unshift({ id: Date.now(), tipo: tipoActual, cat, monto, fecha, concepto });
+        function eliminarMovimiento(id) {
+            if(confirm("¿Borrar?")) {
+                movimientos = movimientos.filter(m => m.id !== id);
+                guardarYRefrescar();
             }
-            document.getElementById('input-monto').value = '';
-            document.getElementById('input-concepto').value = '';
-            guardarYRefrescar();
-        }
-
-        function renderizarAnalisis(movsFiltrados, mesLabel) {
-            document.getElementById('analisis-fecha').innerText = mesLabel;
-            const renderSeccion = (tipoCat, tipoMov, containerId, totalRealId, totalPlanId) => {
-                const container = document.getElementById(containerId);
-                let totalReal = 0; let totalPlan = 0; let html = "";
-                config.categorias.filter(c => c.tipo === tipoCat).forEach(cat => {
-                    const real = movsFiltrados.filter(m => m.cat === cat.nombre && (m.tipo === tipoMov || (tipoMov === 'Gastos' && (m.tipo === 'Compras' || m.tipo === 'Inversiones')))).reduce((s, m) => s + m.monto, 0);
-                    const plan = cat.presupuesto || 0;
-                    totalReal += real; totalPlan += plan;
-                    const porc = plan > 0 ? Math.min((real / plan) * 100, 100) : (real > 0 ? 100 : 0);
-                    const esExceso = (tipoCat === 'Gasto' && real > plan && plan > 0);
-                    html += `<div class="mb-3">
-                        <div class="flex justify-between items-end mb-1">
-                            <span class="text-[10px] font-black text-slate-700 uppercase">${cat.nombre}</span>
-                            <span class="text-[10px] font-bold ${esExceso?'text-red-600':'text-slate-800'}">${real.toFixed(0)}€ <small class="text-gray-400">/ ${plan}€</small></span>
-                        </div>
-                        <div class="progress-bg"><div class="progress-fill ${esExceso?'bg-red-500':(tipoCat==='Ingreso'?'bg-green-500':'bg-blue-600')}" style="width: ${porc}%"></div></div>
-                    </div>`;
-                });
-                container.innerHTML = html || "<p class='text-[10px] text-gray-400 italic'>Sin datos este mes</p>";
-                document.getElementById(totalRealId).innerText = totalReal.toLocaleString();
-                document.getElementById(totalPlanId).innerText = totalPlan.toLocaleString();
-            };
-            renderSeccion('Ingreso', 'Ingresos', 'analisis-ingresos', 'total-ing-real', 'total-ing-plan');
-            renderSeccion('Gasto', 'Gastos', 'analisis-gastos', 'total-gas-real', 'total-gas-plan');
         }
 
         function actualizarUI() {
@@ -290,14 +295,42 @@
                     </div>
                 </div>`).join('');
 
+            renderizarAnalisis(filtrados);
+            renderizarAdminCats();
+            actualizarSelectCategorias();
+        }
+
+        function renderizarAnalisis(movsFiltrados) {
+            const renderSeccion = (tipoCat, tipoMov, containerId, titulo) => {
+                const container = document.getElementById(containerId);
+                let html = `<h3 class="text-xs font-black uppercase italic mb-4">${titulo}</h3>`;
+                const cats = config.categorias.filter(c => c.tipo === tipoCat);
+                
+                cats.forEach(cat => {
+                    const real = movsFiltrados.filter(m => m.cat === cat.nombre && (m.tipo === tipoMov || (tipoMov === 'Gastos' && (m.tipo === 'Compras' || m.tipo === 'Inversiones')))).reduce((s, m) => s + m.monto, 0);
+                    const plan = cat.presupuesto || 0;
+                    const porc = plan > 0 ? Math.min((real / plan) * 100, 100) : (real > 0 ? 100 : 0);
+                    const exceso = (tipoCat === 'Gasto' && real > plan && plan > 0);
+                    html += `<div class="mb-3">
+                        <div class="flex justify-between items-end mb-1">
+                            <span class="text-[10px] font-black text-slate-700 uppercase">${cat.nombre}</span>
+                            <span class="text-[10px] font-bold ${exceso?'text-red-600':'text-slate-800'}">${real.toFixed(0)}€ <small class="text-gray-400">/ ${plan}€</small></span>
+                        </div>
+                        <div class="progress-bg"><div class="progress-fill ${exceso?'bg-red-500':(tipoCat==='Ingreso'?'bg-green-500':'bg-blue-600')}" style="width: ${porc}%"></div></div>
+                    </div>`;
+                });
+                container.innerHTML = html || "<p class='text-[10px] text-gray-400 italic'>Sin categorías configuradas</p>";
+            };
+            renderSeccion('Ingreso', 'Ingresos', 'analisis-ingresos', '📈 Ingresos');
+            renderSeccion('Gasto', 'Gastos', 'analisis-gastos', '📉 Gastos');
+        }
+
+        function renderizarAdminCats() {
             document.getElementById('lista-cats-admin').innerHTML = config.categorias.map((c, i) => `
                 <div class="bg-gray-50 p-2 rounded-xl border border-gray-100 mb-1 flex justify-between items-center">
                     <div class="flex-1"><span class="text-[7px] font-black uppercase ${c.tipo==='Ingreso'?'text-green-500':'text-red-400'}">${c.tipo}</span><span class="text-[10px] font-bold block text-slate-700">${c.nombre}</span></div>
                     <div class="flex items-center gap-1"><input type="number" value="${c.presupuesto}" onchange="updatePresupuesto(${i}, this.value)" class="w-16 h-7 text-[10px] font-bold text-right p-1"><button onclick="eliminarCat(${i})" class="text-gray-300 px-2"><i class="fas fa-trash"></i></button></div>
                 </div>`).join('');
-
-            renderizarAnalisis(filtrados, mesSel);
-            actualizarSelectCategorias();
         }
 
         function updatePresupuesto(i, v) { config.categorias[i].presupuesto = parseFloat(v)||0; guardarYRefrescar(); }
@@ -306,7 +339,8 @@
         function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); actualizarUI(); }
         function guardarYRefrescar() { localStorage.setItem(KEY_CONFIG, JSON.stringify(config)); localStorage.setItem(KEY_MOVS, JSON.stringify(movimientos)); actualizarUI(); }
         function borrarTodo() { if(confirm("¿Borrar todo?")) { movimientos=[]; guardarYRefrescar(); } }
-        
+        function exportarBackup() { const d = JSON.stringify({config, movimientos}); const b = new Blob([d], {type: 'application/json'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `backup_finanzas.json`; a.click(); }
+
         document.getElementById('input-fecha').valueAsDate = new Date();
         actualizarUI();
     </script>
