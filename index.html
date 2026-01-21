@@ -282,3 +282,53 @@
             };
 
             const draw = (canvasId, data, colorScheme) => {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                if (canvasId === 'chartGastos' && myChartG) myChartG.destroy();
+                if (canvasId === 'chartIngresos' && myChartI) myChartI.destroy();
+
+                const configChart = {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(data),
+                        datasets: [{
+                            data: Object.values(data),
+                            backgroundColor: colorScheme,
+                            borderWidth: 0
+                        }]
+                    },
+                    options: { 
+                        plugins: { legend: { position: 'bottom', labels: { color: document.body.classList.contains('dark') ? '#f1f5f9' : '#1e293b', font: { size: 10 } } } },
+                        cutout: '70%'
+                    }
+                };
+                return new Chart(ctx, configChart);
+            };
+
+            const dataG = agrupar('Gastos');
+            const dataI = agrupar('Ingresos');
+            const colG = ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4'];
+            const colI = ['#10b981', '#34d399', '#059669', '#6ee7b7'];
+
+            myChartG = draw('chartGastos', dataG, colG);
+            myChartI = draw('chartIngresos', dataI, colI);
+        }
+
+        // --- UTILIDADES ---
+        function setTipo(t) { tipoActual = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectCategorias(); }
+        function actualizarSelectCategorias() { const s = document.getElementById('select-cat'); const f = (tipoActual === 'Ingresos') ? 'Ingreso' : 'Gasto'; const filtradas = config.categorias.filter(c => c.tipo === f); s.innerHTML = filtradas.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join(''); if(filtradas.length === 0) s.innerHTML = '<option value="Varios">Varios</option>'; }
+        function registrar() { const id = document.getElementById('edit-id').value; const m = parseFloat(document.getElementById('input-monto').value); const f = document.getElementById('input-fecha').value; const c = document.getElementById('select-cat').value || 'Varios'; const con = document.getElementById('input-concepto').value || "Varios"; const met = document.getElementById('select-metodo').value; if (!m || !f) return alert("Datos incompletos"); if(id) { const idx = movimientos.findIndex(mov => mov.id == id); movimientos[idx] = { ...movimientos[idx], tipo: tipoActual, cat: c, monto: m, fecha: f, concepto: con, metodo: met }; document.getElementById('edit-id').value = ""; } else { movimientos.unshift({ id: Date.now(), tipo: tipoActual, cat: c, monto: m, fecha: f, concepto: con, metodo: met }); } document.getElementById('input-monto').value = ''; document.getElementById('input-concepto').value = ''; guardarYRefrescar(); }
+        function eliminarMovimiento(id) { if(confirm("¿Borrar?")) { movimientos = movimientos.filter(m => m.id !== id); guardarYRefrescar(); } }
+        function renderizarAdminCats() { document.getElementById('lista-cats-admin').innerHTML = config.categorias.map((c, i) => `<div class="bg-gray-50 dark:bg-slate-700 p-2 rounded-xl border border-gray-100 dark:border-slate-600 mb-1 flex justify-between items-center"><div class="flex-1"><span class="text-[7px] font-black uppercase ${c.tipo==='Ingreso'?'text-green-500':'text-red-400'}">${c.tipo}</span><span class="text-[10px] font-bold block">${c.nombre}</span></div><div class="flex items-center gap-1"><input type="number" value="${c.presupuesto}" onchange="updatePresupuesto(${i}, this.value)" class="w-16 h-7 text-[10px] text-right p-1"><button onclick="eliminarCat(${i})" class="text-gray-300 px-2"><i class="fas fa-trash"></i></button></div></div>`).join(''); }
+        function updatePresupuesto(i, v) { config.categorias[i].presupuesto = parseFloat(v)||0; guardarYRefrescar(); }
+        function añadirCatManual() { const n=document.getElementById('nueva-cat-input').value.trim(); const t=document.getElementById('nueva-cat-tipo').value; const p=parseFloat(document.getElementById('nueva-cat-pres').value)||0; if(n){ config.categorias.push({nombre:n,tipo:t,presupuesto:p}); document.getElementById('nueva-cat-input').value=''; document.getElementById('nueva-cat-pres').value=''; guardarYRefrescar(); } }
+        function eliminarCat(i) { if(confirm("¿Borrar?")){ config.categorias.splice(i,1); guardarYRefrescar(); } }
+        function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); actualizarUI(); }
+        function guardarYRefrescar() { localStorage.setItem(KEY_CONFIG, JSON.stringify(config)); localStorage.setItem(KEY_MOVS, JSON.stringify(movimientos)); actualizarUI(); }
+        function borrarTodo() { if(confirm("¿Borrar todo?")) { movimientos=[]; localStorage.clear(); location.reload(); } }
+        function exportarBackup() { const d = JSON.stringify({config, movimientos}); const b = new Blob([d], {type: 'application/json'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `backup_finanzas.json`; a.click(); }
+
+        document.getElementById('input-fecha').valueAsDate = new Date();
+        actualizarUI();
+    </script>
+</body>
+</html>
