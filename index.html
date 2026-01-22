@@ -1,9 +1,23 @@
+¡Buenos días! Me alegra verte de nuevo manos a la obra. Esos ajustes de "pulido" son los que marcan la diferencia entre una app que funciona y una que es realmente profesional.
+
+He preparado la Versión 6.3 atacando esos tres puntos:
+
+Las mejoras de hoy:
+Totales en Planes: Ahora, en la parte superior de cada sección de presupuestos (Entradas y Salidas), verás una comparativa clara: Total Real vs. Total Presupuestado.
+
+Corrección de Colores en Ajustes: He eliminado los fondos fijos (bg-gray-50 / bg-slate-800) que daban problemas al cambiar de modo. Ahora todo el panel de ajustes usa las variables de color de la app, adaptándose instantáneamente al sol o a la luna.
+
+Importes en Gráficos: He modificado la leyenda de los gráficos para que no solo veas el nombre de la categoría, sino también el importe exacto en euros al lado.
+
+Aquí tienes el código completo. Recuerda: Copia con el botón, traductor apagado y verifica el </html> al final.
+
+HTML
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS PRO 6.2</title>
+    <title>FINANZAS PRO 6.3</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -13,28 +27,42 @@
         :root {
             --bg-main: #f8fafc;
             --bg-card: #ffffff;
+            --bg-alt: #f1f5f9;
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --input-bg: #ffffff;
             --input-text: #1e293b;
+            --accent: #1e40af;
         }
 
         .dark {
             --bg-main: #0f172a;
             --bg-card: #1e293b;
+            --bg-alt: #334155;
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --border-color: #334155;
             --input-bg: #1e293b;
             --input-text: #f1f5f9;
+            --accent: #3b82f6;
         }
 
         body { background-color: var(--bg-main); color: var(--text-main); transition: all 0.2s ease; padding-bottom: 100px; font-family: sans-serif; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .card { background: var(--bg-card); border-radius: 20px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 12px; border: 1px solid var(--border-color); }
         
+        .card { 
+            background: var(--bg-card); 
+            border-radius: 20px; 
+            padding: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            margin-bottom: 12px; 
+            border: 1px solid var(--border-color); 
+        }
+
+        .card-alt { background: var(--bg-alt); }
+
         input, select, textarea { 
             background-color: var(--input-bg) !important; 
             color: var(--input-text) !important; 
@@ -46,21 +74,14 @@
             width: 100%;
         }
 
-        /* Corrección para el campo concepto */
-        #input-concepto {
-            background-color: #f0f7ff !important;
-            color: #1e293b !important;
-        }
-        .dark #input-concepto {
-            background-color: #334155 !important;
-            color: #f1f5f9 !important;
-        }
+        #input-concepto { background-color: rgba(30, 64, 175, 0.05) !important; font-weight: 500; }
+        .dark #input-concepto { background-color: rgba(255, 255, 255, 0.05) !important; }
 
-        .btn-tipo { background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); height: 40px; width: 100%; border-radius: 8px; font-size: 10px; font-weight: bold; }
+        .btn-tipo { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); height: 40px; width: 100%; border-radius: 8px; font-size: 10px; font-weight: bold; }
         .btn-tipo.active { background-color: #1e40af !important; color: white !important; border-color: #1e40af !important; }
         
         nav { background: var(--bg-card); border-top: 1px solid var(--border-color); }
-        canvas { max-height: 200px !important; }
+        canvas { max-height: 200px !important; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -68,11 +89,11 @@
     <header class="p-4 flex justify-between items-center bg-blue-700 text-white shadow-lg mb-2">
         <div>
             <h1 class="text-xl font-black italic uppercase tracking-tighter">Control 2026</h1>
-            <p id="mes-actual-label" class="text-[10px] font-bold opacity-80"></p>
+            <p id="mes-actual-label" class="text-[10px] font-bold opacity-80 uppercase"></p>
         </div>
         <div class="flex items-center gap-4">
             <button onclick="toggleDarkMode()" class="text-xl p-2"><i id="dark-icon" class="fas fa-moon"></i></button>
-            <select id="filtro-mes" onchange="actualizarUI()" class="!bg-blue-800 !text-white !border-none !h-8 !text-[10px] w-24"></select>
+            <select id="filtro-mes" onchange="actualizarUI()" class="!bg-blue-800 !text-white !border-none !h-8 !text-[10px] w-24 font-bold"></select>
         </div>
     </header>
 
@@ -115,26 +136,26 @@
                     <option value="EFECTIVO">💵 EFECTIVO</option>
                 </select>
             </div>
-            <input type="text" id="input-concepto" placeholder="Escribe el concepto..." class="w-full mb-4 !h-12 font-medium">
+            <input type="text" id="input-concepto" placeholder="Escribe el concepto..." class="w-full mb-4 !h-12">
             <button id="btn-guardar" onclick="registrar()" class="w-full bg-blue-700 text-white h-14 rounded-2xl font-black text-xs uppercase shadow-lg">Guardar Movimiento</button>
         </div>
         <div id="lista-movimientos" class="space-y-2 pb-10 mt-4"></div>
     </div>
 
     <div id="analisis" class="tab-content p-4">
-        <h2 class="text-xl font-black mb-6 uppercase italic">Presupuestos</h2>
+        <h2 class="text-xl font-black mb-6 uppercase italic">Comparativa Planes</h2>
         <div id="analisis-ingresos" class="card border-l-4 border-green-500 mb-6"></div>
         <div id="analisis-gastos" class="card border-l-4 border-red-500 mb-6"></div>
     </div>
 
     <div id="graficos" class="tab-content p-4">
-        <h2 class="text-xl font-black mb-4 uppercase italic text-center">Distribución</h2>
+        <h2 class="text-xl font-black mb-4 uppercase italic text-center">Distribución Real</h2>
         <div class="card p-4 flex flex-col items-center mb-4">
-            <h3 class="font-bold text-red-500 text-[10px] uppercase mb-2">Gastos</h3>
+            <h3 class="font-bold text-red-500 text-[10px] uppercase mb-2">Gastos (Detalle €)</h3>
             <canvas id="chartGastos"></canvas>
         </div>
         <div class="card p-4 flex flex-col items-center">
-            <h3 class="font-bold text-green-500 text-[10px] uppercase mb-2">Ingresos</h3>
+            <h3 class="font-bold text-green-500 text-[10px] uppercase mb-2">Ingresos (Detalle €)</h3>
             <canvas id="chartIngresos"></canvas>
         </div>
     </div>
@@ -175,9 +196,9 @@
     </div>
 
     <script>
-        const KEY_CONFIG = 'fin_config_v6_2';
-        const KEY_MOVS = 'fin_movs_v6_2';
-        const KEY_DARK = 'fin_dark_v6_2';
+        const KEY_CONFIG = 'fin_config_v6_3';
+        const KEY_MOVS = 'fin_movs_v6_3';
+        const KEY_DARK = 'fin_dark_v6_3';
 
         let tipoActual = 'Ingresos';
         let config = JSON.parse(localStorage.getItem(KEY_CONFIG)) || { categorias: [] };
@@ -189,7 +210,7 @@
             const isDark = document.body.classList.contains('dark');
             localStorage.setItem(KEY_DARK, isDark);
             document.getElementById('dark-icon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-            if(myChartG) actualizarUI();
+            actualizarUI();
         }
         if(localStorage.getItem(KEY_DARK) === 'true') toggleDarkMode();
 
@@ -252,7 +273,10 @@
                         <div class="h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden"><div class="h-full ${tipoCat==='Ingreso'?'bg-green-500':'bg-blue-600'}" style="width: ${porc}%"></div></div>
                     </div>`;
                 });
-                container.innerHTML = `<div class="flex justify-between border-b border-gray-100 dark:border-slate-700 pb-2 mb-4"><span class="text-xs font-black uppercase italic text-blue-500">${titulo}</span><span class="text-xs font-black">${totalR.toFixed(0)}€</span></div>` + (html || "<p class='text-[10px] opacity-40 italic'>Sin datos</p>");
+                container.innerHTML = `<div class="flex justify-between border-b border-gray-100 dark:border-slate-700 pb-2 mb-4">
+                    <span class="text-xs font-black uppercase italic text-blue-500">${titulo}</span>
+                    <span class="text-xs font-black">${totalR.toFixed(0)}€ <span class="opacity-40 font-normal">de ${totalP.toFixed(0)}€</span></span>
+                </div>` + (html || "<p class='text-[10px] opacity-40 italic'>Sin datos registrados</p>");
             };
             renderSeccion('Ingreso', 'Ingresos', 'analisis-ingresos', 'Entradas');
             renderSeccion('Gasto', 'Gastos', 'analisis-gastos', 'Salidas');
@@ -265,22 +289,47 @@
                     .forEach(m => data[m.cat] = (data[m.cat] || 0) + m.monto);
                 return data;
             };
+            
             const draw = (canvasId, data, colorScheme) => {
                 const ctx = document.getElementById(canvasId).getContext('2d');
                 if (canvasId === 'chartGastos' && myChartG) myChartG.destroy();
                 if (canvasId === 'chartIngresos' && myChartI) myChartI.destroy();
-                return new Chart(ctx, {
+                
+                // Formatear etiquetas para incluir el importe
+                const labelsWithAmounts = Object.keys(data).map(cat => `${cat}: ${data[cat].toFixed(2)}€`);
+
+                const chart = new Chart(ctx, {
                     type: 'doughnut',
-                    data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: colorScheme, borderWidth: 0 }] },
-                    options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: document.body.classList.contains('dark') ? '#94a3b8' : '#1e293b', font: { size: 9 } } } } }
+                    data: { labels: labelsWithAmounts, datasets: [{ data: Object.values(data), backgroundColor: colorScheme, borderWidth: 0 }] },
+                    options: { 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { 
+                                position: 'bottom', 
+                                labels: { 
+                                    color: document.body.classList.contains('dark') ? '#94a3b8' : '#1e293b', 
+                                    font: { size: 9, weight: 'bold' },
+                                    padding: 10
+                                } 
+                            } 
+                        } 
+                    }
                 });
+                return chart;
             };
             myChartG = draw('chartGastos', agrupar('Gastos'), ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4']);
             myChartI = draw('chartIngresos', agrupar('Ingresos'), ['#10b981', '#34d399', '#059669', '#6ee7b7']);
         }
 
         function setTipo(t) { tipoActual = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectCategorias(); }
-        function actualizarSelectCategorias() { const s = document.getElementById('select-cat'); const f = (tipoActual === 'Ingresos') ? 'Ingreso' : 'Gasto'; const filtradas = config.categorias.filter(c => c.tipo === f); s.innerHTML = filtradas.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join(''); if(filtradas.length === 0) s.innerHTML = '<option value="Varios">Varios</option>'; }
+        
+        function actualizarSelectCategorias() { 
+            const s = document.getElementById('select-cat'); 
+            const f = (tipoActual === 'Ingresos') ? 'Ingreso' : 'Gasto'; 
+            const filtradas = config.categorias.filter(c => c.tipo === f); 
+            s.innerHTML = filtradas.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join(''); 
+            if(filtradas.length === 0) s.innerHTML = '<option value="Varios">Varios</option>'; 
+        }
         
         function registrar() { 
             const id = document.getElementById('edit-id').value; 
@@ -318,13 +367,13 @@
 
         function renderizarAdminCats() { 
             document.getElementById('lista-cats-admin').innerHTML = config.categorias.map((c, i) => `
-                <div class="flex justify-between items-center bg-gray-50 dark:bg-slate-800 p-3 rounded-xl border border-gray-100 dark:border-slate-700 mb-2">
+                <div class="flex justify-between items-center card-alt p-3 rounded-xl border border-gray-100 dark:border-slate-700 mb-2">
                     <div class="flex-1">
                         <span class="text-[8px] font-black uppercase ${c.tipo==='Ingreso'?'text-green-500':'text-red-400'}">${c.tipo}</span>
                         <span class="text-sm font-bold block">${c.nombre}</span>
                     </div>
                     <div class="flex items-center gap-3">
-                        <input type="number" value="${c.presupuesto}" onchange="updatePresupuesto(${i}, this.value)" class="!w-20 !h-8 text-right font-bold !text-xs">
+                        <input type="number" value="${c.presupuesto}" onchange="updatePresupuesto(${i}, this.value)" class="!w-20 !h-8 text-right font-bold !text-xs !bg-transparent">
                         <div class="flex gap-1">
                             <button onclick="editarNombreCat(${i})" class="text-blue-500 p-2"><i class="fas fa-pen"></i></button>
                             <button onclick="eliminarCat(${i})" class="text-red-300 p-2"><i class="fas fa-trash"></i></button>
@@ -334,17 +383,28 @@
         }
 
         function editarNombreCat(i) {
-            const nuevo = prompt("Nuevo nombre para la categoría:", config.categorias[i].nombre);
+            const nuevo = prompt("Nuevo nombre:", config.categorias[i].nombre);
             if(nuevo) { config.categorias[i].nombre = nuevo; guardarYRefrescar(); }
         }
 
         function updatePresupuesto(i, v) { config.categorias[i].presupuesto = parseFloat(v)||0; guardarYRefrescar(); }
-        function añadirCatManual() { const n=document.getElementById('nueva-cat-input').value.trim(); const t=document.getElementById('nueva-cat-tipo').value; const p=parseFloat(document.getElementById('nueva-cat-pres').value)||0; if(n){ config.categorias.push({nombre:n,tipo:t,presupuesto:p}); document.getElementById('nueva-cat-input').value=''; document.getElementById('nueva-cat-pres').value=''; guardarYRefrescar(); } }
+        function añadirCatManual() { 
+            const n=document.getElementById('nueva-cat-input').value.trim(); 
+            const t=document.getElementById('nueva-cat-tipo').value; 
+            const p=parseFloat(document.getElementById('nueva-cat-pres').value)||0; 
+            if(n){ 
+                config.categorias.push({nombre:n,tipo:t,presupuesto:p}); 
+                document.getElementById('nueva-cat-input').value=''; 
+                document.getElementById('nueva-cat-pres').value=''; 
+                guardarYRefrescar(); 
+            } 
+        }
         function eliminarCat(i) { if(confirm("¿Borrar categoría?")){ config.categorias.splice(i,1); guardarYRefrescar(); } }
         function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); actualizarUI(); }
         function guardarYRefrescar() { localStorage.setItem(KEY_CONFIG, JSON.stringify(config)); localStorage.setItem(KEY_MOVS, JSON.stringify(movimientos)); actualizarUI(); }
+        function eliminarMovimiento(id) { if(confirm("¿Eliminar registro?")) { movimientos = movimientos.filter(m => m.id !== id); guardarYRefrescar(); } }
         function borrarTodo() { if(confirm("¿Resetear?")) { localStorage.clear(); location.reload(); } }
-        function exportarBackup() { const d = JSON.stringify({config, movimientos}); const b = new Blob([d], {type: 'application/json'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `backup_finanzas.json`; a.click(); }
+        function exportarBackup() { const d = JSON.stringify({config, movimientos}); const b = new Blob([d], {type: 'application/json'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `backup_v6_3.json`; a.click(); }
         
         function importarDatos() {
             const rawData = document.getElementById('import-area').value;
