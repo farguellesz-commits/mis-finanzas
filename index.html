@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS PRO 8.1 - OPTIMIZACIÓN</title>
+    <title>FINANZAS PRO 8.2 - ESTRUCTURA 4 PILARES</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -27,7 +27,7 @@
         }
         .dark input, .dark select { border-color: #334155 !important; }
 
-        .btn-tipo { background: var(--bg-card); border: 1px solid #e2e8f0; color: var(--text-main); height: 40px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .btn-tipo { background: var(--bg-card); border: 1px solid #e2e8f0; color: var(--text-main); height: 40px; border-radius: 10px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
         .btn-tipo.active { background-color: var(--accent) !important; color: white !important; border-color: var(--accent) !important; }
         
         .nav-btn { color: #94a3b8; }
@@ -41,7 +41,7 @@
 
     <header class="p-5 flex justify-between items-center bg-blue-700 text-white shadow-md">
         <div>
-            <h1 class="text-xl font-black tracking-tighter italic">FINANZAS 2026</h1>
+            <h1 class="text-xl font-black tracking-tighter italic uppercase">Control 2026</h1>
             <span id="mes-actual-label" class="text-[10px] font-bold opacity-80 uppercase bg-blue-800 px-2 py-0.5 rounded"></span>
         </div>
         <div class="flex items-center gap-3">
@@ -52,7 +52,7 @@
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around p-3 z-50">
         <button onclick="showTab('inicio')" id="nav-inicio" class="nav-btn nav-active flex flex-col items-center"><i class="fas fa-th-large text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Muro</span></button>
-        <button onclick="showTab('analisis')" id="nav-analisis" class="nav-btn flex flex-col items-center"><i class="fas fa-chart-line text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Planes</span></button>
+        <button onclick="showTab('analisis')" id="nav-analisis" class="nav-btn flex flex-col items-center"><i class="fas fa-tasks text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Planes</span></button>
         <button onclick="showTab('config')" id="nav-config" class="nav-btn flex flex-col items-center"><i class="fas fa-cog text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Ajustes</span></button>
     </nav>
 
@@ -121,12 +121,10 @@
     </div>
 
     <div id="analisis" class="tab-content p-4">
-        <div class="card bg-blue-600 text-white border-none text-center shadow-lg">
-            <p class="text-[10px] font-bold uppercase opacity-80">Presupuesto Estimado</p>
-            <h2 id="total-presupuesto" class="text-3xl font-black italic">0.00 €</h2>
-        </div>
         <div id="analisis-ingresos" class="mb-6"></div>
-        <div id="analisis-gastos"></div>
+        <div id="analisis-gastos" class="mb-6"></div>
+        <div id="analisis-compras" class="mb-6"></div>
+        <div id="analisis-inversiones" class="mb-6"></div>
     </div>
 
     <div id="config" class="tab-content p-4">
@@ -143,24 +141,26 @@
         </div>
 
         <div class="card">
-            <h3 class="font-bold mb-4 text-[10px] text-gray-400 uppercase">Configurar Categorías y Fijos</h3>
+            <h3 class="font-bold mb-4 text-[10px] text-gray-400 uppercase">Configurar Categorías</h3>
             <div class="flex flex-col gap-2 mb-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
                 <div class="grid grid-cols-2 gap-2">
                     <select id="nueva-cat-tipo">
-                        <option value="Gasto">Gasto</option>
                         <option value="Ingreso">Ingreso</option>
+                        <option value="Gasto">Gasto</option>
+                        <option value="Compra">Compra</option>
+                        <option value="Inversion">Inversión</option>
                     </select>
-                    <input type="text" id="nueva-cat-input" placeholder="Nombre (ej. Luz)">
+                    <input type="text" id="nueva-cat-input" placeholder="Nombre (ej. Viajes)">
                 </div>
-                <input type="text" id="nueva-cat-concepto" placeholder="Concepto por defecto (ej. Factura mensual Iberdrola)">
+                <input type="text" id="nueva-cat-concepto" placeholder="Concepto por defecto">
                 
                 <div class="grid grid-cols-2 gap-2">
                     <input type="number" id="nueva-cat-pres" placeholder="Importe €">
-                    <input type="number" id="nueva-cat-dia" placeholder="Día del mes (1-31)">
+                    <input type="number" id="nueva-cat-dia" placeholder="Día (1-31)">
                 </div>
                 <div class="flex items-center gap-2 px-1">
                     <input type="checkbox" id="nueva-cat-fijo" class="w-5 h-5">
-                    <label for="nueva-cat-fijo" class="text-[10px] font-black uppercase text-blue-600">Incluir en carga automática</label>
+                    <label for="nueva-cat-fijo" class="text-[10px] font-black uppercase text-blue-600">Carga automática mensual</label>
                 </div>
                 <button onclick="añadirCatManual()" class="w-full bg-blue-800 text-white h-11 rounded-xl font-black uppercase text-xs mt-1">Crear Categoría</button>
             </div>
@@ -171,11 +171,8 @@
     </div>
 
     <script>
-        const KEY = 'finanzas_v8_1';
-        let data = JSON.parse(localStorage.getItem(KEY)) || { 
-            config: { categorias: [] }, 
-            movimientos: [] 
-        };
+        const KEY = 'finanzas_v8_2';
+        let data = JSON.parse(localStorage.getItem(KEY)) || { config: { categorias: [] }, movimientos: [] };
         
         let tipoActual = 'Ingresos';
 
@@ -190,7 +187,7 @@
 
             const movsMes = data.movimientos.filter(m => m.fecha.startsWith(mesSel));
 
-            // CÁLCULOS
+            // DASHBOARD
             const ing = movsMes.filter(m => m.tipo === 'Ingresos').reduce((s,m) => s + m.monto, 0);
             const gas = movsMes.filter(m => m.tipo === 'Gastos' && !m.cat.toLowerCase().includes('retirada')).reduce((s,m) => s + m.monto, 0);
             const com = movsMes.filter(m => m.tipo === 'Compras').reduce((s,m) => s + m.monto, 0);
@@ -219,8 +216,7 @@
                         <p class="font-black text-sm">${m.monto.toFixed(2)}€</p>
                         <button onclick="eliminarMov(${m.id})" class="text-rose-400 text-xs p-1"><i class="fas fa-trash"></i></button>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
 
             renderizarPlanes(movsMes);
             renderizarAdminCats();
@@ -228,30 +224,8 @@
         }
 
         function getColor(tipo) {
-            if(tipo==='Ingresos') return 'border-emerald-500';
-            if(tipo==='Gastos') return 'border-rose-400';
-            if(tipo==='Compras') return 'border-blue-500';
-            return 'border-indigo-500';
-        }
-
-        function ejecutarFijos() {
-            const mesSel = document.getElementById('filtro-mes').value;
-            const fijos = data.config.categorias.filter(c => c.fijo);
-            if(!confirm(`¿Cargar fijos en ${mesSel}?`)) return;
-            
-            fijos.forEach(c => {
-                const diaPad = String(c.dia || 1).padStart(2, '0');
-                data.movimientos.push({
-                    id: Date.now() + Math.random(),
-                    tipo: c.tipo === 'Ingreso' ? 'Ingresos' : 'Gastos',
-                    cat: c.nombre,
-                    monto: c.presupuesto,
-                    fecha: `${mesSel}-${diaPad}`,
-                    concepto: c.concepto || c.nombre, // Usa el concepto guardado
-                    metodo: "BANCO"
-                });
-            });
-            guardar();
+            const colors = { 'Ingresos': 'border-emerald-500', 'Gastos': 'border-rose-400', 'Compras': 'border-blue-500', 'Inversiones': 'border-indigo-500' };
+            return colors[tipo] || 'border-gray-300';
         }
 
         function registrar() {
@@ -260,17 +234,7 @@
             const c = document.getElementById('input-concepto').value || "Varios";
             if(!m || !f) return alert("Falta importe o fecha");
 
-            data.movimientos.unshift({
-                id: Date.now(),
-                tipo: tipoActual,
-                cat: document.getElementById('select-cat').value,
-                monto: m,
-                fecha: f,
-                concepto: c,
-                metodo: document.getElementById('select-metodo').value
-            });
-            
-            // LIMPIAR CAMPOS
+            data.movimientos.unshift({ id: Date.now(), tipo: tipoActual, cat: document.getElementById('select-cat').value, monto: m, fecha: f, concepto: c, metodo: document.getElementById('select-metodo').value });
             document.getElementById('input-monto').value = '';
             document.getElementById('input-concepto').value = '';
             guardar();
@@ -286,26 +250,21 @@
             
             if(n) {
                 data.config.categorias.push({nombre:n, tipo:t, concepto:con, presupuesto:p, fijo:f, dia:d});
-                
-                // LIMPIAR CAMPOS
                 document.getElementById('nueva-cat-input').value = '';
                 document.getElementById('nueva-cat-concepto').value = '';
                 document.getElementById('nueva-cat-pres').value = '';
                 document.getElementById('nueva-cat-dia').value = '';
                 document.getElementById('nueva-cat-fijo').checked = false;
-                
                 guardar();
             }
         }
 
         function renderizarPlanes(movs) {
-            const cats = data.config.categorias;
-            const totalPres = cats.reduce((s,c) => s + (c.presupuesto || 0), 0);
-            document.getElementById('total-presupuesto').innerText = totalPres.toFixed(2) + " €";
-
-            const renderSeccion = (tipo, container) => {
-                const filtradas = cats.filter(c => c.tipo === tipo);
-                let html = `<h4 class="text-[10px] font-black uppercase text-blue-600 mb-3 ml-2">${tipo}s</h4>`;
+            const renderSeccion = (tipoConfig, label, container) => {
+                const filtradas = data.config.categorias.filter(c => c.tipo === tipoConfig);
+                if(filtradas.length === 0) { document.getElementById(container).innerHTML = ""; return; }
+                
+                let html = `<h4 class="text-[10px] font-black uppercase text-blue-600 mb-3 ml-2">${label}</h4>`;
                 filtradas.forEach(c => {
                     const real = movs.filter(m => m.cat === c.nombre).reduce((s,m) => s + m.monto, 0);
                     const porc = c.presupuesto > 0 ? Math.min((real / c.presupuesto) * 100, 100) : (real > 0 ? 100 : 0);
@@ -316,23 +275,32 @@
                                 <span>${real.toFixed(0)}€ / ${c.presupuesto}€</span>
                             </div>
                             <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div class="h-full ${tipo==='Ingreso'?'bg-emerald-500':'bg-blue-600'}" style="width: ${porc}%"></div>
+                                <div class="h-full ${tipoConfig==='Ingreso'?'bg-emerald-500':'bg-blue-600'}" style="width: ${porc}%"></div>
                             </div>
                         </div>`;
                 });
                 document.getElementById(container).innerHTML = html;
             };
-            renderSeccion('Ingreso', 'analisis-ingresos');
-            renderSeccion('Gasto', 'analisis-gastos');
+
+            renderSeccion('Ingreso', 'Entradas (Ingresos)', 'analisis-ingresos');
+            renderSeccion('Gasto', 'Salidas (Gastos)', 'analisis-gastos');
+            renderSeccion('Compra', 'Compras Puntuables', 'analisis-compras');
+            renderSeccion('Inversion', 'Inversiones y Ahorro', 'analisis-inversiones');
         }
 
         function renderizarAdminCats() { 
+            const badgeColor = (t) => {
+                if(t==='Ingreso') return 'text-emerald-500';
+                if(t==='Gasto') return 'text-rose-400';
+                if(t==='Compra') return 'text-blue-500';
+                return 'text-indigo-500';
+            };
+
             document.getElementById('lista-cats-admin').innerHTML = data.config.categorias.map((c, i) => `
                 <div class="card flex justify-between items-center py-2 bg-slate-50 dark:bg-slate-800/50 border-none">
                     <div>
-                        <p class="text-[8px] font-black uppercase ${c.tipo==='Ingreso'?'text-emerald-500':'text-rose-400'}">${c.tipo} ${c.fijo?'· Día '+c.dia:''}</p>
+                        <p class="text-[8px] font-black uppercase ${badgeColor(c.tipo)}">${c.tipo} ${c.fijo?'· Día '+c.dia:''}</p>
                         <p class="font-bold text-sm">${c.nombre}</p>
-                        <p class="text-[9px] opacity-60 italic">${c.concepto || '(Sin concepto)'}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="font-black text-xs">${c.presupuesto}€</span>
@@ -341,16 +309,13 @@
                 </div>`).join(''); 
         }
 
-        // CSV EXPORT/IMPORT
         function exportarCSV() {
             let csv = "Fecha,Tipo,Categoria,Concepto,Monto,Metodo\n";
-            data.movimientos.forEach(m => {
-                csv += `${m.fecha},${m.tipo},${m.cat},"${m.concepto.replace(/"/g, '""')}",${m.monto},${m.metodo}\n`;
-            });
+            data.movimientos.forEach(m => { csv += `${m.fecha},${m.tipo},${m.cat},"${m.concepto.replace(/"/g, '""')}",${m.monto},${m.metodo}\n`; });
             const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `finanzas_backup.csv`;
+            a.download = `finanzas_export.csv`;
             a.click();
         }
 
@@ -363,11 +328,7 @@
                     if (line.trim() === "") return;
                     const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if(parts.length >= 6) {
-                        data.movimientos.push({
-                            id: Date.now() + Math.random(),
-                            fecha: parts[0], tipo: parts[1], cat: parts[2], 
-                            concepto: parts[3].replace(/"/g, ''), monto: parseFloat(parts[4]), metodo: parts[5].trim()
-                        });
+                        data.movimientos.push({ id: Date.now() + Math.random(), fecha: parts[0], tipo: parts[1], cat: parts[2], concepto: parts[3].replace(/"/g, ''), monto: parseFloat(parts[4]), metodo: parts[5].trim() });
                     }
                 });
                 guardar();
@@ -376,12 +337,27 @@
         }
 
         function setTipo(t) { tipoActual = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectCategorias(); }
+        
         function actualizarSelectCategorias() { 
             const s = document.getElementById('select-cat');
-            const filtro = (tipoActual === 'Ingresos') ? 'Ingreso' : 'Gasto';
+            const mapa = { 'Ingresos': 'Ingreso', 'Gastos': 'Gasto', 'Compras': 'Compra', 'Inversiones': 'Inversion' };
+            const filtro = mapa[tipoActual];
             const cats = data.config.categorias.filter(c => c.tipo === filtro);
             s.innerHTML = cats.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('') + `<option value="Varios">Varios</option>`;
         }
+
+        function ejecutarFijos() {
+            const mesSel = document.getElementById('filtro-mes').value;
+            const fijos = data.config.categorias.filter(c => c.fijo);
+            if(!confirm(`¿Cargar fijos en ${mesSel}?`)) return;
+            const mapaTipoMov = { 'Ingreso': 'Ingresos', 'Gasto': 'Gastos', 'Compra': 'Compras', 'Inversion': 'Inversiones' };
+            fijos.forEach(c => {
+                const diaPad = String(c.dia || 1).padStart(2, '0');
+                data.movimientos.push({ id: Date.now() + Math.random(), tipo: mapaTipoMov[c.tipo], cat: c.nombre, monto: c.presupuesto, fecha: `${mesSel}-${diaPad}`, concepto: c.concepto || c.nombre, metodo: "BANCO" });
+            });
+            guardar();
+        }
+
         function eliminarMov(id) { data.movimientos = data.movimientos.filter(m => m.id !== id); guardar(); }
         function eliminarCat(i) { data.config.categorias.splice(i,1); guardar(); }
         function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); }
@@ -389,10 +365,7 @@
         function borrarTodo() { if(confirm("¿Borrar todo?")) { localStorage.clear(); location.reload(); } }
         function gastoRapidoEfectivo() {
             const m = prompt("Importe:");
-            if(m) {
-                data.movimientos.unshift({id: Date.now(), tipo: 'Gastos', cat: 'Varios', monto: parseFloat(m), fecha: new Date().toISOString().split('T')[0], concepto: "Gasto Rápido", metodo: 'EFECTIVO'});
-                guardar();
-            }
+            if(m) { data.movimientos.unshift({id: Date.now(), tipo: 'Gastos', cat: 'Varios', monto: parseFloat(m), fecha: new Date().toISOString().split('T')[0], concepto: "Gasto Rápido", metodo: 'EFECTIVO'}); guardar(); }
         }
 
         document.getElementById('input-fecha').valueAsDate = new Date();
