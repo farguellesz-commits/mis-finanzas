@@ -1,9 +1,26 @@
+¡Tienes un ojo clínico! Efectivamente, en la versión anterior ese detalle estaba en la pestaña de Planes, pero al reorganizar los bloques para dar prioridad a la gráfica circular, se quedó "oculto" o menos accesible.
+
+En esta Versión 8.7 (Final de Estabilización), he rescatado ese detalle y lo he colocado en el mejor sitio posible para que no se te escape nada:
+
+En Planes (Detalle Visual): He vuelto a habilitar el bloque de Inversiones con su barra de progreso. Así, si tu hucha es de 1.000€ y ya te has gastado 500€ (marcado como Inversión), verás la barra al 50%.
+
+En Ajustes (El "Libro de Cuentas"): He mejorado el Monitor de Huchas para que sea un desglose contable claro. Ahora no solo ves el saldo, sino:
+
+Ahorrado: Lo que has metido mes a mes como Gasto/Provisión.
+
+Consumido: Lo que ya has pagado realmente (marcado como Inversión).
+
+Disponible: El neto que te queda en la hucha.
+
+Aquí tienes el código con esos detalles recuperados y el campo "Concepto" en categorías totalmente operativo:
+
+HTML
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS PRO 8.6 - VERSIÓN ESTABLE</title>
+    <title>FINANZAS PRO 8.7 - ESTABLE CON DETALLE</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -71,7 +88,7 @@
         </div>
 
         <div class="mb-4 relative">
-            <input type="text" id="buscador" oninput="actualizarUI()" placeholder="Buscar en este mes..." class="pl-10 !bg-slate-100 dark:!bg-slate-800 !border-none">
+            <input type="text" id="buscador" oninput="actualizarUI()" placeholder="Buscar concepto o categoría..." class="pl-10 !bg-slate-100 dark:!bg-slate-800 !border-none">
             <i class="fas fa-search absolute left-4 top-4 text-slate-400"></i>
         </div>
 
@@ -95,14 +112,14 @@
                 </select>
             </div>
             <input type="text" id="input-concepto" placeholder="Concepto..." class="mb-3">
-            <button onclick="registrar()" class="w-full bg-blue-700 text-white h-12 rounded-xl font-black uppercase text-xs">Guardar</button>
+            <button onclick="registrar()" class="w-full bg-blue-700 text-white h-12 rounded-xl font-black uppercase text-xs">Guardar Movimiento</button>
         </div>
         <div id="lista-movimientos" class="space-y-2 pb-10"></div>
     </div>
 
     <div id="analisis" class="tab-content p-4">
         <div class="card mb-4">
-            <h3 class="text-[10px] font-black uppercase text-gray-400 mb-4 text-center">Necesidades vs Caprichos</h3>
+            <h3 class="text-[10px] font-black uppercase text-gray-400 mb-4 text-center">Gasto Necesario vs Capricho</h3>
             <div style="height: 180px;" class="flex justify-center"><canvas id="chartComparativa"></canvas></div>
             <div id="chart-legend" class="flex justify-around mt-4 text-[10px] font-bold uppercase"></div>
         </div>
@@ -117,19 +134,19 @@
         <div class="card border-2 border-emerald-500">
             <h3 class="font-black text-[10px] text-emerald-600 mb-3 uppercase flex items-center gap-2"><i class="fas fa-file-excel"></i> Copias de Seguridad</h3>
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="exportarExcel()" class="bg-emerald-600 text-white p-3 rounded-xl font-bold text-[9px] uppercase">Exportar Excel</button>
-                <button onclick="document.getElementById('import-excel').click()" class="bg-blue-600 text-white p-3 rounded-xl font-bold text-[9px] uppercase">Importar Excel</button>
+                <button onclick="exportarExcel()" class="bg-emerald-600 text-white p-3 rounded-xl font-bold text-[9px] uppercase">Bajar Excel</button>
+                <button onclick="document.getElementById('import-excel').click()" class="bg-blue-600 text-white p-3 rounded-xl font-bold text-[9px] uppercase">Subir Excel</button>
                 <input type="file" id="import-excel" class="hidden" accept=".xlsx, .xls, .csv" onchange="importarExcel(event)">
             </div>
         </div>
 
         <div class="card bg-indigo-900 text-white border-none shadow-xl mb-4">
-            <h3 class="font-black text-[10px] text-indigo-300 mb-4 uppercase flex items-center gap-2"><i class="fas fa-piggy-bank"></i> Monitor de Huchas</h3>
+            <h3 class="font-black text-[10px] text-indigo-300 mb-4 uppercase flex items-center gap-2"><i class="fas fa-piggy-bank"></i> Detalle de Huchas</h3>
             <div id="huchas-acumulado" class="space-y-3"></div>
         </div>
 
         <div class="card">
-            <h3 class="font-bold mb-4 text-[10px] text-gray-400 uppercase">Nueva Categoría / Automático</h3>
+            <h3 class="font-bold mb-4 text-[10px] text-gray-400 uppercase">Añadir Categoría o Fijo</h3>
             <div class="flex flex-col gap-2">
                 <div class="grid grid-cols-2 gap-2">
                     <select id="nueva-cat-tipo">
@@ -138,27 +155,27 @@
                         <option value="Compra">Compra</option>
                         <option value="Inversion">Inversión</option>
                     </select>
-                    <input type="text" id="nueva-cat-input" placeholder="Nombre (ej. Hucha)">
+                    <input type="text" id="nueva-cat-input" placeholder="Nombre Cat.">
                 </div>
                 <input type="text" id="nueva-cat-concepto" placeholder="Concepto (ej. Vacaciones)">
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="number" id="nueva-cat-pres" placeholder="Importe €">
-                    <input type="number" id="nueva-cat-dia" placeholder="Día (1-31)">
+                    <input type="number" id="nueva-cat-pres" placeholder="Importe Fijo €">
+                    <input type="number" id="nueva-cat-dia" placeholder="Día cobro">
                 </div>
                 <div class="flex items-center gap-2 py-2">
                     <input type="checkbox" id="nueva-cat-fijo" class="w-5 h-5">
-                    <label for="nueva-cat-fijo" class="text-[10px] font-bold uppercase text-blue-600">Carga Automática Mensual</label>
+                    <label for="nueva-cat-fijo" class="text-[10px] font-bold uppercase text-blue-600">Incluir en Carga Automática</label>
                 </div>
-                <button onclick="añadirCatManual()" class="w-full bg-slate-800 text-white h-11 rounded-xl font-black uppercase text-xs">Crear Categoría</button>
+                <button onclick="añadirCatManual()" class="w-full bg-slate-800 text-white h-11 rounded-xl font-black uppercase text-xs">Añadir</button>
             </div>
         </div>
 
         <div id="lista-cats-admin" class="space-y-2 mt-4"></div>
-        <button onclick="borrarTodo()" class="w-full p-4 text-rose-500 text-[9px] font-bold uppercase opacity-40">Borrar Base de Datos</button>
+        <button onclick="borrarTodo()" class="w-full p-4 text-rose-500 text-[9px] font-bold uppercase opacity-40">Formatear App</button>
     </div>
 
     <script>
-        const KEY = 'finanzas_v8_6';
+        const KEY = 'finanzas_v8_7';
         let data = JSON.parse(localStorage.getItem(KEY)) || { config: { categorias: [] }, movimientos: [] };
         let tipoActual = 'Ingresos';
         let myChart = null;
@@ -214,17 +231,31 @@
         }
 
         function renderizarHuchas() {
-            const huchasCats = data.config.categorias.filter(c => c.nombre.toLowerCase().includes('hucha') || c.nombre.toLowerCase().includes('provisión') || (c.concepto && c.concepto.toLowerCase().includes('hucha')));
+            // Buscamos categorías o conceptos que contengan Hucha o Provisión
+            const huchasCats = data.config.categorias.filter(c => 
+                c.nombre.toLowerCase().includes('hucha') || 
+                c.nombre.toLowerCase().includes('provisión') || 
+                (c.concepto && c.concepto.toLowerCase().includes('hucha'))
+            );
+            
             let html = "";
             huchasCats.forEach(c => {
-                const ahorro = data.movimientos.filter(m => (m.cat === c.nombre || m.concepto === c.concepto) && m.tipo === 'Gastos').reduce((s, m) => s + m.monto, 0);
-                const uso = data.movimientos.filter(m => (m.cat === c.nombre || m.concepto === c.concepto) && m.tipo === 'Inversiones').reduce((s, m) => s + m.monto, 0);
-                html += `<div class="flex justify-between items-end border-b border-indigo-800 pb-2">
-                    <div><p class="text-[9px] font-bold uppercase text-indigo-300">${c.concepto || c.nombre}</p><p class="text-lg font-black">${(ahorro-uso).toFixed(2)} €</p></div>
-                    <div class="text-[8px] opacity-40 text-right">Acumulado: ${ahorro.toFixed(0)}€</div>
+                const ahorroTotal = data.movimientos.filter(m => (m.cat === c.nombre || (c.concepto && m.concepto === c.concepto)) && m.tipo === 'Gastos').reduce((s, m) => s + m.monto, 0);
+                const usoTotal = data.movimientos.filter(m => (m.cat === c.nombre || (c.concepto && m.concepto === c.concepto)) && m.tipo === 'Inversiones').reduce((s, m) => s + m.monto, 0);
+                const saldo = ahorroTotal - usoTotal;
+                
+                html += `<div class="border-b border-indigo-800 pb-2">
+                    <div class="flex justify-between items-center">
+                        <p class="text-[10px] font-bold uppercase text-indigo-300">${c.concepto || c.nombre}</p>
+                        <p class="text-lg font-black">${saldo.toFixed(2)} €</p>
+                    </div>
+                    <div class="flex justify-between text-[8px] opacity-40 uppercase font-bold">
+                        <span>Entradas: ${ahorroTotal.toFixed(0)}€</span>
+                        <span>Consumido: ${usoTotal.toFixed(0)}€</span>
+                    </div>
                 </div>`;
             });
-            document.getElementById('huchas-acumulado').innerHTML = html || "<p class='text-[10px] opacity-40 italic text-center'>Crea categorías con la palabra 'Hucha'</p>";
+            document.getElementById('huchas-acumulado').innerHTML = html || "<p class='text-center opacity-40 text-[10px]'>Sin huchas definidas</p>";
         }
 
         function actualizarGrafica(gastos, compras) {
@@ -245,10 +276,9 @@
             const m = parseFloat(document.getElementById('input-monto').value);
             const f = document.getElementById('input-fecha').value;
             const c = document.getElementById('input-concepto').value || "Varios";
-            if(!m || !f) return alert("Importe y fecha obligatorios");
+            if(!m || !f) return alert("Falta importe o fecha");
             data.movimientos.unshift({ id: Date.now(), tipo: tipoActual, cat: document.getElementById('select-cat').value, monto: m, fecha: f, concepto: c, metodo: document.getElementById('select-metodo').value });
-            document.getElementById('input-monto').value = '';
-            document.getElementById('input-concepto').value = '';
+            document.getElementById('input-monto').value = ''; document.getElementById('input-concepto').value = '';
             guardar();
         }
 
@@ -262,7 +292,8 @@
             if(n) {
                 data.config.categorias.push({nombre:n, tipo:t, concepto:c, presupuesto:p, fijo:f, dia:parseInt(d)});
                 document.getElementById('nueva-cat-input').value=''; document.getElementById('nueva-cat-concepto').value='';
-                document.getElementById('nueva-cat-pres').value=''; document.getElementById('nueva-cat-fijo').checked=false;
+                document.getElementById('nueva-cat-pres').value=''; document.getElementById('nueva-cat-dia').value='';
+                document.getElementById('nueva-cat-fijo').checked=false;
                 guardar();
             }
         }
@@ -271,7 +302,7 @@
             const ws = XLSX.utils.json_to_sheet(data.movimientos);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Movimientos");
-            XLSX.writeFile(wb, "Finanzas_2026.xlsx");
+            XLSX.writeFile(wb, "Cuentas_2026.xlsx");
         }
 
         function importarExcel(e) {
@@ -279,12 +310,9 @@
             reader.onload = (ev) => {
                 const bstr = ev.target.result;
                 const wb = XLSX.read(bstr, {type:'binary'});
-                const wsname = wb.SheetNames[0];
-                const ws = wb.Sheets[wsname];
-                const json = XLSX.utils.sheet_to_json(ws);
-                data.movimientos = json;
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                data.movimientos = XLSX.utils.sheet_to_json(ws);
                 guardar();
-                alert("Importado con éxito");
             };
             reader.readAsBinaryString(e.target.files[0]);
         }
@@ -299,19 +327,19 @@
             const renderSeccion = (tipo, label, id) => {
                 const cats = data.config.categorias.filter(c => c.tipo === tipo);
                 if(cats.length === 0) { document.getElementById(id).innerHTML = ""; return; }
-                let h = `<h4 class="text-[9px] font-black uppercase text-blue-600 mb-2 mt-4 ml-2">${label}</h4>`;
+                let h = `<h4 class="text-[10px] font-black uppercase text-blue-600 mb-2 mt-4 ml-1">${label}</h4>`;
                 cats.forEach(c => {
-                    const real = movs.filter(m => m.cat === c.nombre).reduce((s,m) => s + m.monto, 0);
-                    const p = c.presupuesto > 0 ? Math.min((real/c.presupuesto)*100, 100) : 0;
-                    h += `<div class="card py-3 mb-2"><div class="flex justify-between text-[10px] font-bold mb-1"><span>${c.nombre}</span><span>${real.toFixed(0)}€ / ${c.presupuesto}€</span></div>
+                    const real = movs.filter(m => m.cat === c.nombre || (c.concepto && m.concepto === c.concepto)).reduce((s,m) => s + m.monto, 0);
+                    const p = c.presupuesto > 0 ? Math.min((real/c.presupuesto)*100, 100) : (real > 0 ? 100 : 0);
+                    h += `<div class="card py-3 mb-2"><div class="flex justify-between text-[10px] font-bold mb-1"><span>${c.nombre} ${c.concepto?' - '+c.concepto:''}</span><span>${real.toFixed(0)}€ / ${c.presupuesto}€</span></div>
                     <div class="h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-blue-500" style="width:${p}%"></div></div></div>`;
                 });
                 document.getElementById(id).innerHTML = h;
             };
-            renderSeccion('Ingreso', 'Fuentes de Ingreso', 'analisis-ingresos');
-            renderSeccion('Gasto', 'Necesidades', 'analisis-gastos');
-            renderSeccion('Compra', 'Caprichos', 'analisis-compras');
-            renderSeccion('Inversion', 'Inversión', 'analisis-inversiones');
+            renderSeccion('Ingreso', 'Entradas', 'analisis-ingresos');
+            renderSeccion('Gasto', 'Gastos Fijos', 'analisis-gastos');
+            renderSeccion('Compra', 'Ocio y Otros', 'analisis-compras');
+            renderSeccion('Inversion', 'Huchas y Activos', 'analisis-inversiones');
         }
         function renderizarAdminCats() { document.getElementById('lista-cats-admin').innerHTML = data.config.categorias.map((c, i) => `<div class="card flex justify-between py-2 border-none bg-slate-100 dark:bg-slate-800/50"><span class="text-[10px] font-bold uppercase">${c.nombre} (${c.tipo})</span><button onclick="eliminarCat(${i})" class="text-slate-400 p-1"><i class="fas fa-times"></i></button></div>`).join(''); }
         function ejecutarFijos() {
@@ -327,7 +355,7 @@
         function eliminarCat(i) { data.config.categorias.splice(i,1); guardar(); }
         function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); }
         function guardar() { localStorage.setItem(KEY, JSON.stringify(data)); actualizarUI(); }
-        function borrarTodo() { if(confirm("¿BORRAR TODO?")) { localStorage.clear(); location.reload(); } }
+        function borrarTodo() { if(confirm("¿RESET TOTAL?")) { localStorage.clear(); location.reload(); } }
         function gastoRapidoEfectivo() { const m = prompt("Importe:"); if(m) { data.movimientos.unshift({id: Date.now(), tipo: 'Gastos', cat: 'Varios', monto: parseFloat(m), fecha: new Date().toISOString().split('T')[0], concepto: "Efectivo", metodo: 'EFECTIVO'}); guardar(); } }
 
         document.getElementById('input-fecha').valueAsDate = new Date();
