@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS 2026 - ESTABLE FINAL</title>
+    <title>CONTROL FINANCIERO 2026 - 12 COLUMNAS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
-        body { background-color: #f1f5f9; color: #1e293b; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-bottom: 100px; }
+        body { background-color: #f8fafc; color: #0f172a; font-family: system-ui, -apple-system, sans-serif; padding-bottom: 100px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid #e2e8f0; }
-        input, select { border: 1px solid #cbd5e1 !important; border-radius: 10px; height: 44px; padding: 0 12px; width: 100%; color: #1e293b !important; background: white !important; font-size: 16px; }
-        .btn-tipo { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; height: 40px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 16px; border: 1px solid #e2e8f0; }
+        input, select { border: 1px solid #cbd5e1 !important; border-radius: 10px; height: 44px; padding: 0 12px; width: 100%; color: #0f172a !important; background: white !important; font-size: 16px; }
+        .btn-tipo { background: #f1f5f9; border: 1px solid #e2e8f0; color: #64748b; height: 42px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
         .btn-tipo.active { background-color: #2563eb !important; color: white !important; border-color: #2563eb !important; }
-        .nav-btn { color: #94a3b8; flex: 1; padding: 12px 0; text-align: center; }
-        .nav-active { color: #2563eb; border-top: 3px solid #2563eb; }
-        .label-fijo { color: #1e293b !important; font-weight: 800; font-size: 11px; text-transform: uppercase; }
+        .nav-btn { color: #94a3b8; flex: 1; text-align: center; padding: 10px 0; }
+        .nav-active { color: #2563eb; border-top: 3px solid #2563eb; background: rgba(37, 99, 235, 0.05); }
     </style>
 </head>
 <body>
 
     <header class="p-5 bg-blue-700 text-white flex justify-between items-center shadow-lg">
         <div>
-            <h1 class="text-xl font-black italic tracking-tighter uppercase">Control 2026</h1>
+            <h1 class="text-xl font-black italic tracking-tighter uppercase">Finanzas 12C</h1>
             <div id="mes-actual-label" class="text-[10px] font-bold bg-blue-800 px-2 py-0.5 rounded inline-block mt-1 uppercase"></div>
         </div>
         <select id="filtro-mes" onchange="actualizarUI()" class="!w-32 !h-8 !text-[10px] !bg-blue-800 !text-white !border-none font-bold uppercase"></select>
@@ -38,16 +37,16 @@
     </nav>
 
     <div id="inicio" class="tab-content active p-4">
-        <div class="card bg-slate-800 text-white border-none shadow-xl">
-            <p class="text-[10px] uppercase opacity-60 font-black mb-1">Balance Disponible</p>
+        <div class="card bg-slate-900 text-white border-none shadow-2xl">
+            <p class="text-[10px] uppercase opacity-50 font-black mb-1">Balance del Mes</p>
             <h2 id="total-balance" class="text-4xl font-black mb-4 italic">0.00 €</h2>
-            <div class="grid grid-cols-2 gap-4 border-t border-white/10 pt-3">
-                <div><p class="text-[9px] uppercase text-emerald-400 font-bold">Ingresos</p><p id="res-ing" class="font-black text-lg">0.00 €</p></div>
-                <div><p class="text-[9px] uppercase text-rose-400 font-bold">Gastos</p><p id="res-gas" class="font-black text-lg">0.00 €</p></div>
+            <div class="grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
+                <div><p class="text-[9px] uppercase text-emerald-400 font-bold">Ingresos</p><p id="res-ing" class="font-black text-xl">0.00 €</p></div>
+                <div><p class="text-[9px] uppercase text-rose-400 font-bold">Gastos</p><p id="res-gas" class="font-black text-xl">0.00 €</p></div>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 mb-5">
+        <div class="grid grid-cols-2 gap-3 mb-6">
             <button onclick="ejecutarFijos()" class="bg-indigo-600 text-white h-12 rounded-2xl font-black text-[10px] uppercase shadow-lg">Cargar Fijos</button>
             <button onclick="gastoRapidoEfectivo()" class="bg-amber-500 text-white h-12 rounded-2xl font-black text-[10px] uppercase shadow-lg">Gasto Cash</button>
         </div>
@@ -71,19 +70,18 @@
                     <option value="TARJETA">💳 TARJETA</option>
                 </select>
             </div>
-            <input type="text" id="input-concepto" placeholder="Concepto..." class="mb-3">
-            <button onclick="registrar()" class="w-full bg-blue-700 text-white h-12 rounded-xl font-black uppercase text-xs">Añadir Movimiento</button>
+            <input type="text" id="input-concepto" placeholder="Concepto..." class="mb-4">
+            <button onclick="registrar()" class="w-full bg-blue-600 text-white h-14 rounded-2xl font-black uppercase text-sm shadow-lg">Guardar Registro</button>
         </div>
 
-        <input type="text" id="buscador" oninput="actualizarUI()" placeholder="🔍 Buscar..." class="mb-4 !bg-white">
-        <div id="lista-movimientos" class="space-y-2"></div>
+        <div id="lista-movimientos" class="space-y-3"></div>
     </div>
 
     <div id="analisis" class="tab-content p-4">
         <div class="card text-center">
-            <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">Distribución de Gasto</h3>
+            <h3 class="text-[10px] font-black uppercase text-slate-400 mb-6 tracking-widest">Distribución</h3>
             <div style="height: 200px;" class="flex justify-center"><canvas id="chartComparativa"></canvas></div>
-            <div id="chart-legend" class="flex justify-around mt-4 text-[10px] font-black uppercase"></div>
+            <div id="chart-legend" class="flex justify-around mt-4 text-[11px] font-black uppercase"></div>
         </div>
         <div id="analisis-gastos"></div>
         <div id="analisis-compras"></div>
@@ -91,23 +89,22 @@
     </div>
 
     <div id="config" class="tab-content p-4">
-        
-        <div class="card border-2 border-emerald-500 bg-emerald-50 mb-6">
-            <h3 class="text-[11px] font-black text-emerald-700 uppercase mb-3 flex items-center gap-2"><i class="fas fa-file-excel"></i> Copias de Seguridad</h3>
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="exportarExcel()" class="bg-emerald-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-sm">Bajar Excel</button>
-                <button onclick="document.getElementById('import-excel').click()" class="bg-blue-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-sm">Subir Excel</button>
+        <div class="card border-2 border-emerald-500 bg-emerald-50">
+            <h3 class="text-[11px] font-black text-emerald-700 uppercase mb-4 flex items-center gap-2"><i class="fas fa-file-excel"></i> Modelo 12 Columnas</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="exportarExcel()" class="bg-emerald-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-md">Bajar Backup</button>
+                <button onclick="document.getElementById('import-excel').click()" class="bg-blue-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-md">Subir Datos</button>
                 <input type="file" id="import-excel" class="hidden" accept=".xlsx" onchange="importarExcel(event)">
             </div>
         </div>
 
-        <div class="card bg-indigo-900 text-white border-none shadow-xl mb-6">
-            <h3 class="text-[10px] font-black text-indigo-300 uppercase mb-4 flex items-center gap-2"><i class="fas fa-piggy-bank"></i> Monitor de Huchas</h3>
+        <div class="card bg-slate-800 text-white border-none shadow-xl mt-4">
+            <h3 class="text-[11px] font-black text-blue-300 uppercase mb-4 flex items-center gap-2"><i class="fas fa-piggy-bank"></i> Monitor de Huchas</h3>
             <div id="huchas-acumulado" class="space-y-4"></div>
         </div>
 
-        <div class="card">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Nueva Categoría / Fijo</h3>
+        <div class="card mt-4">
+            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Añadir Categoría</h3>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-2">
                     <select id="nueva-cat-tipo">
@@ -118,61 +115,59 @@
                     </select>
                     <input type="text" id="nueva-cat-input" placeholder="Nombre">
                 </div>
-                <input type="text" id="nueva-cat-concepto" placeholder="Concepto por defecto">
+                <input type="text" id="nueva-cat-concepto" placeholder="Concepto defecto">
                 <div class="grid grid-cols-2 gap-2">
                     <input type="number" id="nueva-cat-pres" placeholder="Importe €">
-                    <input type="number" id="nueva-cat-dia" placeholder="Día del mes">
+                    <input type="number" id="nueva-cat-dia" placeholder="Día (1-31)">
                 </div>
-                <div class="flex items-center gap-3 p-3 bg-slate-100 rounded-xl border border-slate-200">
-                    <input type="checkbox" id="nueva-cat-fijo" class="w-6 h-6 rounded">
-                    <label for="nueva-cat-fijo" class="label-fijo">Activar carga automática mensual</label>
+                <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                    <input type="checkbox" id="nueva-cat-fijo" class="w-6 h-6">
+                    <label for="nueva-cat-fijo" class="font-black text-[10px] uppercase">Incluir en Carga Automática</label>
                 </div>
-                <button onclick="añadirCatManual()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase">Crear Categoría</button>
+                <button onclick="añadirCatManual()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg">Crear Categoría</button>
             </div>
         </div>
 
         <div id="lista-cats-admin" class="space-y-2 mt-4"></div>
-        <button onclick="borrarTodo()" class="w-full mt-8 p-4 text-rose-500 font-bold text-[10px] uppercase opacity-40 italic">Borrar Base de Datos</button>
+        <button onclick="borrarTodo()" class="w-full mt-10 p-4 text-rose-500 font-bold text-[10px] uppercase opacity-40">Reset Total</button>
     </div>
 
     <script>
-        const KEY = 'finanzas_v8_9_estable';
+        const KEY = 'finanzas_v8_9_4_12col';
         let data = JSON.parse(localStorage.getItem(KEY)) || { config: { categorias: [] }, movimientos: [] };
         let tipoActual = 'Ingresos';
         let myChart = null;
 
+        const COLUMNAS_MODELO = ["ID", "FECHA", "MES", "AÑO", "TIPO", "CATEGORIA", "CONCEPTO", "IMPORTE", "METODO", "ESTADO", "NOTAS", "EXTRAS"];
+
         function actualizarUI() {
             const mesSel = document.getElementById('filtro-mes').value || new Date().toISOString().substring(0, 7);
-            const meses = [...new Set(data.movimientos.map(m => m.fecha.substring(0, 7)))].sort().reverse();
+            const meses = [...new Set(data.movimientos.map(m => m.FECHA.substring(0, 7)))].sort().reverse();
             if(!meses.includes(new Date().toISOString().substring(0, 7))) meses.unshift(new Date().toISOString().substring(0, 7));
             document.getElementById('filtro-mes').innerHTML = meses.map(m => `<option value="${m}" ${m===mesSel?'selected':''}>${m}</option>`).join('');
-            document.getElementById('mes-actual-label').innerText = "Mes: " + mesSel;
+            document.getElementById('mes-actual-label').innerText = "Viendo: " + mesSel;
 
-            const q = document.getElementById('buscador').value.toLowerCase();
-            const movsMes = data.movimientos.filter(m => m.fecha.startsWith(mesSel));
-            const movsFiltrados = movsMes.filter(m => (m.concepto || "").toLowerCase().includes(q) || (m.cat || "").toLowerCase().includes(q));
-
-            const ing = movsMes.filter(m => m.tipo === 'Ingresos').reduce((s,m) => s + m.monto, 0);
-            const gas = movsMes.filter(m => m.tipo === 'Gastos').reduce((s,m) => s + m.monto, 0);
-            const com = movsMes.filter(m => m.tipo === 'Compras').reduce((s,m) => s + m.monto, 0);
-            const inv = movsMes.filter(m => m.tipo === 'Inversiones').reduce((s,m) => s + m.monto, 0);
+            const movsMes = data.movimientos.filter(m => m.FECHA.startsWith(mesSel));
+            const ing = movsMes.filter(m => m.TIPO === 'Ingresos').reduce((s,m) => s + m.IMPORTE, 0);
+            const gas = movsMes.filter(m => m.TIPO === 'Gastos').reduce((s,m) => s + m.IMPORTE, 0);
+            const com = movsMes.filter(m => m.TIPO === 'Compras').reduce((s,m) => s + m.IMPORTE, 0);
 
             document.getElementById('total-balance').innerText = (ing - gas - com).toFixed(2) + " €";
             document.getElementById('res-ing').innerText = ing.toFixed(2) + " €";
             document.getElementById('res-gas').innerText = gas.toFixed(2) + " €";
 
-            document.getElementById('lista-movimientos').innerHTML = movsFiltrados.map(m => `
-                <div class="card flex justify-between items-center py-3 border-l-4 ${m.tipo==='Ingresos'?'border-emerald-500':'border-rose-500'}">
+            document.getElementById('lista-movimientos').innerHTML = movsMes.map(m => `
+                <div class="card flex justify-between items-center py-4 border-l-8 ${m.TIPO==='Ingresos'?'border-emerald-500':'border-rose-500'}">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="text-[11px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${m.fecha.split('-')[2]}</span>
-                            <span class="font-bold text-slate-800 text-sm">${m.concepto}</span>
+                            <span class="text-[11px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${m.FECHA.split('-')[2]}</span>
+                            <span class="font-bold text-slate-800 text-sm">${m.CONCEPTO}</span>
                         </div>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">${m.cat} • ${m.metodo}</p>
+                        <p class="text-[10px] font-black text-slate-400 uppercase mt-1 tracking-tighter">${m.CATEGORIA} • ${m.METODO}</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-black text-sm text-slate-900">${m.monto.toFixed(2)}€</p>
-                        <button onclick="eliminarMov(${m.id})" class="text-rose-400 p-1"><i class="fas fa-trash"></i></button>
+                        <p class="font-black text-md text-slate-900">${m.IMPORTE.toFixed(2)}€</p>
+                        <button onclick="eliminarMov(${m.ID})" class="text-rose-400 p-1 text-xs mt-1"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>`).join('');
 
@@ -184,17 +179,17 @@
         }
 
         function renderizarHuchas() {
-            const hCats = data.config.categorias.filter(c => c.nombre.toLowerCase().includes('hucha') || (c.concepto && c.concepto.toLowerCase().includes('hucha')));
+            const hCats = data.config.categorias.filter(c => c.nombre.toLowerCase().includes('hucha'));
             let html = "";
             hCats.forEach(c => {
-                const ahorro = data.movimientos.filter(m => m.cat === c.nombre && m.tipo === 'Gastos').reduce((s,m) => s+m.monto, 0);
-                const uso = data.movimientos.filter(m => m.cat === c.nombre && m.tipo === 'Inversiones').reduce((s,m) => s+m.monto, 0);
-                html += `<div class="border-b border-indigo-800/50 pb-2 flex justify-between items-center">
-                    <div><p class="text-[10px] font-black text-indigo-300 uppercase">${c.nombre}</p><p class="text-lg font-black">${(ahorro-uso).toFixed(2)}€</p></div>
-                    <p class="text-[8px] opacity-40 font-bold uppercase">Total Ahorro: ${ahorro.toFixed(0)}€</p>
+                const ahorro = data.movimientos.filter(m => m.CATEGORIA === c.nombre && m.TIPO === 'Gastos').reduce((s,m) => s+m.IMPORTE, 0);
+                const uso = data.movimientos.filter(m => m.CATEGORIA === c.nombre && m.TIPO === 'Inversiones').reduce((s,m) => s+m.IMPORTE, 0);
+                html += `<div class="border-b border-slate-700 pb-3 flex justify-between items-end">
+                    <div><p class="text-[10px] font-black text-blue-400 uppercase mb-1">${c.nombre}</p><p class="text-2xl font-black">${(ahorro-uso).toFixed(2)}€</p></div>
+                    <div class="text-[9px] font-bold opacity-40 uppercase">Total: ${ahorro.toFixed(0)}€</div>
                 </div>`;
             });
-            document.getElementById('huchas-acumulado').innerHTML = html || "<p class='text-center text-[10px] opacity-40'>Define categorías con la palabra 'Hucha'</p>";
+            document.getElementById('huchas-acumulado').innerHTML = html || "<p class='text-center text-[10px] opacity-40 py-4'>No hay huchas</p>";
         }
 
         function renderizarGrafica(g, c) {
@@ -204,23 +199,64 @@
             myChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    datasets: [{ data: total > 0 ? [g, c] : [1], backgroundColor: total > 0 ? ['#f43f5e', '#3b82f6'] : ['#e2e8f0'], borderWidth: 0 }]
+                    datasets: [{ data: total > 0 ? [g, c] : [1], backgroundColor: total > 0 ? ['#f43f5e', '#3b82f6'] : ['#f1f5f9'], borderWidth: 0 }]
                 },
-                options: { cutout: '80%', plugins: { legend: { display: false } } }
+                options: { cutout: '85%', plugins: { legend: { display: false } } }
             });
-            document.getElementById('chart-legend').innerHTML = total > 0 ? 
-                `<span class="text-rose-500 font-black">Gastos: ${((g/total)*100).toFixed(0)}%</span><span class="text-blue-500 font-black">Compras: ${((c/total)*100).toFixed(0)}%</span>` : 
-                `<span class="text-slate-400 italic">No hay registros</span>`;
+            document.getElementById('chart-legend').innerHTML = total > 0 ? `<span class="text-rose-500">Gastos: ${((g/total)*100).toFixed(0)}%</span> <span class="text-blue-500">Compras: ${((c/total)*100).toFixed(0)}%</span>` : "";
         }
 
         function registrar() {
             const m = parseFloat(document.getElementById('input-monto').value);
             const f = document.getElementById('input-fecha').value;
             const c = document.getElementById('input-concepto').value || "Varios";
-            if(!m || !f) return alert("Error: Falta importe o fecha");
-            data.movimientos.unshift({ id: Date.now(), tipo: tipoActual, cat: document.getElementById('select-cat').value, monto: m, fecha: f, concepto: c, metodo: document.getElementById('select-metodo').value });
-            document.getElementById('input-monto').value = ""; document.getElementById('input-concepto').value = "";
+            if(!m || !f) return alert("Faltan datos");
+            
+            const fechaObj = new Date(f);
+            const nuevo = {
+                ID: Date.now(),
+                FECHA: f,
+                MES: fechaObj.getMonth() + 1,
+                AÑO: fechaObj.getFullYear(),
+                TIPO: tipoActual,
+                CATEGORIA: document.getElementById('select-cat').value,
+                CONCEPTO: c,
+                IMPORTE: m,
+                METODO: document.getElementById('select-metodo').value,
+                ESTADO: "Pagado",
+                NOTAS: "",
+                EXTRAS: ""
+            };
+            data.movimientos.unshift(nuevo);
             guardar();
+            document.getElementById('input-monto').value = ""; document.getElementById('input-concepto').value = "";
+        }
+
+        function exportarExcel() {
+            const ws = XLSX.utils.json_to_sheet(data.movimientos, { header: COLUMNAS_MODELO });
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "MisFinanzas");
+            XLSX.writeFile(wb, `Control_Financiero_12Col.xlsx`);
+        }
+
+        function importarExcel(e) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const bstr = ev.target.result;
+                const wb = XLSX.read(bstr, {type:'binary'});
+                const importados = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                const ids = new Set(data.movimientos.map(m => m.ID));
+                let nuevosCont = 0;
+                importados.forEach(n => {
+                    if(!ids.has(n.ID)) {
+                        data.movimientos.push(n);
+                        nuevosCont++;
+                    }
+                });
+                data.movimientos.sort((a,b) => new Date(b.FECHA) - new Date(a.FECHA));
+                guardar();
+                alert(`Importación finalizada. ${nuevosCont} nuevos registros añadidos.`);
+            };
+            reader.readAsBinaryString(e.target.files[0]);
         }
 
         function añadirCatManual() {
@@ -230,72 +266,66 @@
             const p = parseFloat(document.getElementById('nueva-cat-pres').value) || 0;
             const d = parseInt(document.getElementById('nueva-cat-dia').value) || 1;
             const f = document.getElementById('nueva-cat-fijo').checked;
-            if(!n) return alert("Nombre de categoría obligatorio");
+            if(!n) return alert("Nombre obligatorio");
             data.config.categorias.push({ nombre: n, tipo: t, concepto: c, presupuesto: p, dia: d, fijo: f });
-            document.getElementById('nueva-cat-input').value = ""; document.getElementById('nueva-cat-pres').value = "";
             guardar();
+            document.getElementById('nueva-cat-input').value = ""; document.getElementById('nueva-cat-pres').value = "";
         }
 
         function renderizarPlanes(movs) {
             const renderSec = (tipo, label, id) => {
                 const cats = data.config.categorias.filter(c => c.tipo === tipo);
-                let h = cats.length ? `<h4 class="text-[10px] font-black text-blue-600 uppercase mb-3 mt-4 ml-1">${label}</h4>` : "";
+                let h = cats.length ? `<h4 class="text-[11px] font-black text-blue-600 uppercase mb-3 mt-6 ml-1">${label}</h4>` : "";
                 cats.forEach(c => {
-                    const real = movs.filter(m => m.cat === c.nombre).reduce((s,m) => s + m.monto, 0);
+                    const real = movs.filter(m => m.CATEGORIA === c.nombre).reduce((s,m) => s + m.IMPORTE, 0);
                     const p = c.presupuesto > 0 ? Math.min((real/c.presupuesto)*100, 100) : (real > 0 ? 100 : 0);
-                    h += `<div class="card py-3 mb-2"><div class="flex justify-between text-[11px] font-black mb-2"><span>${c.nombre}</span><span class="text-slate-400">${real.toFixed(0)}€ / ${c.presupuesto}€</span></div>
-                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-blue-600 shadow-sm" style="width:${p}%"></div></div></div>`;
+                    h += `<div class="card py-4 mb-3"><div class="flex justify-between text-[11px] font-black mb-2"><span>${c.nombre}</span><span class="text-slate-400">${real.toFixed(0)}€ / ${c.presupuesto}€</span></div>
+                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-blue-600" style="width:${p}%"></div></div></div>`;
                 });
                 document.getElementById(id).innerHTML = h;
             };
             renderSec('Gasto', 'Gastos Fijos', 'analisis-gastos');
-            renderSec('Compra', 'Ocio y Compras', 'analisis-compras');
-            renderSec('Inversion', 'Huchas e Inversión', 'analisis-inversiones');
+            renderSec('Compra', 'Caprichos', 'analisis-compras');
+            renderSec('Inversion', 'Huchas', 'analisis-inversiones');
         }
 
         function renderizarAdminCats() {
-            const cols = { 'Ingreso': 'bg-emerald-100 text-emerald-700', 'Gasto': 'bg-rose-100 text-rose-700', 'Compra': 'bg-blue-100 text-blue-700', 'Inversion': 'bg-indigo-100 text-indigo-700' };
             document.getElementById('lista-cats-admin').innerHTML = data.config.categorias.map((c, i) => `
-                <div class="card flex justify-between items-center py-3 border-none shadow-sm">
-                    <div><span class="text-[8px] font-black uppercase px-2 py-0.5 rounded ${cols[c.tipo]}">${c.tipo}</span> <span class="text-sm font-black ml-2 text-slate-700">${c.nombre}</span><p class="text-[10px] font-bold text-slate-400 mt-1">${c.presupuesto}€ • Día ${c.dia} ${c.fijo?'(Automático)':''}</p></div>
+                <div class="card flex justify-between items-center py-4">
+                    <div><span class="text-[9px] font-black uppercase px-2 py-1 rounded-md bg-slate-100 text-slate-700">${c.tipo}</span> <span class="text-sm font-black ml-2">${c.nombre}</span></div>
                     <button onclick="eliminarCat(${i})" class="text-rose-400 p-2"><i class="fas fa-trash-alt"></i></button>
                 </div>`).join('');
         }
 
         function ejecutarFijos() {
             const mes = document.getElementById('filtro-mes').value;
-            if(!confirm(`¿Cargar pagos fijos del mes ${mes}?`)) return;
+            if(!confirm(`¿Cargar pagos fijos en ${mes}?`)) return;
             const mapa = { 'Ingreso': 'Ingresos', 'Gasto': 'Gastos', 'Compra': 'Compras', 'Inversion': 'Inversiones' };
             data.config.categorias.filter(c => c.fijo).forEach(c => {
-                data.movimientos.push({ id: Date.now()+Math.random(), tipo: mapa[c.tipo], cat: c.nombre, monto: c.presupuesto, fecha: `${mes}-${String(c.dia).padStart(2,'0')}`, concepto: c.concepto || c.nombre, metodo: "BANCO" });
+                const fechaObj = new Date(`${mes}-${String(c.dia).padStart(2,'0')}`);
+                data.movimientos.push({
+                    ID: Date.now()+Math.random(),
+                    FECHA: `${mes}-${String(c.dia).padStart(2,'0')}`,
+                    MES: fechaObj.getMonth() + 1,
+                    AÑO: fechaObj.getFullYear(),
+                    TIPO: mapa[c.tipo],
+                    CATEGORIA: c.nombre,
+                    IMPORTE: c.presupuesto,
+                    CONCEPTO: c.concepto || c.nombre,
+                    METODO: "BANCO",
+                    ESTADO: "Pagado", NOTAS: "", EXTRAS: ""
+                });
             });
             guardar();
-        }
-
-        function exportarExcel() {
-            const ws = XLSX.utils.json_to_sheet(data.movimientos);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "MisCuentas");
-            XLSX.writeFile(wb, "Finanzas_2026.xlsx");
-        }
-
-        function importarExcel(e) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const bstr = ev.target.result; const wb = XLSX.read(bstr, {type:'binary'});
-                data.movimientos = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-                guardar();
-                alert("Importación completada");
-            };
-            reader.readAsBinaryString(e.target.files[0]);
         }
 
         function setTipo(t) { tipoActual = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectCategorias(); }
         function actualizarSelectCategorias() { 
             const mapa = { 'Ingresos': 'Ingreso', 'Gastos': 'Gasto', 'Compras': 'Compra', 'Inversiones': 'Inversion' };
             const cats = data.config.categorias.filter(c => c.tipo === mapa[tipoActual]);
-            document.getElementById('select-cat').innerHTML = cats.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('') + `<option value="Otros">Otros</option>`;
+            document.getElementById('select-cat').innerHTML = cats.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('') + `<option value="Varios">Varios</option>`;
         }
-        function eliminarMov(id) { data.movimientos = data.movimientos.filter(m => m.id !== id); guardar(); }
+        function eliminarMov(id) { data.movimientos = data.movimientos.filter(m => m.ID !== id); guardar(); }
         function eliminarCat(i) { data.config.categorias.splice(i,1); guardar(); }
         function showTab(t) { 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
@@ -305,7 +335,11 @@
         }
         function guardar() { localStorage.setItem(KEY, JSON.stringify(data)); actualizarUI(); }
         function borrarTodo() { if(confirm("¿RESET TOTAL?")) { localStorage.clear(); location.reload(); } }
-        function gastoRapidoEfectivo() { const m = prompt("Importe en efectivo:"); if(m) { data.movimientos.unshift({id: Date.now(), tipo: 'Gastos', cat: 'Varios', monto: parseFloat(m), fecha: new Date().toISOString().split('T')[0], concepto: "Gasto Efectivo", metodo: 'EFECTIVO'}); guardar(); } }
+        function gastoRapidoEfectivo() { const m = prompt("Importe:"); if(m) { 
+            const f = new Date().toISOString().split('T')[0];
+            data.movimientos.unshift({ID: Date.now(), FECHA: f, MES: new Date().getMonth()+1, AÑO: 2026, TIPO: 'Gastos', CATEGORIA: 'Varios', IMPORTE: parseFloat(m), CONCEPTO: "Gasto Cash", METODO: 'EFECTIVO', ESTADO: "Pagado", NOTAS: "", EXTRAS: ""}); 
+            guardar(); 
+        } }
 
         document.getElementById('input-fecha').valueAsDate = new Date();
         actualizarUI();
