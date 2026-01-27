@@ -17,6 +17,8 @@
         input, select { border: 1px solid #e2e8f0 !important; border-radius: 0.75rem; height: 44px; padding: 0 12px; font-size: 16px; width: 100%; }
         .btn-tipo { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; height: 42px; border-radius: 0.75rem; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; }
         .btn-tipo.active { background: #1e293b !important; color: white !important; }
+        .progress-bar { height: 8px; border-radius: 4px; background: #e2e8f0; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.3s ease; }
     </style>
 </head>
 <body>
@@ -31,19 +33,21 @@
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around z-50 pb-safe">
         <button onclick="showTab('muro')" id="nav-muro" class="flex-1 py-3 text-center nav-active"><i class="fas fa-wallet text-xl"></i><br><span class="text-[9px] uppercase">Muro</span></button>
-        <button onclick="showTab('planes')" id="nav-planes" class="flex-1 py-3 text-center"><i class="fas fa-chart-line text-xl"></i><br><span class="text-[9px] uppercase">Planes</span></button>
+        <button onclick="showTab('planes')" id="nav-planes" class="flex-1 py-3 text-center"><i class="fas fa-chart-pie text-xl"></i><br><span class="text-[9px] uppercase">Planes</span></button>
         <button onclick="showTab('config')" id="nav-config" class="flex-1 py-3 text-center"><i class="fas fa-cog text-xl"></i><br><span class="text-[9px] uppercase">Ajustes</span></button>
     </nav>
 
     <div id="muro" class="tab-content active p-4">
-        <div class="card bg-slate-900 text-white border-none">
-            <div class="flex justify-between items-center mb-4">
-                <div><p class="text-[10px] text-slate-400 uppercase font-black">Disponible Real</p><h2 id="disp-real" class="text-3xl font-black">0.00€</h2></div>
-                <div class="text-right"><p class="text-[10px] text-slate-400 uppercase font-black">Mes</p><p id="disp-mes" class="text-xl font-bold text-emerald-400">0€</p></div>
+        <div class="card bg-slate-900 text-white border-none text-center">
+            <p class="text-[10px] text-slate-400 uppercase font-black">Disponible Real</p>
+            <h2 id="disp-real" class="text-4xl font-black mb-2">0.00€</h2>
+            <div class="grid grid-cols-2 gap-4 border-t border-white/10 pt-3">
+                <div><p class="text-[10px] text-slate-400 uppercase">Ingresos</p><p id="sum-ing" class="text-emerald-400 font-bold">0€</p></div>
+                <div><p class="text-[10px] text-slate-400 uppercase">Gastos</p><p id="sum-gas" class="text-rose-400 font-bold">0€</p></div>
             </div>
         </div>
 
-        <div class="card border-l-4 border-slate-400 mt-4">
+        <div class="card border-l-4 border-blue-500 mt-4">
             <div class="grid grid-cols-4 gap-1 mb-3">
                 <button onclick="setTipo('Ingresos')" id="t-Ingresos" class="btn-tipo active">Ing</button>
                 <button onclick="setTipo('Gastos')" id="t-Gastos" class="btn-tipo">Gas</button>
@@ -54,73 +58,82 @@
                 <input type="date" id="in-fecha">
                 <input type="number" id="in-importe" placeholder="0.00" class="text-lg font-black text-blue-600">
             </div>
-            <div class="grid grid-cols-2 gap-2 mb-2">
-                <select id="in-cat" class="text-xs font-bold uppercase"></select>
+            <div class="mb-2">
+                <select id="in-cat" class="text-xs font-bold uppercase mb-2"></select>
+                <input type="text" id="in-concepto" placeholder="CONCEPTO (Ej: Combustible)" class="text-xs font-bold uppercase mb-2">
                 <select id="in-pago" class="text-xs font-bold uppercase">
                     <option value="BANCO">🏦 BANCO</option><option value="EFECTIVO">💵 EFECTIVO</option><option value="TARJETA">💳 TARJETA</option>
                 </select>
             </div>
-            <input type="text" id="in-concepto" placeholder="CONCEPTO" class="text-xs font-bold uppercase mb-3">
-            <button onclick="registrar()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-xs uppercase shadow-lg">Guardar Movimiento</button>
+            <button onclick="registrar()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-xs uppercase shadow-lg">Registrar Movimiento</button>
         </div>
 
         <div id="lista-movs" class="space-y-3 mt-4"></div>
     </div>
 
+    <div id="planes" class="tab-content p-4">
+        <div class="card flex flex-col items-center">
+            <h3 class="text-xs font-black uppercase text-slate-400 mb-4">Balance Mensual</h3>
+            <div style="height: 180px;"><canvas id="chartGasto"></canvas></div>
+        </div>
+        <div id="progreso-presupuesto" class="space-y-3"></div>
+    </div>
+
     <div id="config" class="tab-content p-4">
         <div class="card">
-            <h3 class="text-xs font-black uppercase mb-3 text-slate-500">Configurar Categorías</h3>
+            <h3 class="text-xs font-black uppercase mb-3 text-slate-500">Configuración de Categorías</h3>
             <div class="space-y-2">
-                <input type="text" id="cfg-cat" placeholder="NOMBRE CATEGORÍA" class="text-xs font-bold uppercase">
+                <input type="text" id="cfg-cat" placeholder="NOMBRE CATEGORÍA (Ej: Coche)" class="text-xs font-bold uppercase">
                 <div class="grid grid-cols-2 gap-2">
                     <select id="cfg-tipo" class="text-xs font-bold"><option value="Ingreso">Ingreso</option><option value="Gasto">Gasto</option><option value="Compra">Compra</option><option value="Inversion">Hucha</option></select>
-                    <input type="number" id="cfg-pres" placeholder="PRES. €" class="text-xs font-bold">
+                    <input type="number" id="cfg-pres" placeholder="PRESUPUESTO €" class="text-xs font-bold">
                 </div>
                 <button onclick="añadirCat()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-black text-[10px] uppercase">Añadir Categoría</button>
             </div>
-            <div id="lista-cats-config" class="mt-4 border-t pt-2 space-y-1"></div>
         </div>
 
+        <div id="lista-cats-ui" class="space-y-2 mb-4"></div>
+
         <div class="card bg-emerald-50 border border-emerald-200">
-            <h3 class="text-xs font-black uppercase mb-3 text-emerald-700">Backup & 12 Columnas</h3>
+            <h3 class="text-xs font-black uppercase mb-3 text-emerald-700">Backup 12 Columnas</h3>
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="exportarExcel()" class="bg-emerald-600 text-white py-3 rounded-xl font-black text-[10px] uppercase">Exportar Excel</button>
-                <button onclick="document.getElementById('file-in').click()" class="bg-indigo-600 text-white py-3 rounded-xl font-black text-[10px] uppercase">Importar Excel</button>
+                <button onclick="exportarExcel()" class="bg-emerald-600 text-white py-3 rounded-xl font-black text-[10px] uppercase">Exportar</button>
+                <button onclick="document.getElementById('file-in').click()" class="bg-indigo-600 text-white py-3 rounded-xl font-black text-[10px] uppercase">Importar</button>
             </div>
             <input type="file" id="file-in" class="hidden" onchange="importarExcel(event)">
-            <button onclick="resetTotal()" class="w-full mt-4 text-[9px] font-black text-rose-500 uppercase">Borrar todo el almacenamiento</button>
         </div>
+        <button onclick="resetTotal()" class="w-full mt-4 text-[9px] font-black text-rose-400 uppercase underline">Formatear Aplicación</button>
     </div>
 
     <script>
-        const KEY = 'FINANZAS_V896_OFFICIAL';
+        const KEY = 'FINANZAS_V896_FINAL';
         const COLUMNAS = ["ID", "Fecha", "Año", "Orden_Mes", "Mes", "Tipo", "Categoría", "Concepto", "Forma de Pago", "Importe", "Ingresos", "Gastos", "Deudores"];
         const MESES_TXT = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
         let db = JSON.parse(localStorage.getItem(KEY)) || { config: [], movs: [] };
-        let tipoActual = 'Ingresos';
+        let tipoActual = 'Ingresos', chartInstance = null;
 
         function save() { localStorage.setItem(KEY, JSON.stringify(db)); actualizarUI(); }
 
         function registrar() {
             const imp = parseFloat(document.getElementById('in-importe').value);
             const fec = document.getElementById('in-fecha').value;
-            if(!imp || !fec) return alert("Completa importe y fecha");
+            const con = document.getElementById('in-concepto').value.toUpperCase();
+            if(!imp || !fec || !con) return alert("Falta Importe, Fecha o Concepto");
 
             const fechaObj = new Date(fec);
             const año = fechaObj.getFullYear();
             const ordenMes = fechaObj.getMonth() + 1;
-            const mesNombre = MESES_TXT[ordenMes];
 
-            const nuevoMov = {
+            const nuevo = {
                 "ID": Date.now().toString(),
                 "Fecha": fec,
                 "Año": año,
                 "Orden_Mes": ordenMes,
-                "Mes": mesNombre,
+                "Mes": MESES_TXT[ordenMes],
                 "Tipo": tipoActual,
                 "Categoría": document.getElementById('in-cat').value,
-                "Concepto": document.getElementById('in-concepto').value.toUpperCase() || "VARIOS",
+                "Concepto": con,
                 "Forma de Pago": document.getElementById('in-pago').value,
                 "Importe": imp,
                 "Ingresos": (tipoActual === 'Ingresos') ? imp : 0,
@@ -128,44 +141,26 @@
                 "Deudores": 0
             };
 
-            db.movs.push(nuevoMov);
+            db.movs.push(nuevo);
             save();
             document.getElementById('in-importe').value = "";
             document.getElementById('in-concepto').value = "";
-        }
-
-        function exportarExcel() {
-            const ws = XLSX.utils.json_to_sheet(db.movs, { header: COLUMNAS });
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Finanzas");
-            XLSX.writeFile(wb, `Finanzas_12Col_${new Date().toISOString().slice(0,10)}.xlsx`);
-        }
-
-        function importarExcel(e) {
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                const data = evt.target.result;
-                const workbook = XLSX.read(data, {type: 'binary'});
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(sheet);
-                db.movs = json;
-                save();
-            };
-            reader.readAsBinaryString(e.target.files[0]);
         }
 
         function actualizarUI() {
             const mesAct = document.getElementById('filtro-mes').value || new Date().toISOString().slice(0,7);
             const movsMes = db.movs.filter(m => m.Fecha.startsWith(mesAct));
             
-            const ing = movsMes.reduce((s, m) => s + (parseFloat(m.Ingresos) || 0), 0);
-            const gas = movsMes.reduce((s, m) => s + (parseFloat(m.Gastos) || 0), 0);
+            const totalIng = movsMes.reduce((s, m) => s + (parseFloat(m.Ingresos) || 0), 0);
+            const totalGas = movsMes.reduce((s, m) => s + (parseFloat(m.Gastos) || 0), 0);
 
-            document.getElementById('disp-real').innerText = (ing - gas).toFixed(2) + "€";
-            document.getElementById('disp-mes').innerText = ing.toFixed(0) + "€";
-            document.getElementById('mes-header').innerText = "Periodo: " + mesAct;
+            document.getElementById('disp-real').innerText = (totalIng - totalGas).toFixed(2) + "€";
+            document.getElementById('sum-ing').innerText = totalIng.toFixed(0) + "€";
+            document.getElementById('sum-gas').innerText = totalGas.toFixed(0) + "€";
+            document.getElementById('mes-header').innerText = "Viendo: " + mesAct;
 
-            document.getElementById('lista-movs').innerHTML = movsMes.map((m, i) => `
+            // Lista de Movimientos
+            document.getElementById('lista-movs').innerHTML = movsMes.map(m => `
                 <div class="card flex justify-between items-center py-3 border-l-4 ${m.Ingresos > 0 ? 'border-emerald-500':'border-rose-500'}">
                     <div class="min-w-0">
                         <p class="text-[8px] font-black text-slate-400 uppercase">${m.Fecha} • ${m.Categoría}</p>
@@ -173,13 +168,63 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <p class="font-black text-sm">${m.Importe.toFixed(2)}€</p>
-                        <button onclick="borrarMov('${m.ID}')" class="text-rose-400"><i class="fas fa-trash"></i></button>
+                        <button onclick="borrarMov('${m.ID}')" class="text-rose-300"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>`).reverse().join('');
 
+            // Planes
+            renderPlanes(movsMes, totalIng, totalGas);
+            renderChart(totalIng, totalGas);
+            
             updateFiltros(mesAct);
             updateSelectCats();
             renderListaCatsConfig();
+        }
+
+        function renderPlanes(movs, ti, tg) {
+            const container = document.getElementById('progreso-presupuesto');
+            const catsPres = db.config.filter(c => c.tipo !== 'Ingreso');
+            
+            container.innerHTML = catsPres.map(c => {
+                const real = movs.filter(m => m.Categoría === c.nombre).reduce((s, m) => s + m.Importe, 0);
+                const porc = c.presupuesto > 0 ? Math.min((real/c.presupuesto)*100, 100) : 0;
+                const color = real > c.presupuesto ? 'bg-rose-500' : 'bg-blue-600';
+                return `
+                    <div class="card py-2">
+                        <div class="flex justify-between text-[10px] font-black uppercase mb-1">
+                            <span>${c.nombre}</span>
+                            <span>${real.toFixed(0)} / ${c.presupuesto}€</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill ${color}" style="width: ${porc}%"></div></div>
+                    </div>`;
+            }).join('');
+        }
+
+        function renderChart(i, g) {
+            const ctx = document.getElementById('chartGasto').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: { datasets: [{ data: [i, g], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] },
+                options: { cutout: '80%', plugins: { legend: { display: false } } }
+            });
+        }
+
+        function exportarExcel() {
+            const ws = XLSX.utils.json_to_sheet(db.movs, { header: COLUMNAS });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Datos");
+            XLSX.writeFile(wb, `Finanzas_12Col.xlsx`);
+        }
+
+        function importarExcel(e) {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const workbook = XLSX.read(evt.target.result, {type: 'binary'});
+                db.movs = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                save();
+            };
+            reader.readAsBinaryString(e.target.files[0]);
         }
 
         function updateFiltros(act) {
@@ -196,19 +241,19 @@
         }
 
         function renderListaCatsConfig() {
-            document.getElementById('lista-cats-config').innerHTML = db.config.map((c, i) => `
-                <div class="flex justify-between text-[10px] font-bold p-1 bg-slate-50 rounded">
-                    <span>${c.tipo.slice(0,3)} | ${c.nombre}</span>
-                    <button onclick="borrarCat(${i})" class="text-rose-500">Eliminar</button>
+            document.getElementById('lista-cats-ui').innerHTML = db.config.map((c, i) => `
+                <div class="card py-2 flex justify-between items-center text-[10px] font-bold uppercase">
+                    <span>${c.tipo} | ${c.nombre} (${c.presupuesto}€)</span>
+                    <button onclick="borrarCat(${i})" class="text-rose-500"><i class="fas fa-times-circle text-lg"></i></button>
                 </div>`).join('');
         }
 
         function setTipo(t) { tipoActual = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); updateSelectCats(); }
         function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); }
         function añadirCat() { const n = document.getElementById('cfg-cat').value.toUpperCase(); if(!n) return; db.config.push({ nombre: n, tipo: document.getElementById('cfg-tipo').value, presupuesto: parseFloat(document.getElementById('cfg-pres').value)||0 }); save(); document.getElementById('cfg-cat').value=""; }
-        function borrarMov(id) { db.movs = db.movs.filter(m => m.ID !== id); save(); }
+        function borrarMov(id) { if(confirm("¿Eliminar?")) { db.movs = db.movs.filter(m => m.ID !== id); save(); } }
         function borrarCat(i) { db.config.splice(i,1); save(); }
-        function resetTotal() { if(confirm("¿RESET?")) { localStorage.clear(); location.reload(); } }
+        function resetTotal() { if(confirm("¡ATENCIÓN! Se borrarán todos los datos.")) { localStorage.clear(); location.reload(); } }
 
         document.getElementById('in-fecha').valueAsDate = new Date();
         actualizarUI();
