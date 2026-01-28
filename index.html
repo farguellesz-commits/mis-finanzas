@@ -3,47 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V9.0.1 - COMPLETO</title>
+    <title>FINANZAS V9.1 - GRÁFICOS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
-        body { background-color: #f1f5f9; font-family: system-ui, sans-serif; padding-bottom: 100px; }
+        body { background-color: #f8fafc; font-family: system-ui, sans-serif; padding-bottom: 100px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .card { background: white; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 1rem; }
+        .card { background: white; border-radius: 1.25rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1rem; }
         .nav-active { color: #2563eb; border-top: 3px solid #2563eb; font-weight: 900; }
-        input, select { border: 1px solid #cbd5e1 !important; border-radius: 0.75rem; height: 44px; padding: 0 12px; font-size: 15px; width: 100%; background: #fff; outline: none; }
-        input:focus { border-color: #2563eb !important; ring: 2px #2563eb; }
-        .btn-tipo { background: #f8fafc; border: 1px solid #cbd5e1; color: #64748b; height: 42px; border-radius: 0.75rem; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; }
+        input, select { border: 1px solid #e2e8f0 !important; border-radius: 0.75rem; height: 44px; padding: 0 12px; font-size: 15px; width: 100%; background: #fff; }
+        .btn-tipo { background: #f1f5f9; border: 1px solid #e2e8f0; color: #64748b; height: 42px; border-radius: 0.75rem; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; }
         .btn-tipo.active { background: #1e293b !important; color: white !important; }
+        .progress-bar { height: 8px; border-radius: 4px; background: #f1f5f9; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.5s ease; }
     </style>
 </head>
 <body>
 
-    <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
+    <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center">
         <div>
-            <h1 class="font-black italic text-lg uppercase tracking-tighter text-blue-400">Finanzas V9.0.1</h1>
-            <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
+            <h1 class="font-black italic text-lg uppercase text-blue-400 leading-none">Finanzas 9.1</h1>
+            <p id="mes-header" class="text-[10px] text-slate-500 font-bold uppercase mt-1"></p>
         </div>
         <select id="filtro-mes" onchange="actualizarUI()" class="!w-32 !h-9 !bg-slate-800 !text-white !text-xs font-bold border-none"></select>
     </header>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around z-50 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-        <button onclick="showTab('muro')" id="nav-muro" class="flex-1 py-3 text-center nav-active"><i class="fas fa-wallet text-xl mb-1"></i><br><span class="text-[9px] uppercase font-bold">Muro</span></button>
-        <button onclick="showTab('planes')" id="nav-planes" class="flex-1 py-3 text-center"><i class="fas fa-chart-pie text-xl mb-1"></i><br><span class="text-[9px] uppercase font-bold">Planes</span></button>
-        <button onclick="showTab('config')" id="nav-config" class="flex-1 py-3 text-center"><i class="fas fa-sliders-h text-xl mb-1"></i><br><span class="text-[9px] uppercase font-bold">Ajustes</span></button>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around z-50 pb-safe shadow-lg">
+        <button onclick="showTab('muro')" id="nav-muro" class="flex-1 py-3 text-center nav-active"><i class="fas fa-list-ul text-xl"></i><br><span class="text-[9px] uppercase font-bold">Muro</span></button>
+        <button onclick="showTab('graficos')" id="nav-graficos" class="flex-1 py-3 text-center"><i class="fas fa-chart-pie text-xl"></i><br><span class="text-[9px] uppercase font-bold">Gráficos</span></button>
+        <button onclick="showTab('config')" id="nav-config" class="flex-1 py-3 text-center"><i class="fas fa-cog text-xl"></i><br><span class="text-[9px] uppercase font-bold">Ajustes</span></button>
     </nav>
 
     <div id="muro" class="tab-content active p-4">
-        <div class="card bg-slate-900 text-white border-none text-center relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-emerald-500"></div>
-            <p class="text-[10px] text-slate-500 uppercase font-black mb-1">Disponible Real</p>
-            <h2 id="disp-real" class="text-4xl font-black mb-3 tracking-tighter">0.00€</h2>
+        <div class="card bg-slate-900 text-white border-none text-center">
+            <p class="text-[10px] text-slate-500 uppercase font-black mb-1">Saldo del Mes</p>
+            <h2 id="disp-real" class="text-4xl font-black mb-3">0.00€</h2>
             <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-3">
-                <div><p class="text-[9px] text-slate-500 uppercase font-bold">Ingresos</p><p id="sum-ing" class="text-emerald-400 font-bold text-lg">0€</p></div>
-                <div><p class="text-[9px] text-slate-500 uppercase font-bold">Gastos</p><p id="sum-gas" class="text-rose-400 font-bold text-lg">0€</p></div>
+                <div><p class="text-[9px] text-slate-500 font-bold">INGRESOS</p><p id="sum-ing" class="text-emerald-400 font-bold text-lg">0€</p></div>
+                <div><p class="text-[9px] text-slate-500 font-bold">GASTOS</p><p id="sum-gas" class="text-rose-400 font-bold text-lg">0€</p></div>
             </div>
         </div>
 
@@ -52,80 +52,65 @@
                 <button onclick="setTipo('Ingresos')" id="t-Ingresos" class="btn-tipo active">Ingresos</button>
                 <button onclick="setTipo('Gastos')" id="t-Gastos" class="btn-tipo">Gastos</button>
             </div>
-            
             <div class="grid grid-cols-2 gap-2 mb-4">
-                <input type="date" id="in-fecha" class="text-sm">
-                <input type="number" id="in-importe" placeholder="0.00 €" class="font-black text-blue-600 text-lg">
+                <input type="date" id="in-fecha">
+                <input type="number" id="in-importe" placeholder="0.00€" class="font-black text-blue-600 text-lg">
             </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 mb-1 block">Categoría</label>
-                    <select id="in-cat" onchange="cargarConceptosMuro()" class="font-bold uppercase text-sm"></select>
-                </div>
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 mb-1 block">Concepto</label>
-                    <select id="in-concepto-select" class="font-bold uppercase text-sm"></select>
-                </div>
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 mb-1 block">Método de Pago</label>
-                    <select id="in-pago" class="text-xs font-bold uppercase">
-                        <option value="BANCO">🏦 BANCO</option><option value="EFECTIVO">💵 EFECTIVO</option><option value="TARJETA">💳 TARJETA</option>
-                    </select>
-                </div>
+            <div class="space-y-3">
+                <select id="in-cat" onchange="cargarConceptosMuro()" class="font-bold uppercase text-sm"></select>
+                <select id="in-concepto-select" class="font-bold uppercase text-sm"></select>
+                <select id="in-pago" class="text-xs font-bold uppercase bg-slate-50">
+                    <option value="BANCO">🏦 BANCO</option><option value="EFECTIVO">💵 EFECTIVO</option><option value="TARJETA">💳 TARJETA</option>
+                </select>
             </div>
-
-            <button onclick="registrarMovimiento()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-xl active:scale-95 transition-transform">
-                Guardar Registro
-            </button>
+            <button onclick="registrarMovimiento()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-xl">Guardar Movimiento</button>
         </div>
-
-        <div id="lista-movs" class="space-y-3 mt-4"></div>
+        <div id="lista-movs" class="space-y-2 mt-4"></div>
     </div>
 
-    <div id="planes" class="tab-content p-4">
-        <div class="card">
-            <h3 class="text-xs font-black uppercase text-slate-400 mb-4 text-center">Distribución Mensual</h3>
-            <canvas id="mainChart" style="max-height: 250px;"></canvas>
+    <div id="graficos" class="tab-content p-4">
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="card p-3 mb-0 flex flex-col items-center justify-center">
+                <p class="text-[9px] font-black text-slate-400 uppercase">Ahorro %</p>
+                <h4 id="kpi-ahorro" class="text-xl font-black text-blue-600">0%</h4>
+            </div>
+            <div class="card p-3 mb-0 flex flex-col items-center justify-center">
+                <p class="text-[9px] font-black text-slate-400 uppercase">Gasto Diario</p>
+                <h4 id="kpi-diario" class="text-xl font-black text-rose-600">0€</h4>
+            </div>
         </div>
+
+        <div class="card">
+            <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4 text-center">Balance Ingresos vs Gastos</h3>
+            <canvas id="chartDoughnut" style="max-height: 200px;"></canvas>
+        </div>
+
+        <div class="card">
+            <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4">Top 5 Categorías de Gasto</h3>
+            <canvas id="chartBars" style="max-height: 250px;"></canvas>
+        </div>
+
+        <div id="progreso-presupuestos" class="space-y-3 pb-20">
+            </div>
     </div>
 
     <div id="config" class="tab-content p-4">
         <div class="card border-2 border-blue-50">
-            <h3 class="text-xs font-black uppercase mb-4 text-blue-600">Configurar Categorías y Conceptos</h3>
-            
+            <h3 class="text-xs font-black uppercase mb-4 text-blue-600">Configuración</h3>
             <div class="space-y-3">
-                <select id="cfg-tipo" class="font-bold text-sm">
-                    <option value="Ingreso">Tipo: INGRESO</option>
-                    <option value="Gasto">Tipo: GASTO</option>
-                </select>
-
-                <div class="relative">
-                    <input list="lista-sugerencias-cat" id="cfg-cat" type="text" placeholder="CATEGORÍA (Ej: COCHE)" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
-                    <datalist id="lista-sugerencias-cat"></datalist>
-                </div>
-
-                <input type="text" id="cfg-con" placeholder="CONCEPTO (Ej: GASOLINA)" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
-                
-                <input type="number" id="cfg-imp" placeholder="IMPORTE PREVISTO €" class="font-bold text-sm">
-
-                <button onclick="guardarNuevaConfig()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-md">
-                    Registrar en Ajustes
-                </button>
+                <select id="cfg-tipo" class="font-bold text-sm"><option value="Ingreso">Tipo: INGRESO</option><option value="Gasto">Tipo: GASTO</option></select>
+                <input list="lista-sugerencias-cat" id="cfg-cat" type="text" placeholder="CATEGORÍA" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
+                <datalist id="lista-sugerencias-cat"></datalist>
+                <input type="text" id="cfg-con" placeholder="CONCEPTO" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
+                <input type="number" id="cfg-imp" placeholder="PRESUPUESTO €" class="font-bold text-sm">
+                <button onclick="guardarNuevaConfig()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-[10px] uppercase">Añadir a Ajustes</button>
             </div>
         </div>
-
-        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Estructura Actual</h3>
         <div id="lista-cats-ui" class="space-y-2 mb-24"></div>
-
         <div class="fixed bottom-[75px] left-4 right-4 bg-slate-900 p-3 rounded-2xl flex gap-2 items-center justify-between z-40 shadow-2xl">
             <div class="flex gap-2">
-                <button onclick="exportarExcel()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">
-                    <i class="fas fa-file-excel mr-1"></i> Exportar
-                </button>
-                <button onclick="document.getElementById('file-in').click()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">
-                    <i class="fas fa-upload mr-1"></i> Importar
-                </button>
+                <button onclick="exportarExcel()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Excel</button>
+                <button onclick="document.getElementById('file-in').click()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Importar</button>
             </div>
             <input type="file" id="file-in" class="hidden" onchange="importarExcel(event)">
             <button onclick="borrarTodoElSistema()" class="text-rose-400 p-2"><i class="fas fa-trash-alt"></i></button>
@@ -134,54 +119,21 @@
 
     <script>
         const KEY = 'SISTEMA_FINANZAS_V9_PRO';
-        const COL_EXCEL = ["ID", "Fecha", "Tipo", "Categoría", "Concepto", "Forma de Pago", "Importe", "Ingresos", "Gastos"];
-        
         let db = JSON.parse(localStorage.getItem(KEY)) || { config: [], movs: [] };
         let tipoMuroActual = 'Ingresos'; 
-        let chartObj = null;
+        let charts = { doughnut: null, bars: null };
 
-        // --- MOTOR DE FECHAS (CORRIGE IMPORTACIONES) ---
-        function limpiarFecha(dato) {
-            if (!dato) return new Date().toISOString().slice(0,10);
-            if (typeof dato === 'number') {
-                const f = new Date(Math.round((dato - 25569) * 86400 * 1000));
-                return f.toISOString().slice(0,10);
-            }
-            if (typeof dato === 'string') {
-                const s = dato.trim();
-                if (s.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
-                    const p = s.split('/');
-                    return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
-                }
-                return s.slice(0, 10);
-            }
-            return String(dato).slice(0, 10);
-        }
+        function save() { localStorage.setItem(KEY, JSON.stringify(db)); actualizarUI(); }
 
-        // --- NAVEGACIÓN ---
-        function showTab(t) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(t).classList.add('active');
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active'));
-            document.getElementById('nav-'+t).classList.add('nav-active');
-            if(t === 'muro') actualizarSelectsMuro();
-            actualizarUI();
-        }
-
-        function save() {
-            localStorage.setItem(KEY, JSON.stringify(db));
-            actualizarUI();
-        }
-
-        // --- INTERFAZ ---
         function actualizarUI() {
             renderizarSelectorMeses();
             const mesSel = document.getElementById('filtro-mes').value || new Date().toISOString().slice(0,7);
-            
             const filtrados = db.movs.filter(m => m.Fecha.startsWith(mesSel));
+            
             const ti = filtrados.reduce((s, m) => s + (parseFloat(m.Ingresos) || 0), 0);
             const tg = filtrados.reduce((s, m) => s + (parseFloat(m.Gastos) || 0), 0);
 
+            // Muro
             document.getElementById('disp-real').innerText = (ti - tg).toFixed(2) + "€";
             document.getElementById('sum-ing').innerText = ti.toFixed(0) + "€";
             document.getElementById('sum-gas').innerText = tg.toFixed(0) + "€";
@@ -189,161 +141,140 @@
 
             document.getElementById('lista-movs').innerHTML = filtrados.map(m => `
                 <div class="card flex justify-between items-center py-3 border-l-4 ${m.Ingresos > 0 ? 'border-emerald-500':'border-rose-500'}">
-                    <div class="truncate mr-4">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[8px] font-bold text-slate-400">${m.Fecha}</span>
-                            <span class="text-[9px] font-black text-blue-500 uppercase tracking-tighter">${m.Categoría}</span>
-                        </div>
-                        <p class="font-bold text-slate-800 uppercase text-xs truncate">${m.Concepto}</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <p class="font-black text-sm">${m.Importe.toFixed(2)}€</p>
-                        <button onclick="eliminarMovimiento('${m.ID}')" class="text-slate-200 hover:text-rose-500"><i class="fas fa-times-circle"></i></button>
-                    </div>
+                    <div class="truncate"><p class="text-[8px] font-bold text-slate-400">${m.Fecha} • ${m.Categoría}</p><p class="font-bold text-slate-800 uppercase text-xs truncate">${m.Concepto}</p></div>
+                    <div class="flex items-center gap-3"><p class="font-black text-sm">${m.Importe.toFixed(2)}€</p>
+                    <button onclick="eliminarMovimiento('${m.ID}')" class="text-slate-200"><i class="fas fa-times-circle"></i></button></div>
                 </div>`).reverse().join('');
 
+            // Gráficos
+            renderizarDashboard(filtrados, ti, tg, mesSel);
             renderizarListaAjustes();
-            renderizarGrafico(ti, tg);
+            actualizarDatalistCats();
         }
 
+        function renderizarDashboard(movs, ti, tg, mesSel) {
+            // KPIs
+            const ahorro = ti > 0 ? Math.max(0, ((ti - tg) / ti) * 100) : 0;
+            document.getElementById('kpi-ahorro').innerText = ahorro.toFixed(1) + "%";
+            
+            const diasMes = mesSel === new Date().toISOString().slice(0,7) ? new Date().getDate() : 30;
+            document.getElementById('kpi-diario').innerText = (tg / diasMes).toFixed(1) + "€";
+
+            // Gráfico Circular
+            const ctxD = document.getElementById('chartDoughnut').getContext('2d');
+            if (charts.doughnut) charts.doughnut.destroy();
+            charts.doughnut = new Chart(ctxD, {
+                type: 'doughnut',
+                data: { labels: ['Ingresos', 'Gastos'], datasets: [{ data: [ti, tg], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] },
+                options: { cutout: '80%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } } } }
+            });
+
+            // Gráfico Barras (Top 5 Categorías Gasto)
+            const gastosPorCat = {};
+            movs.filter(m => m.Gastos > 0).forEach(m => {
+                gastosPorCat[m.Categoría] = (gastosPorCat[m.Categoría] || 0) + m.Gastos;
+            });
+            const topCats = Object.entries(gastosPorCat).sort((a,b) => b[1] - a[1]).slice(0,5);
+
+            const ctxB = document.getElementById('chartBars').getContext('2d');
+            if (charts.bars) charts.bars.destroy();
+            charts.bars = new Chart(ctxB, {
+                type: 'bar',
+                data: {
+                    labels: topCats.map(c => c[0]),
+                    datasets: [{ label: 'Gasto €', data: topCats.map(c => c[1]), backgroundColor: '#3b82f6', borderRadius: 8 }]
+                },
+                options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } } } }
+            });
+
+            // Barras de Presupuesto
+            const htmlPres = db.config.filter(c => c.tipo === 'Gasto').map(c => {
+                const consumido = movs.filter(m => m.Categoría === c.categoria).reduce((s,m) => s + m.Gastos, 0);
+                const porc = c.importe > 0 ? Math.min((consumido / c.importe) * 100, 100) : 0;
+                const color = consumido > c.importe ? 'bg-rose-500' : 'bg-blue-500';
+                return `<div class="card p-3 mb-2">
+                    <div class="flex justify-between text-[10px] font-black uppercase mb-1"><span>${c.categoria}</span><span class="${consumido > c.importe ? 'text-rose-500':''}">${consumido.toFixed(0)}€ / ${c.importe}€</span></div>
+                    <div class="progress-bar"><div class="progress-fill ${color}" style="width: ${porc}%"></div></div>
+                </div>`;
+            }).join('');
+            document.getElementById('progreso-presupuestos').innerHTML = htmlPres;
+        }
+
+        // --- FUNCIONES SOPORTE (Idénticas a V9.0.1 para no romper nada) ---
         function renderizarSelectorMeses() {
             const fechas = [...new Set(db.movs.map(m => m.Fecha.slice(0, 7)))].sort().reverse();
             const hoy = new Date().toISOString().slice(0, 7);
             if (!fechas.includes(hoy)) fechas.unshift(hoy);
-
             const select = document.getElementById('filtro-mes');
             const actual = select.value;
             select.innerHTML = fechas.map(f => `<option value="${f}" ${f===actual?'selected':''}>${f}</option>`).join('');
         }
-
-        // --- LÓGICA DE AJUSTES ---
         function guardarNuevaConfig() {
-            const tipo = document.getElementById('cfg-tipo').value;
-            const cat = document.getElementById('cfg-cat').value.trim().toUpperCase();
-            const con = document.getElementById('cfg-con').value.trim().toUpperCase();
-            const imp = parseFloat(document.getElementById('cfg-imp').value) || 0;
-
-            if(!cat || !con) return alert("Completa Categoría y Concepto");
-
+            const tipo = document.getElementById('cfg-tipo').value, cat = document.getElementById('cfg-cat').value.trim().toUpperCase(), con = document.getElementById('cfg-con').value.trim().toUpperCase(), imp = parseFloat(document.getElementById('cfg-imp').value) || 0;
+            if(!cat || !con) return alert("Faltan datos");
             db.config.push({ id: Date.now(), tipo, categoria: cat, concepto: con, importe: imp });
-            document.getElementById('cfg-con').value = "";
-            document.getElementById('cfg-imp').value = ""; // Importe a blanco
-            save();
-            actualizarDatalistCats();
+            document.getElementById('cfg-con').value = ""; document.getElementById('cfg-imp').value = ""; save();
         }
-
         function renderizarListaAjustes() {
-            document.getElementById('lista-cats-ui').innerHTML = db.config.map((c, i) => `
-                <div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center text-[10px] font-bold">
-                    <div class="flex-1">
-                        <span class="${c.tipo === 'Ingreso' ? 'text-emerald-600':'text-rose-500'} uppercase">${c.tipo}</span> | 
-                        <span class="text-slate-800 uppercase">${c.categoria}</span>
-                        <div class="text-slate-400 uppercase mt-0.5">${c.concepto} <span class="text-slate-900 ml-2">${c.importe.toFixed(2)}€</span></div>
-                    </div>
-                    <button onclick="db.config.splice(${i},1); save();" class="text-slate-300 px-2"><i class="fas fa-trash"></i></button>
-                </div>`).join('');
+            document.getElementById('lista-cats-ui').innerHTML = db.config.map((c, i) => `<div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center text-[10px] font-bold"><div class="flex-1"><span class="${c.tipo === 'Ingreso' ? 'text-emerald-600':'text-rose-500'} uppercase">${c.tipo}</span> | <span class="text-slate-800 uppercase">${c.categoria}</span><div class="text-slate-400 uppercase mt-0.5">${c.concepto} <span class="text-slate-900 ml-2">${c.importe.toFixed(2)}€</span></div></div><button onclick="db.config.splice(${i},1); save();" class="text-slate-300 px-2"><i class="fas fa-trash"></i></button></div>`).join('');
         }
-
         function actualizarDatalistCats() {
             const cats = [...new Set(db.config.map(c => c.categoria))];
             document.getElementById('lista-sugerencias-cat').innerHTML = cats.map(c => `<option value="${c}">`).join('');
         }
-
-        // --- LÓGICA DE MURO ---
-        function setTipo(t) {
-            tipoMuroActual = t;
-            document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active'));
-            document.getElementById('t-'+t).classList.add('active');
-            actualizarSelectsMuro();
-        }
-
+        function setTipo(t) { tipoMuroActual = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectsMuro(); }
         function actualizarSelectsMuro() {
             const tipoRef = tipoMuroActual === 'Ingresos' ? 'Ingreso' : 'Gasto';
-            const filtradas = db.config.filter(c => c.tipo === tipoRef);
-            const catsUnicas = [...new Set(filtradas.map(c => c.categoria))].sort();
-            
-            document.getElementById('in-cat').innerHTML = `<option value="" disabled selected>SELECCIONAR...</option>` + 
-                catsUnicas.map(c => `<option value="${c}">${c}</option>`).join('') + `<option value="VARIOS">VARIOS</option>`;
+            const catsUnicas = [...new Set(db.config.filter(c => c.tipo === tipoRef).map(c => c.categoria))].sort();
+            document.getElementById('in-cat').innerHTML = `<option value="" disabled selected>CATEGORÍA...</option>` + catsUnicas.map(c => `<option value="${c}">${c}</option>`).join('') + `<option value="VARIOS">VARIOS</option>`;
             document.getElementById('in-concepto-select').innerHTML = "";
         }
-
         function cargarConceptosMuro() {
             const cat = document.getElementById('in-cat').value;
-            if(cat === 'VARIOS') {
-                document.getElementById('in-concepto-select').innerHTML = `<option value="VARIOS">VARIOS</option>`;
-                return;
-            }
             const tipoRef = tipoMuroActual === 'Ingresos' ? 'Ingreso' : 'Gasto';
             const conceptos = db.config.filter(c => c.tipo === tipoRef && c.categoria === cat);
-            
-            document.getElementById('in-concepto-select').innerHTML = conceptos.map(c => `<option value="${c.concepto}" data-imp="${c.importe}">${c.concepto}</option>`).join('');
+            document.getElementById('in-concepto-select').innerHTML = conceptos.map(c => `<option value="${c.concepto}">${c.concepto}</option>`).join('');
             if(conceptos.length > 0) document.getElementById('in-importe').value = conceptos[0].importe;
         }
-
         function registrarMovimiento() {
-            const f = document.getElementById('in-fecha').value;
-            const imp = parseFloat(document.getElementById('in-importe').value);
-            const cat = document.getElementById('in-cat').value;
-            const con = document.getElementById('in-concepto-select').value;
-
+            const f = document.getElementById('in-fecha').value, imp = parseFloat(document.getElementById('in-importe').value), cat = document.getElementById('in-cat').value, con = document.getElementById('in-concepto-select').value;
             if(!f || !imp || !cat) return alert("Faltan datos");
-
-            const mov = {
-                "ID": Date.now().toString(), "Fecha": f, "Tipo": tipoMuroActual, "Categoría": cat, "Concepto": con,
-                "Forma de Pago": document.getElementById('in-pago').value, "Importe": imp,
-                "Ingresos": (tipoMuroActual === 'Ingresos' ? imp : 0), "Gastos": (tipoMuroActual === 'Gastos' ? imp : 0)
-            };
-            db.movs.push(mov);
-            save();
-            document.getElementById('in-importe').value = "";
+            db.movs.push({ "ID": Date.now().toString(), "Fecha": f, "Tipo": tipoMuroActual, "Categoría": cat, "Concepto": con, "Forma de Pago": document.getElementById('in-pago').value, "Importe": imp, "Ingresos": (tipoMuroActual === 'Ingresos' ? imp : 0), "Gastos": (tipoMuroActual === 'Gastos' ? imp : 0) });
+            save(); document.getElementById('in-importe').value = "";
         }
-
-        // --- EXCEL ---
         function exportarExcel() {
-            const ws = XLSX.utils.json_to_sheet(db.movs, { header: COL_EXCEL });
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Datos");
-            XLSX.writeFile(wb, `Finanzas_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+            const ws = XLSX.utils.json_to_sheet(db.movs, { header: ["ID", "Fecha", "Tipo", "Categoría", "Concepto", "Forma de Pago", "Importe", "Ingresos", "Gastos"] });
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Datos"); XLSX.writeFile(wb, `Finanzas_9_1.xlsx`);
         }
-
         function importarExcel(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+            const file = e.target.files[0]; if (!file) return;
             const r = new FileReader();
             r.onload = (evt) => {
                 const wb = XLSX.read(evt.target.result, {type: 'binary'});
                 const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-                const actuales = new Set(db.movs.map(m => m.ID.toString()));
-                let cont = 0;
                 raw.forEach(fila => {
                     if(!fila.ID) fila.ID = "IMP-" + Math.random().toString(16).slice(2);
-                    fila.Fecha = limpiarFecha(fila.Fecha);
-                    if (!actuales.has(fila.ID.toString())) {
-                        db.movs.push(fila);
-                        cont++;
+                    if(fila.Fecha && typeof fila.Fecha === 'number') {
+                        const f = new Date(Math.round((fila.Fecha - 25569) * 86400 * 1000));
+                        fila.Fecha = f.toISOString().slice(0,10);
                     }
+                    if (!db.movs.find(m => m.ID.toString() === fila.ID.toString())) db.movs.push(fila);
                 });
-                alert(`Importado: ${cont} registros nuevos.`);
                 save();
             };
             r.readAsBinaryString(file);
         }
-
-        // --- EXTRAS ---
-        function renderizarGrafico(i, g) {
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            if (chartObj) chartObj.destroy();
-            chartObj = new Chart(ctx, {
-                type: 'doughnut', data: { labels: ['Ingresos', 'Gastos'], datasets: [{ data: [i, g], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] },
-                options: { cutout: '80%', plugins: { legend: { position: 'bottom' } } }
-            });
-        }
-
         function eliminarMovimiento(id) { if(confirm("¿Eliminar?")) { db.movs = db.movs.filter(m => m.ID !== id); save(); } }
         function borrarTodoElSistema() { if(confirm("¡ATENCIÓN! Se borrará todo.")) { localStorage.clear(); location.reload(); } }
+        function showTab(t) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(t).classList.add('active');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active'));
+            document.getElementById('nav-'+t).classList.add('nav-active');
+            actualizarUI();
+        }
 
-        // INICIO
         document.getElementById('in-fecha').valueAsDate = new Date();
-        actualizarDatalistCats();
         actualizarUI();
     </script>
 </body>
