@@ -3,33 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V9.0 - AJUSTES & EXCEL</title>
+    <title>FINANZAS V9.0.1 - COMPLETO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
-        body { background-color: #f1f5f9; font-family: system-ui, sans-serif; padding-bottom: 90px; }
+        body { background-color: #f1f5f9; font-family: system-ui, sans-serif; padding-bottom: 100px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .card { background: white; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 1rem; }
         .nav-active { color: #2563eb; border-top: 3px solid #2563eb; font-weight: 900; }
-        input, select { border: 1px solid #cbd5e1 !important; border-radius: 0.75rem; height: 44px; padding: 0 12px; font-size: 15px; width: 100%; background: #fff; }
+        input, select { border: 1px solid #cbd5e1 !important; border-radius: 0.75rem; height: 44px; padding: 0 12px; font-size: 15px; width: 100%; background: #fff; outline: none; }
+        input:focus { border-color: #2563eb !important; ring: 2px #2563eb; }
         .btn-tipo { background: #f8fafc; border: 1px solid #cbd5e1; color: #64748b; height: 42px; border-radius: 0.75rem; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; }
         .btn-tipo.active { background: #1e293b !important; color: white !important; }
     </style>
 </head>
 <body>
 
-    <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-md">
+    <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
         <div>
-            <h1 class="font-black italic text-lg uppercase tracking-wider">Finanzas V9.0</h1>
-            <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase"></p>
+            <h1 class="font-black italic text-lg uppercase tracking-tighter text-blue-400">Finanzas V9.0.1</h1>
+            <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
         </div>
-        <select id="filtro-mes" onchange="actualizarUI()" class="!w-32 !h-9 !bg-slate-800 !text-white !text-xs font-bold border-none outline-none ring-0"></select>
+        <select id="filtro-mes" onchange="actualizarUI()" class="!w-32 !h-9 !bg-slate-800 !text-white !text-xs font-bold border-none"></select>
     </header>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around z-50 pb-safe">
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around z-50 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         <button onclick="showTab('muro')" id="nav-muro" class="flex-1 py-3 text-center nav-active"><i class="fas fa-wallet text-xl mb-1"></i><br><span class="text-[9px] uppercase font-bold">Muro</span></button>
         <button onclick="showTab('planes')" id="nav-planes" class="flex-1 py-3 text-center"><i class="fas fa-chart-pie text-xl mb-1"></i><br><span class="text-[9px] uppercase font-bold">Planes</span></button>
         <button onclick="showTab('config')" id="nav-config" class="flex-1 py-3 text-center"><i class="fas fa-sliders-h text-xl mb-1"></i><br><span class="text-[9px] uppercase font-bold">Ajustes</span></button>
@@ -37,380 +38,312 @@
 
     <div id="muro" class="tab-content active p-4">
         <div class="card bg-slate-900 text-white border-none text-center relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-            <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1">Disponible Real</p>
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-emerald-500"></div>
+            <p class="text-[10px] text-slate-500 uppercase font-black mb-1">Disponible Real</p>
             <h2 id="disp-real" class="text-4xl font-black mb-3 tracking-tighter">0.00€</h2>
-            <div class="grid grid-cols-2 gap-4 border-t border-white/10 pt-3">
-                <div><p class="text-[9px] text-slate-500 uppercase font-bold">Ingresos Mes</p><p id="sum-ing" class="text-emerald-400 font-bold text-lg">0€</p></div>
-                <div><p class="text-[9px] text-slate-500 uppercase font-bold">Gastos Mes</p><p id="sum-gas" class="text-rose-400 font-bold text-lg">0€</p></div>
+            <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-3">
+                <div><p class="text-[9px] text-slate-500 uppercase font-bold">Ingresos</p><p id="sum-ing" class="text-emerald-400 font-bold text-lg">0€</p></div>
+                <div><p class="text-[9px] text-slate-500 uppercase font-bold">Gastos</p><p id="sum-gas" class="text-rose-400 font-bold text-lg">0€</p></div>
             </div>
         </div>
 
         <div class="card border-l-4 border-blue-600">
-            <div class="grid grid-cols-2 gap-1 mb-3">
+            <div class="grid grid-cols-2 gap-2 mb-4">
                 <button onclick="setTipo('Ingresos')" id="t-Ingresos" class="btn-tipo active">Ingresos</button>
                 <button onclick="setTipo('Gastos')" id="t-Gastos" class="btn-tipo">Gastos</button>
             </div>
             
-            <div class="grid grid-cols-2 gap-2 mb-3">
-                <input type="date" id="in-fecha">
-                <input type="number" id="in-importe" placeholder="0.00 €" class="font-black text-slate-800">
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <input type="date" id="in-fecha" class="text-sm">
+                <input type="number" id="in-importe" placeholder="0.00 €" class="font-black text-blue-600 text-lg">
             </div>
 
-            <div class="space-y-3">
+            <div class="space-y-4">
                 <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Categoría</label>
-                    <select id="in-cat" onchange="cargarConceptosMuro()" class="font-bold uppercase text-sm text-slate-700"></select>
+                    <label class="text-[10px] font-black uppercase text-slate-400 mb-1 block">Categoría</label>
+                    <select id="in-cat" onchange="cargarConceptosMuro()" class="font-bold uppercase text-sm"></select>
                 </div>
                 <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Concepto</label>
-                    <select id="in-concepto-select" class="font-bold uppercase text-sm text-slate-700 mb-2"></select>
-                    <input type="text" id="in-concepto-manual" placeholder="Escribir otro concepto..." class="hidden text-xs font-bold uppercase">
+                    <label class="text-[10px] font-black uppercase text-slate-400 mb-1 block">Concepto</label>
+                    <select id="in-concepto-select" class="font-bold uppercase text-sm"></select>
                 </div>
-                
-                <select id="in-pago" class="text-xs font-bold uppercase bg-slate-50">
-                    <option value="BANCO">🏦 BANCO</option><option value="EFECTIVO">💵 EFECTIVO</option><option value="TARJETA">💳 TARJETA</option>
-                </select>
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-400 mb-1 block">Método de Pago</label>
+                    <select id="in-pago" class="text-xs font-bold uppercase">
+                        <option value="BANCO">🏦 BANCO</option><option value="EFECTIVO">💵 EFECTIVO</option><option value="TARJETA">💳 TARJETA</option>
+                    </select>
+                </div>
             </div>
 
-            <button onclick="registrar()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs uppercase mt-4 shadow-lg active:scale-95 transition-transform">
-                <i class="fas fa-save mr-2"></i> Guardar
+            <button onclick="registrarMovimiento()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-xl active:scale-95 transition-transform">
+                Guardar Registro
             </button>
         </div>
 
-        <div id="lista-movs" class="space-y-3 mt-4 pb-12"></div>
+        <div id="lista-movs" class="space-y-3 mt-4"></div>
     </div>
 
     <div id="planes" class="tab-content p-4">
         <div class="card">
-            <h3 class="text-xs font-black uppercase text-slate-400 mb-4 text-center">Balance del Mes</h3>
+            <h3 class="text-xs font-black uppercase text-slate-400 mb-4 text-center">Distribución Mensual</h3>
             <canvas id="mainChart" style="max-height: 250px;"></canvas>
         </div>
-        <div id="progreso-presupuesto" class="space-y-3"></div>
     </div>
 
     <div id="config" class="tab-content p-4">
-        
-        <div class="card border-2 border-indigo-50 shadow-none">
-            <h3 class="text-xs font-black uppercase mb-3 text-indigo-800 flex items-center gap-2">
-                <i class="fas fa-plus-circle"></i> Nuevo Tipo / Categoría
-            </h3>
+        <div class="card border-2 border-blue-50">
+            <h3 class="text-xs font-black uppercase mb-4 text-blue-600">Configurar Categorías y Conceptos</h3>
             
-            <div class="mb-3">
-                <label class="text-[9px] font-bold uppercase text-slate-400">1. Tipo</label>
+            <div class="space-y-3">
                 <select id="cfg-tipo" class="font-bold text-sm">
-                    <option value="Ingreso">Ingreso</option>
-                    <option value="Gasto">Gasto</option>
+                    <option value="Ingreso">Tipo: INGRESO</option>
+                    <option value="Gasto">Tipo: GASTO</option>
                 </select>
-            </div>
 
-            <div class="mb-3">
-                <label class="text-[9px] font-bold uppercase text-slate-400">2. Categoría</label>
-                <input list="lista-sugerencias-cat" id="cfg-cat" type="text" placeholder="Ej: COCHE" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
-                <datalist id="lista-sugerencias-cat"></datalist>
-            </div>
+                <div class="relative">
+                    <input list="lista-sugerencias-cat" id="cfg-cat" type="text" placeholder="CATEGORÍA (Ej: COCHE)" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
+                    <datalist id="lista-sugerencias-cat"></datalist>
+                </div>
 
-            <div class="mb-3">
-                <label class="text-[9px] font-bold uppercase text-slate-400">3. Concepto</label>
-                <input type="text" id="cfg-con" placeholder="Ej: GASOLINA" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
-            </div>
+                <input type="text" id="cfg-con" placeholder="CONCEPTO (Ej: GASOLINA)" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
+                
+                <input type="number" id="cfg-imp" placeholder="IMPORTE PREVISTO €" class="font-bold text-sm">
 
-            <div class="mb-4">
-                <label class="text-[9px] font-bold uppercase text-slate-400">4. Importe Previsto</label>
-                <input type="number" id="cfg-imp" placeholder="0.00" class="font-bold text-sm">
+                <button onclick="guardarNuevaConfig()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-md">
+                    Registrar en Ajustes
+                </button>
             </div>
-
-            <button onclick="guardarConfig()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition-transform">
-                Añadir Configuración
-            </button>
         </div>
 
-        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Configuraciones Guardadas</h3>
-        <div id="lista-cats-ui" class="space-y-2 mb-20"></div>
+        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Estructura Actual</h3>
+        <div id="lista-cats-ui" class="space-y-2 mb-24"></div>
 
-        <div class="fixed bottom-[70px] left-0 right-0 bg-slate-100 p-3 border-t border-slate-200 flex gap-2 items-center justify-center z-40 backdrop-blur-sm bg-opacity-90">
-            <span class="text-[9px] font-black uppercase text-slate-400 mr-2">Excel:</span>
-            <button onclick="exportarExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm">
-                <i class="fas fa-download mr-1"></i> Exportar
-            </button>
-            <button onclick="document.getElementById('file-in').click()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm">
-                <i class="fas fa-upload mr-1"></i> Importar
-            </button>
+        <div class="fixed bottom-[75px] left-4 right-4 bg-slate-900 p-3 rounded-2xl flex gap-2 items-center justify-between z-40 shadow-2xl">
+            <div class="flex gap-2">
+                <button onclick="exportarExcel()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">
+                    <i class="fas fa-file-excel mr-1"></i> Exportar
+                </button>
+                <button onclick="document.getElementById('file-in').click()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">
+                    <i class="fas fa-upload mr-1"></i> Importar
+                </button>
+            </div>
             <input type="file" id="file-in" class="hidden" onchange="importarExcel(event)">
-            <button onclick="borrarTodo()" class="bg-rose-100 text-rose-600 px-3 py-2 rounded-lg font-bold text-[10px] uppercase border border-rose-200">
-                <i class="fas fa-trash"></i>
-            </button>
+            <button onclick="borrarTodoElSistema()" class="text-rose-400 p-2"><i class="fas fa-trash-alt"></i></button>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURACIÓN DE BASE DE DATOS ---
-        const KEY = 'FINANZAS_V9_DATA';
-        // Estructura simplificada 9 columnas
-        const COLUMNAS_EXCEL = ["ID", "Fecha", "Tipo", "Categoría", "Concepto", "Forma de Pago", "Importe", "Ingresos", "Gastos"];
+        const KEY = 'SISTEMA_FINANZAS_V9_PRO';
+        const COL_EXCEL = ["ID", "Fecha", "Tipo", "Categoría", "Concepto", "Forma de Pago", "Importe", "Ingresos", "Gastos"];
         
         let db = JSON.parse(localStorage.getItem(KEY)) || { config: [], movs: [] };
-        let tipoActual = 'Ingresos'; 
-        let chartInstance = null;
+        let tipoMuroActual = 'Ingresos'; 
+        let chartObj = null;
 
-        // --- FUNCIONES PRINCIPALES ---
-        function save() { 
-            localStorage.setItem(KEY, JSON.stringify(db)); 
-            actualizarUI(); 
+        // --- MOTOR DE FECHAS (CORRIGE IMPORTACIONES) ---
+        function limpiarFecha(dato) {
+            if (!dato) return new Date().toISOString().slice(0,10);
+            if (typeof dato === 'number') {
+                const f = new Date(Math.round((dato - 25569) * 86400 * 1000));
+                return f.toISOString().slice(0,10);
+            }
+            if (typeof dato === 'string') {
+                const s = dato.trim();
+                if (s.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
+                    const p = s.split('/');
+                    return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                }
+                return s.slice(0, 10);
+            }
+            return String(dato).slice(0, 10);
         }
 
+        // --- NAVEGACIÓN ---
+        function showTab(t) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(t).classList.add('active');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active'));
+            document.getElementById('nav-'+t).classList.add('nav-active');
+            if(t === 'muro') actualizarSelectsMuro();
+            actualizarUI();
+        }
+
+        function save() {
+            localStorage.setItem(KEY, JSON.stringify(db));
+            actualizarUI();
+        }
+
+        // --- INTERFAZ ---
         function actualizarUI() {
-            // 1. Gestión de Fechas y Filtro
-            let mesAct = document.getElementById('filtro-mes').value;
-            // Si no hay filtro seleccionado, forzar el mes actual o el último disponible
-            if (!mesAct) mesAct = new Date().toISOString().slice(0, 7);
-
-            // Filtrar movimientos
-            const movsMes = db.movs.filter(m => m.Fecha.startsWith(mesAct));
+            renderizarSelectorMeses();
+            const mesSel = document.getElementById('filtro-mes').value || new Date().toISOString().slice(0,7);
             
-            // Cálculos
-            const ing = movsMes.reduce((s, m) => s + (parseFloat(m.Ingresos) || 0), 0);
-            const gas = movsMes.reduce((s, m) => s + (parseFloat(m.Gastos) || 0), 0);
-            
-            // Renderizado Muro
-            document.getElementById('disp-real').innerText = (ing - gas).toFixed(2) + "€";
-            document.getElementById('sum-ing').innerText = ing.toFixed(0) + "€";
-            document.getElementById('sum-gas').innerText = gas.toFixed(0) + "€";
-            document.getElementById('mes-header').innerText = mesAct;
+            const filtrados = db.movs.filter(m => m.Fecha.startsWith(mesSel));
+            const ti = filtrados.reduce((s, m) => s + (parseFloat(m.Ingresos) || 0), 0);
+            const tg = filtrados.reduce((s, m) => s + (parseFloat(m.Gastos) || 0), 0);
 
-            // Lista Movimientos
-            document.getElementById('lista-movs').innerHTML = movsMes.map(m => `
+            document.getElementById('disp-real').innerText = (ti - tg).toFixed(2) + "€";
+            document.getElementById('sum-ing').innerText = ti.toFixed(0) + "€";
+            document.getElementById('sum-gas').innerText = tg.toFixed(0) + "€";
+            document.getElementById('mes-header').innerText = mesSel;
+
+            document.getElementById('lista-movs').innerHTML = filtrados.map(m => `
                 <div class="card flex justify-between items-center py-3 border-l-4 ${m.Ingresos > 0 ? 'border-emerald-500':'border-rose-500'}">
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-2">
-                            <span class="text-[9px] bg-slate-100 px-1 rounded text-slate-500 font-bold">${m.Fecha.slice(8,10)}</span>
-                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-wide">${m.Categoría}</span>
+                    <div class="truncate mr-4">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-[8px] font-bold text-slate-400">${m.Fecha}</span>
+                            <span class="text-[9px] font-black text-blue-500 uppercase tracking-tighter">${m.Categoría}</span>
                         </div>
-                        <p class="font-bold text-slate-800 uppercase truncate text-xs mt-1">${m.Concepto}</p>
+                        <p class="font-bold text-slate-800 uppercase text-xs truncate">${m.Concepto}</p>
                     </div>
                     <div class="flex items-center gap-3">
-                        <p class="font-black text-sm ${m.Ingresos > 0 ? 'text-emerald-600':'text-rose-600'}">${m.Importe.toFixed(2)}€</p>
-                        <button onclick="borrarMov('${m.ID}')" class="text-slate-300 hover:text-rose-500 transition-colors"><i class="fas fa-trash-alt"></i></button>
+                        <p class="font-black text-sm">${m.Importe.toFixed(2)}€</p>
+                        <button onclick="eliminarMovimiento('${m.ID}')" class="text-slate-200 hover:text-rose-500"><i class="fas fa-times-circle"></i></button>
                     </div>
                 </div>`).reverse().join('');
 
-            // Actualizar Desplegables de Muro y Ajustes
-            updateFiltrosFechas(mesAct);
-            renderListaConfig();
-            updateDatalistCategorias();
-            
-            // Si estamos en Muro, actualizar selects
-            if(document.getElementById('muro').style.display === 'block'){
-                updateSelectsMuro();
-            }
-
-            // Gráficos
-            renderChart(ing, gas);
+            renderizarListaAjustes();
+            renderizarGrafico(ti, tg);
         }
 
-        // --- LÓGICA DE AJUSTES (CATEGORÍA / CONCEPTO) ---
-        function guardarConfig() {
+        function renderizarSelectorMeses() {
+            const fechas = [...new Set(db.movs.map(m => m.Fecha.slice(0, 7)))].sort().reverse();
+            const hoy = new Date().toISOString().slice(0, 7);
+            if (!fechas.includes(hoy)) fechas.unshift(hoy);
+
+            const select = document.getElementById('filtro-mes');
+            const actual = select.value;
+            select.innerHTML = fechas.map(f => `<option value="${f}" ${f===actual?'selected':''}>${f}</option>`).join('');
+        }
+
+        // --- LÓGICA DE AJUSTES ---
+        function guardarNuevaConfig() {
             const tipo = document.getElementById('cfg-tipo').value;
             const cat = document.getElementById('cfg-cat').value.trim().toUpperCase();
             const con = document.getElementById('cfg-con').value.trim().toUpperCase();
             const imp = parseFloat(document.getElementById('cfg-imp').value) || 0;
 
-            if(!cat || !con) return alert("Falta Categoría o Concepto");
+            if(!cat || !con) return alert("Completa Categoría y Concepto");
 
-            // Añadir a configuración
             db.config.push({ id: Date.now(), tipo, categoria: cat, concepto: con, importe: imp });
-            
-            // Limpiar SOLO importe y concepto (dejar categoría por si sigue añadiendo)
             document.getElementById('cfg-con').value = "";
-            document.getElementById('cfg-imp').value = ""; // Importe pasa a blanco
-            
+            document.getElementById('cfg-imp').value = ""; // Importe a blanco
             save();
+            actualizarDatalistCats();
         }
 
-        function renderListaConfig() {
-            // Mostrar lista en Ajustes con IMPORTE visible
+        function renderizarListaAjustes() {
             document.getElementById('lista-cats-ui').innerHTML = db.config.map((c, i) => `
-                <div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center shadow-sm">
+                <div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center text-[10px] font-bold">
                     <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[8px] font-bold uppercase px-2 py-0.5 rounded ${c.tipo === 'Ingreso' ? 'bg-emerald-100 text-emerald-700':'bg-rose-100 text-rose-700'}">${c.tipo}</span>
-                            <span class="text-[10px] font-black text-slate-700 uppercase">${c.categoria}</span>
-                        </div>
-                        <div class="flex justify-between items-end pr-4">
-                            <span class="text-xs font-bold text-slate-500 uppercase">${c.concepto}</span>
-                            <span class="text-xs font-black text-slate-800">${c.importe.toFixed(2)}€</span>
-                        </div>
+                        <span class="${c.tipo === 'Ingreso' ? 'text-emerald-600':'text-rose-500'} uppercase">${c.tipo}</span> | 
+                        <span class="text-slate-800 uppercase">${c.categoria}</span>
+                        <div class="text-slate-400 uppercase mt-0.5">${c.concepto} <span class="text-slate-900 ml-2">${c.importe.toFixed(2)}€</span></div>
                     </div>
-                    <button onclick="borrarConfig(${i})" class="text-slate-300 hover:text-rose-500 px-2"><i class="fas fa-times"></i></button>
+                    <button onclick="db.config.splice(${i},1); save();" class="text-slate-300 px-2"><i class="fas fa-trash"></i></button>
                 </div>`).join('');
         }
 
-        function updateDatalistCategorias() {
-            // Rellena el datalist de Ajustes para autocompletar categorías existentes
-            const uniqueCats = [...new Set(db.config.map(c => c.categoria))];
-            document.getElementById('lista-sugerencias-cat').innerHTML = uniqueCats.map(c => `<option value="${c}">`).join('');
+        function actualizarDatalistCats() {
+            const cats = [...new Set(db.config.map(c => c.categoria))];
+            document.getElementById('lista-sugerencias-cat').innerHTML = cats.map(c => `<option value="${c}">`).join('');
         }
 
-        // --- LÓGICA DEL MURO (USO DE LA CONFIGURACIÓN) ---
+        // --- LÓGICA DE MURO ---
         function setTipo(t) {
-            tipoActual = t; // 'Ingresos' o 'Gastos'
+            tipoMuroActual = t;
             document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active'));
             document.getElementById('t-'+t).classList.add('active');
-            updateSelectsMuro();
+            actualizarSelectsMuro();
         }
 
-        function updateSelectsMuro() {
-            // Filtramos la configuración según si es Ingreso o Gasto
-            // Nota: En config guardamos 'Ingreso'/'Gasto' (singular), en muro usamos plural. Normalizamos.
-            const tipoSingular = tipoActual === 'Ingresos' ? 'Ingreso' : 'Gasto';
-            const configsFiltradas = db.config.filter(c => c.tipo === tipoSingular);
+        function actualizarSelectsMuro() {
+            const tipoRef = tipoMuroActual === 'Ingresos' ? 'Ingreso' : 'Gasto';
+            const filtradas = db.config.filter(c => c.tipo === tipoRef);
+            const catsUnicas = [...new Set(filtradas.map(c => c.categoria))].sort();
             
-            // Obtener categorías únicas disponibles para ese tipo
-            const categoriasUnicas = [...new Set(configsFiltradas.map(c => c.categoria))].sort();
-            
-            const selectCat = document.getElementById('in-cat');
-            selectCat.innerHTML = `<option value="" disabled selected>SELECCIONAR...</option>` + 
-                                  categoriasUnicas.map(c => `<option value="${c}">${c}</option>`).join('');
-            
-            // Resetear concepto
+            document.getElementById('in-cat').innerHTML = `<option value="" disabled selected>SELECCIONAR...</option>` + 
+                catsUnicas.map(c => `<option value="${c}">${c}</option>`).join('') + `<option value="VARIOS">VARIOS</option>`;
             document.getElementById('in-concepto-select').innerHTML = "";
         }
 
         function cargarConceptosMuro() {
-            const catSel = document.getElementById('in-cat').value;
-            const tipoSingular = tipoActual === 'Ingresos' ? 'Ingreso' : 'Gasto';
-            
-            // Buscar conceptos asociados a esa categoría y tipo
-            const conceptos = db.config.filter(c => c.tipo === tipoSingular && c.categoria === catSel);
-            
-            const selectCon = document.getElementById('in-concepto-select');
-            selectCon.innerHTML = conceptos.map(c => `<option value="${c.concepto}" data-imp="${c.importe}">${c.concepto}</option>`).join('') + 
-                                  `<option value="OTRO">-- OTRO (Manual) --</option>`;
-            
-            // Rellenar importe automáticamente si hay
-            if(conceptos.length > 0) {
-                document.getElementById('in-importe').value = concepts[0]?.importe || "";
+            const cat = document.getElementById('in-cat').value;
+            if(cat === 'VARIOS') {
+                document.getElementById('in-concepto-select').innerHTML = `<option value="VARIOS">VARIOS</option>`;
+                return;
             }
+            const tipoRef = tipoMuroActual === 'Ingresos' ? 'Ingreso' : 'Gasto';
+            const conceptos = db.config.filter(c => c.tipo === tipoRef && c.categoria === cat);
+            
+            document.getElementById('in-concepto-select').innerHTML = conceptos.map(c => `<option value="${c.concepto}" data-imp="${c.importe}">${c.concepto}</option>`).join('');
+            if(conceptos.length > 0) document.getElementById('in-importe').value = conceptos[0].importe;
         }
 
-        function registrar() {
-            const fecha = document.getElementById('in-fecha').value;
-            const importe = parseFloat(document.getElementById('in-importe').value);
+        function registrarMovimiento() {
+            const f = document.getElementById('in-fecha').value;
+            const imp = parseFloat(document.getElementById('in-importe').value);
             const cat = document.getElementById('in-cat').value;
-            
-            let concepto = document.getElementById('in-concepto-select').value;
-            // Si eligió OTRO o está vacío (manual), mirar input texto
-            if (concepto === 'OTRO' || !concepto) {
-               // Aquí podrías habilitar el input manual, por simplicidad usamos prompt o asumimos VARIOS
-               concepto = prompt("Escribe el concepto manual:") || "VARIOS";
-               concepto = concepto.toUpperCase();
-            }
+            const con = document.getElementById('in-concepto-select').value;
 
-            if(!fecha || !importe || !cat) return alert("Faltan datos obligatorios");
+            if(!f || !imp || !cat) return alert("Faltan datos");
 
-            const nuevoMov = {
-                "ID": Date.now().toString(),
-                "Fecha": fecha,
-                "Tipo": tipoActual, // Ingresos o Gastos
-                "Categoría": cat,
-                "Concepto": concepto,
-                "Forma de Pago": document.getElementById('in-pago').value,
-                "Importe": importe,
-                "Ingresos": (tipoActual === 'Ingresos' ? importe : 0),
-                "Gastos": (tipoActual === 'Gastos' ? importe : 0)
+            const mov = {
+                "ID": Date.now().toString(), "Fecha": f, "Tipo": tipoMuroActual, "Categoría": cat, "Concepto": con,
+                "Forma de Pago": document.getElementById('in-pago').value, "Importe": imp,
+                "Ingresos": (tipoMuroActual === 'Ingresos' ? imp : 0), "Gastos": (tipoMuroActual === 'Gastos' ? imp : 0)
             };
-
-            db.movs.push(nuevoMov);
+            db.movs.push(mov);
             save();
-            
-            // Reset Formulario
             document.getElementById('in-importe').value = "";
         }
 
-        // --- IMPORTAR / EXPORTAR (LÓGICA MEJORADA) ---
+        // --- EXCEL ---
         function exportarExcel() {
-            // Solo exportamos las 9 columnas deseadas
-            const ws = XLSX.utils.json_to_sheet(db.movs, { header: COLUMNAS_EXCEL });
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Datos");
-            XLSX.writeFile(wb, `Finanzas_Backup_${new Date().toISOString().slice(0,10)}.xlsx`);
+            const ws = XLSX.utils.json_to_sheet(db.movs, { header: COL_EXCEL });
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Datos");
+            XLSX.writeFile(wb, `Finanzas_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
         function importarExcel(e) {
             const file = e.target.files[0];
             if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                const workbook = XLSX.read(evt.target.result, {type: 'binary'});
-                const sheetName = workbook.SheetNames[0];
-                const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-                // FUSIÓN INTELIGENTE (MERGE)
-                // 1. Obtenemos IDs actuales para no duplicar si importamos el mismo archivo 2 veces
-                const idsActuales = new Set(db.movs.map(m => m.ID.toString()));
-                let contNuevos = 0;
-
-                rawData.forEach(fila => {
-                    // Asegurar compatibilidad de nombres de columna (por si acaso)
-                    if(!fila.ID) fila.ID = Date.now().toString() + Math.random(); 
-                    
-                    // Solo añadir si el ID no existe
-                    if (!idsActuales.has(fila.ID.toString())) {
+            const r = new FileReader();
+            r.onload = (evt) => {
+                const wb = XLSX.read(evt.target.result, {type: 'binary'});
+                const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                const actuales = new Set(db.movs.map(m => m.ID.toString()));
+                let cont = 0;
+                raw.forEach(fila => {
+                    if(!fila.ID) fila.ID = "IMP-" + Math.random().toString(16).slice(2);
+                    fila.Fecha = limpiarFecha(fila.Fecha);
+                    if (!actuales.has(fila.ID.toString())) {
                         db.movs.push(fila);
-                        contNuevos++;
+                        cont++;
                     }
                 });
-
-                alert(`Importación completada.\nSe han añadido ${contNuevos} movimientos nuevos.\nTotal registros: ${db.movs.length}`);
-                save(); // Esto recalcula filtros y muestra 2025 si existe
+                alert(`Importado: ${cont} registros nuevos.`);
+                save();
             };
-            reader.readAsBinaryString(file);
+            r.readAsBinaryString(file);
         }
 
-        // --- UTILIDADES ---
-        function updateFiltrosFechas(seleccionado) {
-            // Sacar lista de AÑO-MES únicos de todos los movimientos
-            const fechas = [...new Set(db.movs.map(m => m.Fecha.slice(0, 7)))].sort().reverse();
-            
-            // Asegurar que el mes actual siempre está en la lista
-            const hoy = new Date().toISOString().slice(0, 7);
-            if (!fechas.includes(hoy)) fechas.unshift(hoy);
-
-            const select = document.getElementById('filtro-mes');
-            select.innerHTML = fechas.map(f => `<option value="${f}" ${f === seleccionado ? 'selected' : ''}>${f}</option>`).join('');
-        }
-
-        function renderChart(ing, gas) {
+        // --- EXTRAS ---
+        function renderizarGrafico(i, g) {
             const ctx = document.getElementById('mainChart').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Ingresos', 'Gastos'],
-                    datasets: [{
-                        data: [ing, gas],
-                        backgroundColor: ['#10b981', '#f43f5e'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
+            if (chartObj) chartObj.destroy();
+            chartObj = new Chart(ctx, {
+                type: 'doughnut', data: { labels: ['Ingresos', 'Gastos'], datasets: [{ data: [i, g], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] },
+                options: { cutout: '80%', plugins: { legend: { position: 'bottom' } } }
             });
         }
 
-        function borrarMov(id) { if(confirm("¿Borrar?")) { db.movs = db.movs.filter(m => m.ID !== id); save(); } }
-        function borrarConfig(index) { if(confirm("¿Borrar Config?")) { db.config.splice(index, 1); save(); } }
-        function borrarTodo() { if(confirm("¿ESTÁS SEGURO? Se borrará TODO.")) { localStorage.clear(); location.reload(); } }
-        function showTab(t) { 
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
-            document.getElementById(t).classList.add('active'); 
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); 
-            document.getElementById('nav-'+t).classList.add('nav-active');
-            if(t==='muro') updateSelectsMuro();
-        }
+        function eliminarMovimiento(id) { if(confirm("¿Eliminar?")) { db.movs = db.movs.filter(m => m.ID !== id); save(); } }
+        function borrarTodoElSistema() { if(confirm("¡ATENCIÓN! Se borrará todo.")) { localStorage.clear(); location.reload(); } }
 
-        // Iniciar
+        // INICIO
         document.getElementById('in-fecha').valueAsDate = new Date();
+        actualizarDatalistCats();
         actualizarUI();
     </script>
 </body>
