@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V9.5 - FINAL</title>
+    <title>FINANZAS V9.6 - FINAL FIX</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,7 +26,7 @@
 
     <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-md">
         <div>
-            <h1 class="font-black italic text-lg uppercase text-blue-400 leading-none">Finanzas V9.5</h1>
+            <h1 class="font-black italic text-lg uppercase text-blue-400 leading-none">Finanzas V9.6</h1>
             <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-widest"></p>
         </div>
         <select id="filtro-mes" onchange="actualizarUI()" class="!w-32 !h-9 !bg-slate-800 !text-white !text-xs font-bold border-none"></select>
@@ -138,9 +138,7 @@
     </div>
 
     <script>
-        // Mantenemos la clave para no perder datos
-        const KEY = 'SISTEMA_FINANZAS_V9_PRO'; 
-        
+        const KEY = 'SISTEMA_FINANZAS_V9_FINAL';
         let db = JSON.parse(localStorage.getItem(KEY)) || { config: [], movs: [] };
         let tipoMuroActual = 'Ingresos'; 
         let idEdicion = null;
@@ -148,26 +146,28 @@
 
         function save() { localStorage.setItem(KEY, JSON.stringify(db)); actualizarUI(); }
 
+        // --- MOTOR PRINCIPAL ---
         function actualizarUI() {
             renderizarSelectorMeses();
             const mesSel = document.getElementById('filtro-mes').value || new Date().toISOString().slice(0,7);
             
-            // Orden: Más reciente primero
+            // Ordenar por fecha descendente
             db.movs.sort((a, b) => new Date(b.Fecha) - new Date(a.Fecha));
 
             const movsMes = db.movs.filter(m => m.Fecha.startsWith(mesSel));
             
-            // Corrección segura de sumas
-            const totalIng = movsMes.reduce((s, m) => s + (parseFloat(m.Ingresos) || 0), 0);
-            const totalGas = movsMes.reduce((s, m) => s + (parseFloat(m.Gastos) || 0), 0);
+            // Cálculos seguros
+            const totalIng = movsMes.reduce((s, m) => s + (m.Tipo === 'Ingreso' ? (parseFloat(m.Importe)||0) : 0), 0);
+            const totalGas = movsMes.reduce((s, m) => s + (m.Tipo === 'Gasto' ? (parseFloat(m.Importe)||0) : 0), 0);
 
             document.getElementById('disp-real').innerText = (totalIng - totalGas).toFixed(2) + "€";
             document.getElementById('sum-ing').innerText = totalIng.toFixed(0) + "€";
             document.getElementById('sum-gas').innerText = totalGas.toFixed(0) + "€";
             document.getElementById('mes-header').innerText = mesSel;
 
+            // Renderizar Lista (Coloreando correctamente según Tipo real)
             document.getElementById('lista-movs').innerHTML = movsMes.map(m => `
-                <div class="card flex justify-between items-center py-3 border-l-4 ${m.Ingresos > 0 ? 'border-emerald-500':'border-rose-500'}">
+                <div class="card flex justify-between items-center py-3 border-l-4 ${m.Tipo === 'Ingreso' ? 'border-emerald-500':'border-rose-500'}">
                     <div class="truncate mr-2 flex-1">
                         <div class="flex items-center gap-2 mb-1">
                             <span class="text-[8px] font-bold text-slate-400">${m.Fecha.slice(8,10)}</span>
@@ -177,7 +177,7 @@
                         <p class="font-bold text-slate-800 uppercase text-xs truncate">${m.Concepto}</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <p class="font-black text-sm mr-1">${m.Importe.toFixed(2)}€</p>
+                        <p class="font-black text-sm mr-1 ${m.Tipo==='Ingreso'?'text-emerald-600':'text-rose-600'}">${parseFloat(m.Importe).toFixed(2)}€</p>
                         <button onclick="prepararEdicion('${m.ID}')" class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fas fa-pencil-alt text-xs"></i></button>
                         <button onclick="eliminarMovimiento('${m.ID}')" class="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center"><i class="fas fa-trash text-xs"></i></button>
                     </div>
@@ -188,7 +188,7 @@
             actualizarDatalistCats();
         }
 
-        // --- DASHBOARD (Con corrección de tipos) ---
+        // --- GRÁFICOS (FIXED) ---
         function renderizarDashboard(movs, ti, tg, mesSel) {
             const ahorro = ti > 0 ? Math.max(0, ((ti - tg) / ti) * 100) : 0;
             document.getElementById('kpi-ahorro').innerText = ahorro.toFixed(1) + "%";
@@ -197,14 +197,16 @@
 
             if (charts.doughnut) charts.doughnut.destroy();
             charts.doughnut = new Chart(document.getElementById('chartDoughnut'), {
-                type: 'doughnut', data: { labels: ['Ingresos', 'Gastos'], datasets: [{ data: [ti, tg], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] }, options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
+                type: 'doughnut', 
+                data: { labels: ['Ingresos', 'Gastos'], datasets: [{ data: [ti, tg], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] }, 
+                options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
             });
 
-            // Agregación segura (Numérica)
+            // Agregación de gastos por categoría (Filtrado estricto por Tipo='Gasto')
             const gastoCat = {};
-            movs.filter(m => (parseFloat(m.Gastos)||0) > 0).forEach(m => { 
+            movs.filter(m => m.Tipo === 'Gasto').forEach(m => { 
                 const cat = m.Categoría || "OTROS";
-                const val = parseFloat(m.Gastos) || 0;
+                const val = parseFloat(m.Importe) || 0;
                 gastoCat[cat] = (gastoCat[cat] || 0) + val; 
             });
             
@@ -212,15 +214,18 @@
             
             if (charts.bars) charts.bars.destroy();
             charts.bars = new Chart(document.getElementById('chartBars'), {
-                type: 'bar', data: { labels: top.map(x=>x[0]), datasets: [{ data: top.map(x=>x[1]), backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false } } } }
+                type: 'bar', 
+                data: { labels: top.map(x=>x[0]), datasets: [{ data: top.map(x=>x[1]), backgroundColor: '#3b82f6', borderRadius: 6 }] }, 
+                options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false } } } }
             });
 
+            // Barras de Presupuesto
             const configsGasto = db.config.filter(c => c.tipo === 'Gasto');
             const catsUnicas = [...new Set(configsGasto.map(c => c.categoria))].sort();
             
             document.getElementById('progreso-presupuestos').innerHTML = catsUnicas.map(catNombre => {
                 const presupuestoTotal = configsGasto.filter(c => c.categoria === catNombre).reduce((sum, c) => sum + (parseFloat(c.importe)||0), 0);
-                const gastadoReal = movs.filter(m => m.Categoría === catNombre && (parseFloat(m.Gastos)||0) > 0).reduce((sum, m) => sum + (parseFloat(m.Gastos)||0), 0);
+                const gastadoReal = movs.filter(m => m.Categoría === catNombre && m.Tipo === 'Gasto').reduce((sum, m) => sum + (parseFloat(m.Importe)||0), 0);
                 
                 if (presupuestoTotal === 0 && gastadoReal === 0) return ''; 
                 const porc = presupuestoTotal > 0 ? Math.min((gastadoReal / presupuestoTotal) * 100, 100) : (gastadoReal > 0 ? 100 : 0);
@@ -229,11 +234,18 @@
             }).join('');
         }
 
-        // --- IMPORTACIÓN / EXPORTACIÓN (SANITIZADA) ---
+        // --- IMPORTACIÓN AVANZADA V9.6 ---
         function exportarExcel() {
-            const nombre = prompt("Nombre del archivo:", "Finanzas");
+            const nombre = prompt("Nombre:", "MisFinanzas");
             if(!nombre) return;
-            const ws = XLSX.utils.json_to_sheet(db.movs, { header: ["ID", "Fecha", "Tipo", "Categoría", "Concepto", "Forma de Pago", "Importe", "Ingresos", "Gastos", "Fijo"] });
+            // Preparamos datos planos para exportar
+            const datosExport = db.movs.map(m => ({
+                ID: m.ID, Fecha: m.Fecha, Tipo: m.Tipo, Categoría: m.Categoría, Concepto: m.Concepto, 
+                Ingresos: m.Tipo === 'Ingreso' ? m.Importe : 0, 
+                Gastos: m.Tipo === 'Gasto' ? m.Importe : 0,
+                Fijo: m.Fijo ? "SI" : "NO"
+            }));
+            const ws = XLSX.utils.json_to_sheet(datosExport);
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Datos"); XLSX.writeFile(wb, `${nombre}.xlsx`);
         }
 
@@ -244,91 +256,125 @@
                 const w = XLSX.read(evt.target.result, {type: 'binary'}); 
                 const raw = XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]]);
                 
-                if(!confirm(`Detectados ${raw.length} movimientos.\n¿Importar y generar categorías?`)) {
+                if(!confirm(`Se han detectado ${raw.length} filas.\n¿Proceder con la importación inteligente?`)) {
                     document.getElementById('file-in').value = ''; return;
                 }
 
                 let count = 0;
                 raw.forEach(fila => { 
-                    // SANITIZACIÓN DE DATOS (CRÍTICO)
-                    if(!fila.ID) fila.ID = "IMP-" + Math.random().toString(16).slice(2);
-                    
-                    // Fechas
-                    if(typeof fila.Fecha === 'number') fila.Fecha = new Date(Math.round((fila.Fecha - 25569) * 86400 * 1000)).toISOString().slice(0,10);
-                    
-                    // NÚMEROS: Forzar conversión a Float real (evita texto)
-                    const ing = parseFloat(fila.Ingresos) || 0;
-                    const gas = parseFloat(fila.Gastos) || 0;
-                    const imp = parseFloat(fila.Importe) || (ing + gas); // Si falta importe, lo deduce
-                    
-                    fila.Ingresos = ing;
-                    fila.Gastos = gas;
-                    fila.Importe = imp;
-                    
-                    // CATEGORÍAS: Limpieza de espacios y mayúsculas
-                    const catClean = (fila.Categoría || fila.Categoria || "OTROS").toString().trim().toUpperCase();
-                    const conClean = (fila.Concepto || "Varios").toString().trim().toUpperCase();
-                    
-                    fila.Categoría = catClean;
-                    fila.Concepto = conClean;
-                    fila.Tipo = ing > 0 ? 'Ingreso' : 'Gasto';
+                    // 1. Detección Inteligente de Columnas (Case Insensitive)
+                    // Buscamos cualquier columna que se llame "Ingresos", "INGRESOS", etc.
+                    const valIng = parseFloat(fila['Ingresos'] || fila['INGRESOS'] || fila['ingresos'] || 0);
+                    const valGas = parseFloat(fila['Gastos'] || fila['GASTOS'] || fila['gastos'] || 0);
+                    const valImp = parseFloat(fila['Importe'] || fila['IMPORTE'] || 0);
 
-                    // Generar Config si no existe
-                    const existeConfig = db.config.find(c => c.categoria === catClean && c.concepto === conClean);
-                    if(!existeConfig) {
-                        db.config.push({ id: Date.now() + Math.random(), tipo: fila.Tipo, categoria: catClean, concepto: conClean, importe: 0 });
+                    // 2. Determinación del TIPO (Corrección del error "Todo es Gasto")
+                    let tipoFinal = 'Gasto'; 
+                    let importeFinal = 0;
+
+                    if (valIng > 0) {
+                        tipoFinal = 'Ingreso';
+                        importeFinal = valIng;
+                    } else if (valGas > 0) {
+                        tipoFinal = 'Gasto';
+                        importeFinal = valGas;
+                    } else if (valImp > 0) {
+                        // Si solo hay columna importe, confiamos en la columna Tipo si existe, sino Gasto por defecto
+                        const tipoTexto = (fila['Tipo'] || fila['TIPO'] || '').toString().toUpperCase();
+                        if(tipoTexto.includes('INGRESO')) tipoFinal = 'Ingreso';
+                        importeFinal = valImp;
                     }
 
-                    if (!db.movs.find(m => m.ID.toString() === fila.ID.toString())) {
-                        db.movs.push(fila);
+                    // 3. Normalización de FECHA (Corrección del error "Gráficos en blanco")
+                    let fechaFinal = new Date().toISOString().slice(0,10);
+                    if(fila.Fecha) {
+                        if(typeof fila.Fecha === 'number') {
+                            // Formato Excel numérico
+                            fechaFinal = new Date(Math.round((fila.Fecha - 25569) * 86400 * 1000)).toISOString().slice(0,10);
+                        } else {
+                            // Intentar parsear texto
+                            const d = new Date(fila.Fecha);
+                            if(!isNaN(d)) fechaFinal = d.toISOString().slice(0,10);
+                        }
+                    }
+
+                    // 4. Limpieza de Categorías/Conceptos
+                    const catClean = (fila.Categoría || fila.Categoria || fila.CATEGORIA || "OTROS").toString().trim().toUpperCase();
+                    const conClean = (fila.Concepto || fila.CONCEPTO || "Varios").toString().trim().toUpperCase();
+
+                    // 5. Creación del Objeto Movimiento V9.6
+                    const nuevoMov = {
+                        ID: "IMP-" + Date.now() + Math.random().toString(16).slice(2),
+                        Fecha: fechaFinal,
+                        Tipo: tipoFinal, // Ingreso o Gasto
+                        Categoría: catClean,
+                        Concepto: conClean,
+                        Importe: importeFinal, // Un solo campo numérico
+                        Fijo: (fila.Fijo === 'SI' || fila.Fijo === true || fila.Fijo === 'TRUE')
+                    };
+
+                    // 6. Generar Configuración (Ajustes) si no existe
+                    const existeConfig = db.config.find(c => c.categoria === catClean && c.concepto === conClean);
+                    if(!existeConfig) {
+                        db.config.push({ 
+                            id: Date.now() + Math.random(), 
+                            tipo: tipoFinal, 
+                            categoria: catClean, 
+                            concepto: conClean, 
+                            importe: 0 
+                        });
+                    }
+
+                    // Evitar duplicados exactos (Misma fecha, concepto e importe)
+                    const duplicado = db.movs.find(m => m.Fecha === nuevoMov.Fecha && m.Concepto === nuevoMov.Concepto && m.Importe === nuevoMov.Importe && m.Tipo === nuevoMov.Tipo);
+                    if (!duplicado) {
+                        db.movs.push(nuevoMov);
                         count++;
                     }
                 }); 
                 
                 save();
-                alert(`Importados ${count} movimientos correctamente.`);
+                alert(`¡Éxito! Se han importado ${count} movimientos.\n\nIMPORTANTE: Verifica que el filtro de MES (arriba a la derecha) coincida con las fechas de tu Excel para ver los gráficos.`);
                 document.getElementById('file-in').value = ''; 
             }; 
             r.readAsBinaryString(f);
         }
 
-        // --- RESTO ---
+        // --- FUNCIONES CORE ---
         function clonarFijos() {
             const mesDestinoStr = document.getElementById('filtro-mes').value;
             if(!mesDestinoStr) return alert("Selecciona mes destino.");
             const fd = new Date(mesDestinoStr + "-01");
             const fa = new Date(fd.getFullYear(), fd.getMonth() - 1, 1);
             const mesAnt = fa.toISOString().slice(0, 7);
-            const fijos = db.movs.filter(m => m.Fecha.startsWith(mesAnt) && m.Fijo === true);
+            const fijos = db.movs.filter(m => m.Fecha.startsWith(mesAnt) && m.Fijo);
             if(fijos.length === 0) return alert(`No hay fijos en ${mesAnt}`);
             if(!confirm(`Copiar ${fijos.length} fijos de ${mesAnt} a ${mesDestinoStr}?`)) return;
             fijos.forEach(m => {
-                const dia = parseInt(m.Fecha.split('-')[2]);
-                const nf = new Date(fd.getFullYear(), fd.getMonth(), dia).toISOString().slice(0, 10);
-                if(!db.movs.some(e => e.Fecha === nf && e.Concepto === m.Concepto && e.Importe === m.Importe)) {
-                    db.movs.push({ ...m, ID: Date.now()+Math.random(), Fecha: nf });
-                }
+                const dia = m.Fecha.split('-')[2];
+                const nf = mesDestinoStr + '-' + dia;
+                db.movs.push({ ...m, ID: Date.now()+Math.random(), Fecha: nf });
             });
             save();
         }
 
         function registrarMovimiento() {
             const f = document.getElementById('in-fecha').value;
-            const imp = parseFloat(document.getElementById('in-importe').value); // Asegura numero
+            const imp = parseFloat(document.getElementById('in-importe').value);
             const cat = document.getElementById('in-cat').value;
             const con = document.getElementById('in-concepto-select').value;
-            const pago = document.getElementById('in-pago').value;
-            const esFijo = document.getElementById('in-fijo').checked;
+            const fijo = document.getElementById('in-fijo').checked;
 
-            if(!f || !imp || !cat) return alert("Faltan datos");
+            if(!f || isNaN(imp) || !cat) return alert("Faltan datos");
 
-            const datosMov = { "Fecha": f, "Tipo": tipoMuroActual, "Categoría": cat, "Concepto": con, "Forma de Pago": pago, "Importe": imp, "Fijo": esFijo, "Ingresos": (tipoMuroActual === 'Ingresos' ? imp : 0), "Gastos": (tipoMuroActual === 'Gastos' ? imp : 0) };
+            const mov = { ID: idEdicion || Date.now().toString(), Fecha: f, Tipo: tipoMuroActual === 'Ingresos' ? 'Ingreso':'Gasto', Categoría: cat, Concepto: con, Importe: imp, Fijo: fijo };
 
             if (idEdicion) {
-                const index = db.movs.findIndex(m => m.ID === idEdicion);
-                if (index !== -1) { db.movs[index] = { ...db.movs[index], ...datosMov }; cancelarEdicion(); }
+                const idx = db.movs.findIndex(m => m.ID === idEdicion);
+                if (idx !== -1) db.movs[idx] = mov;
+                cancelarEdicion();
             } else {
-                datosMov.ID = Date.now().toString(); db.movs.push(datosMov);
+                db.movs.push(mov);
             }
             save();
             if(!idEdicion) { document.getElementById('in-importe').value = ""; document.getElementById('in-fijo').checked = false; }
@@ -343,13 +389,18 @@
             document.getElementById('card-formulario').classList.add('ring-2', 'ring-amber-400');
             setTipo(mov.Tipo === 'Ingreso' ? 'Ingresos' : 'Gastos');
             setTimeout(() => {
-                document.getElementById('in-fecha').value = mov.Fecha; document.getElementById('in-importe').value = mov.Importe; document.getElementById('in-pago').value = mov['Forma de Pago'] || 'BANCO'; document.getElementById('in-fijo').checked = mov.Fijo || false;
+                document.getElementById('in-fecha').value = mov.Fecha; 
+                document.getElementById('in-importe').value = mov.Importe; 
+                document.getElementById('in-fijo').checked = mov.Fijo;
+                // Forzar carga de categorías si es necesario
                 const selCat = document.getElementById('in-cat');
                 if(!selCat.querySelector(`option[value="${mov.Categoría}"]`)) { let o=document.createElement('option'); o.value=mov.Categoría; o.text=mov.Categoría; selCat.add(o); }
-                selCat.value = mov.Categoría; cargarConceptosMuro();
+                selCat.value = mov.Categoría; 
+                cargarConceptosMuro();
                 const selCon = document.getElementById('in-concepto-select');
                 if(![...selCon.options].some(o=>o.value===mov.Concepto)){ let o=document.createElement('option'); o.value=mov.Concepto; o.text=mov.Concepto; selCon.add(o); }
-                selCon.value = mov.Concepto; document.getElementById('muro').scrollIntoView({behavior:'smooth'});
+                selCon.value = mov.Concepto; 
+                document.getElementById('muro').scrollIntoView({behavior:'smooth'});
             }, 50);
         }
 
@@ -395,4 +446,3 @@
     </script>
 </body>
 </html>
-
