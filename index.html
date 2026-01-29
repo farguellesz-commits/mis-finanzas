@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V9.2 - EDICIÓN</title>
+    <title>FINANZAS V9.3 - RECURRENTES</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,7 +26,7 @@
 
     <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-md">
         <div>
-            <h1 class="font-black italic text-lg uppercase text-blue-400 leading-none">Finanzas V9.2</h1>
+            <h1 class="font-black italic text-lg uppercase text-blue-400 leading-none">Finanzas V9.3</h1>
             <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-widest"></p>
         </div>
         <select id="filtro-mes" onchange="actualizarUI()" class="!w-32 !h-9 !bg-slate-800 !text-white !text-xs font-bold border-none"></select>
@@ -63,15 +63,21 @@
             <div class="space-y-3">
                 <select id="in-cat" onchange="cargarConceptosMuro()" class="font-bold uppercase text-sm"></select>
                 <select id="in-concepto-select" class="font-bold uppercase text-sm"></select>
-                <select id="in-pago" class="text-xs font-bold uppercase bg-slate-50">
-                    <option value="BANCO">🏦 BANCO</option><option value="EFECTIVO">💵 EFECTIVO</option><option value="TARJETA">💳 TARJETA</option>
-                </select>
+                
+                <div class="flex items-center gap-2">
+                    <select id="in-pago" class="text-xs font-bold uppercase bg-slate-50 flex-1">
+                        <option value="BANCO">🏦 BANCO</option><option value="EFECTIVO">💵 EFECTIVO</option><option value="TARJETA">💳 TARJETA</option>
+                    </select>
+                    <label class="flex items-center gap-2 bg-indigo-50 px-3 py-2 rounded-lg border border-indigo-100 cursor-pointer">
+                        <input type="checkbox" id="in-fijo" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-[9px] font-black uppercase text-indigo-700">Fijo Mensual</span>
+                    </label>
+                </div>
             </div>
 
             <button id="btn-guardar" onclick="registrarMovimiento()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg active:scale-95 transition-transform">
                 Guardar Movimiento
             </button>
-            
             <button id="btn-cancelar" onclick="cancelarEdicion()" class="w-full bg-slate-200 text-slate-500 py-2 rounded-lg font-bold text-[10px] uppercase mt-2 hidden">
                 Cancelar Edición
             </button>
@@ -96,35 +102,42 @@
             <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4 text-center">Distribución</h3>
             <canvas id="chartDoughnut" style="max-height: 200px;"></canvas>
         </div>
-
         <div class="card">
             <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4">Top Categorías (Gastos)</h3>
             <canvas id="chartBars" style="max-height: 250px;"></canvas>
         </div>
-
         <h3 class="text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Control Presupuestario</h3>
         <div id="progreso-presupuestos" class="space-y-3 pb-20"></div>
     </div>
 
     <div id="config" class="tab-content p-4">
-        <div class="card border-2 border-blue-50">
-            <h3 class="text-xs font-black uppercase mb-4 text-blue-600">Crear Categoría / Concepto</h3>
+        
+        <div class="card bg-indigo-50 border border-indigo-200 mb-6">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="fas fa-sync-alt"></i></div>
+                <h3 class="text-xs font-black uppercase text-indigo-800">Copia Mensual</h3>
+            </div>
+            <p class="text-[10px] text-indigo-600 mb-3 leading-tight">Copia todos los movimientos marcados como "Fijo Mensual" del mes anterior al mes seleccionado actualmente.</p>
+            <button onclick="clonarFijos()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95">
+                📥 Clonar Fijos del Mes Anterior
+            </button>
+        </div>
+
+        <div class="card border-2 border-slate-100">
+            <h3 class="text-xs font-black uppercase mb-4 text-slate-500">Configuración Rápida</h3>
             <div class="space-y-3">
                 <select id="cfg-tipo" class="font-bold text-sm"><option value="Ingreso">Tipo: INGRESO</option><option value="Gasto">Tipo: GASTO</option></select>
                 <div class="relative">
-                    <input list="lista-sugerencias-cat" id="cfg-cat" type="text" placeholder="CATEGORÍA (Ej: COCHE)" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
+                    <input list="lista-sugerencias-cat" id="cfg-cat" type="text" placeholder="CATEGORÍA" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
                     <datalist id="lista-sugerencias-cat"></datalist>
                 </div>
-                <input type="text" id="cfg-con" placeholder="CONCEPTO (Ej: GASOLINA)" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
-                <input type="number" id="cfg-imp" placeholder="PRESUPUESTO ESTIMADO €" class="font-bold text-sm">
-                
-                <button onclick="guardarNuevaConfig()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95">
-                    Añadir Configuración
-                </button>
+                <input type="text" id="cfg-con" placeholder="CONCEPTO" class="font-bold uppercase text-sm" oninput="this.value = this.value.toUpperCase()">
+                <input type="number" id="cfg-imp" placeholder="PRESUPUESTO €" class="font-bold text-sm">
+                <button onclick="guardarNuevaConfig()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-black text-[10px] uppercase">Añadir</button>
             </div>
         </div>
 
-        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Configuraciones Actuales</h3>
+        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Configuraciones</h3>
         <div id="lista-cats-ui" class="space-y-2 mb-24"></div>
 
         <div class="fixed bottom-[75px] left-4 right-4 bg-slate-900 p-3 rounded-2xl flex gap-2 items-center justify-between z-40 shadow-2xl">
@@ -138,112 +151,158 @@
     </div>
 
     <script>
-        // --- CONFIGURACIÓN ---
-        const KEY = 'SISTEMA_FINANZAS_V9_PRO';
-        let db = JSON.parse(localStorage.getItem(KEY)) || { config: [], movs: [] };
+        // *** IMPORTANTE: Usa la clave donde tengas tus datos. Si usabas la V9_2, pon FINANZAS_V9_2_DATA ***
+        const KEY = 'SISTEMA_FINANZAS_V9_PRO'; 
         
-        // Estado Global
+        let db = JSON.parse(localStorage.getItem(KEY)) || { config: [], movs: [] };
         let tipoMuroActual = 'Ingresos'; 
-        let idEdicion = null; // Si tiene valor, estamos editando
+        let idEdicion = null;
         let charts = { doughnut: null, bars: null };
 
-        // --- FUNCIONES CORE ---
-        function save() { 
-            localStorage.setItem(KEY, JSON.stringify(db)); 
-            actualizarUI(); 
-        }
+        function save() { localStorage.setItem(KEY, JSON.stringify(db)); actualizarUI(); }
 
         function actualizarUI() {
             renderizarSelectorMeses();
             const mesSel = document.getElementById('filtro-mes').value || new Date().toISOString().slice(0,7);
             
-            // Filtros
             const movsMes = db.movs.filter(m => m.Fecha.startsWith(mesSel));
             const totalIng = movsMes.reduce((s, m) => s + (parseFloat(m.Ingresos) || 0), 0);
             const totalGas = movsMes.reduce((s, m) => s + (parseFloat(m.Gastos) || 0), 0);
 
-            // 1. Render MURO
             document.getElementById('disp-real').innerText = (totalIng - totalGas).toFixed(2) + "€";
             document.getElementById('sum-ing').innerText = totalIng.toFixed(0) + "€";
             document.getElementById('sum-gas').innerText = totalGas.toFixed(0) + "€";
             document.getElementById('mes-header').innerText = mesSel;
 
-            // Lista Movimientos (Con botón Editar)
+            // Render Lista con icono de Fijo
             document.getElementById('lista-movs').innerHTML = movsMes.map(m => `
                 <div class="card flex justify-between items-center py-3 border-l-4 ${m.Ingresos > 0 ? 'border-emerald-500':'border-rose-500'}">
                     <div class="truncate mr-2 flex-1">
                         <div class="flex items-center gap-2 mb-1">
                             <span class="text-[8px] font-bold text-slate-400">${m.Fecha.slice(8,10)}</span>
                             <span class="text-[9px] font-black text-blue-500 uppercase tracking-tighter">${m.Categoría}</span>
+                            ${m.Fijo ? '<i class="fas fa-sync-alt text-[9px] text-indigo-500 ml-1" title="Fijo Mensual"></i>' : ''}
                         </div>
                         <p class="font-bold text-slate-800 uppercase text-xs truncate">${m.Concepto}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <p class="font-black text-sm mr-1">${m.Importe.toFixed(2)}€</p>
-                        <button onclick="prepararEdicion('${m.ID}')" class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center hover:bg-amber-200 transition">
-                            <i class="fas fa-pencil-alt text-xs"></i>
-                        </button>
-                        <button onclick="eliminarMovimiento('${m.ID}')" class="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center hover:bg-rose-200 transition">
-                            <i class="fas fa-trash text-xs"></i>
-                        </button>
+                        <button onclick="prepararEdicion('${m.ID}')" class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fas fa-pencil-alt text-xs"></i></button>
+                        <button onclick="eliminarMovimiento('${m.ID}')" class="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center"><i class="fas fa-trash text-xs"></i></button>
                     </div>
                 </div>`).reverse().join('');
 
-            // 2. Render GRÁFICOS
             renderizarDashboard(movsMes, totalIng, totalGas, mesSel);
-
-            // 3. Render AJUSTES
             renderizarListaAjustes();
             actualizarDatalistCats();
         }
 
-        // --- LÓGICA DE EDICIÓN (NUEVO) ---
+        // --- SISTEMA DE CLONADO (NUEVO) ---
+        function clonarFijos() {
+            const mesDestinoStr = document.getElementById('filtro-mes').value;
+            if(!mesDestinoStr) return alert("Selecciona primero un mes destino.");
+
+            // Calcular mes anterior
+            const fechaDestino = new Date(mesDestinoStr + "-01");
+            const fechaAnterior = new Date(fechaDestino.getFullYear(), fechaDestino.getMonth() - 1, 1);
+            const mesAnteriorStr = fechaAnterior.toISOString().slice(0, 7);
+
+            // Buscar fijos del mes anterior
+            const fijosAnteriores = db.movs.filter(m => m.Fecha.startsWith(mesAnteriorStr) && m.Fijo === true);
+
+            if(fijosAnteriores.length === 0) return alert(`No hay movimientos marcados como 'Fijo' en ${mesAnteriorStr}`);
+
+            if(!confirm(`Se han encontrado ${fijosAnteriores.length} movimientos fijos en ${mesAnteriorStr}.\n¿Quieres copiarlos a ${mesDestinoStr}?`)) return;
+
+            let copiados = 0;
+            fijosAnteriores.forEach(m => {
+                // Crear nueva fecha manteniendo el día (Ojo con días > 28/30/31, JS lo ajusta solo)
+                const dia = parseInt(m.Fecha.split('-')[2]);
+                const nuevaFechaDate = new Date(fechaDestino.getFullYear(), fechaDestino.getMonth(), dia);
+                const nuevaFechaStr = nuevaFechaDate.toISOString().slice(0, 10);
+
+                // Evitar duplicados (mismo concepto, importe y fecha destino)
+                const existe = db.movs.some(exist => 
+                    exist.Fecha === nuevaFechaStr && 
+                    exist.Concepto === m.Concepto && 
+                    exist.Importe === m.Importe
+                );
+
+                if(!existe) {
+                    const copia = { ...m, ID: Date.now().toString() + Math.random(), Fecha: nuevaFechaStr };
+                    db.movs.push(copia);
+                    copiados++;
+                }
+            });
+
+            save();
+            alert(`Proceso terminado. Se han clonado ${copiados} movimientos.`);
+        }
+
+        // --- EDICIÓN Y REGISTRO ---
+        function registrarMovimiento() {
+            const f = document.getElementById('in-fecha').value;
+            const imp = parseFloat(document.getElementById('in-importe').value);
+            const cat = document.getElementById('in-cat').value;
+            const con = document.getElementById('in-concepto-select').value;
+            const pago = document.getElementById('in-pago').value;
+            const esFijo = document.getElementById('in-fijo').checked; // NUEVO
+
+            if(!f || !imp || !cat) return alert("Faltan datos");
+
+            const datosMov = {
+                "Fecha": f, "Tipo": tipoMuroActual, "Categoría": cat, "Concepto": con,
+                "Forma de Pago": pago, "Importe": imp, "Fijo": esFijo,
+                "Ingresos": (tipoMuroActual === 'Ingresos' ? imp : 0),
+                "Gastos": (tipoMuroActual === 'Gastos' ? imp : 0)
+            };
+
+            if (idEdicion) {
+                const index = db.movs.findIndex(m => m.ID === idEdicion);
+                if (index !== -1) {
+                    db.movs[index] = { ...db.movs[index], ...datosMov };
+                    alert("Actualizado");
+                    cancelarEdicion();
+                }
+            } else {
+                datosMov.ID = Date.now().toString();
+                db.movs.push(datosMov);
+            }
+            save();
+            if(!idEdicion) {
+                document.getElementById('in-importe').value = "";
+                document.getElementById('in-fijo').checked = false; // Resetear check
+            }
+        }
+
         function prepararEdicion(id) {
             const mov = db.movs.find(m => m.ID === id);
             if (!mov) return;
-
-            idEdicion = id; // Activamos modo edición
-
-            // 1. Cambiar visualmente el formulario
-            const btn = document.getElementById('btn-guardar');
-            btn.innerText = "ACTUALIZAR DATOS";
-            btn.className = "w-full bg-amber-500 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg";
+            idEdicion = id;
+            document.getElementById('btn-guardar').innerText = "ACTUALIZAR";
+            document.getElementById('btn-guardar').className = "w-full bg-amber-500 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg";
             document.getElementById('btn-cancelar').classList.remove('hidden');
             document.getElementById('card-formulario').classList.add('ring-2', 'ring-amber-400');
-
-            // 2. Cargar datos
-            setTipo(mov.Tipo === 'Ingreso' ? 'Ingresos' : 'Gastos'); // Esto resetea selects, ojo
             
-            // Esperamos un micro-tick para que se rellenen los selects tras setTipo
+            setTipo(mov.Tipo === 'Ingreso' ? 'Ingresos' : 'Gastos');
             setTimeout(() => {
                 document.getElementById('in-fecha').value = mov.Fecha;
                 document.getElementById('in-importe').value = mov.Importe;
                 document.getElementById('in-pago').value = mov['Forma de Pago'] || 'BANCO';
+                document.getElementById('in-fijo').checked = mov.Fijo || false; // Cargar estado fijo
                 
-                // Seleccionar Categoría
                 const selCat = document.getElementById('in-cat');
-                if(selCat.querySelector(`option[value="${mov.Categoría}"]`)){
-                    selCat.value = mov.Categoría;
-                    cargarConceptosMuro(); // Recargar conceptos dependientes
-                } else {
-                    // Si es una categoría manual antigua o borrada
-                    let opt = document.createElement('option');
-                    opt.value = mov.Categoría; opt.text = mov.Categoría;
-                    selCat.add(opt); selCat.value = mov.Categoría;
-                    cargarConceptosMuro();
+                if(!selCat.querySelector(`option[value="${mov.Categoría}"]`)) {
+                    let opt = document.createElement('option'); opt.value = mov.Categoría; opt.text = mov.Categoría; selCat.add(opt);
                 }
-
-                // Seleccionar Concepto
+                selCat.value = mov.Categoría;
+                cargarConceptosMuro();
+                
                 const selCon = document.getElementById('in-concepto-select');
-                // Añadir opción si no existe (manual)
-                if(![...selCon.options].some(o => o.value === mov.Concepto)){
-                    let opt = document.createElement('option');
-                    opt.value = mov.Concepto; opt.text = mov.Concepto;
-                    selCon.add(opt);
+                if(![...selCon.options].some(o => o.value === mov.Concepto)) {
+                    let opt = document.createElement('option'); opt.value = mov.Concepto; opt.text = mov.Concepto; selCon.add(opt);
                 }
                 selCon.value = mov.Concepto;
-
-                // Scroll arriba
                 document.getElementById('muro').scrollIntoView({behavior: 'smooth'});
             }, 50);
         }
@@ -252,201 +311,45 @@
             idEdicion = null;
             document.getElementById('in-importe').value = "";
             document.getElementById('in-fecha').valueAsDate = new Date();
-            
-            // Restaurar diseño botón
-            const btn = document.getElementById('btn-guardar');
-            btn.innerText = "GUARDAR MOVIMIENTO";
-            btn.className = "w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg";
+            document.getElementById('in-fijo').checked = false;
+            document.getElementById('btn-guardar').innerText = "GUARDAR MOVIMIENTO";
+            document.getElementById('btn-guardar').className = "w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg";
             document.getElementById('btn-cancelar').classList.add('hidden');
             document.getElementById('card-formulario').classList.remove('ring-2', 'ring-amber-400');
         }
 
-        function registrarMovimiento() {
-            const f = document.getElementById('in-fecha').value;
-            const imp = parseFloat(document.getElementById('in-importe').value);
-            const cat = document.getElementById('in-cat').value;
-            const con = document.getElementById('in-concepto-select').value;
-            const pago = document.getElementById('in-pago').value;
-
-            if(!f || !imp || !cat) return alert("Faltan datos");
-
-            const datosMov = {
-                "Fecha": f, "Tipo": tipoMuroActual, "Categoría": cat, "Concepto": con,
-                "Forma de Pago": pago, "Importe": imp,
-                "Ingresos": (tipoMuroActual === 'Ingresos' ? imp : 0),
-                "Gastos": (tipoMuroActual === 'Gastos' ? imp : 0)
-            };
-
-            if (idEdicion) {
-                // MODO ACTUALIZAR
-                const index = db.movs.findIndex(m => m.ID === idEdicion);
-                if (index !== -1) {
-                    db.movs[index] = { ...db.movs[index], ...datosMov }; // Mantener ID original
-                    alert("Movimiento Actualizado");
-                    cancelarEdicion();
-                }
-            } else {
-                // MODO CREAR NUEVO
-                datosMov.ID = Date.now().toString();
-                db.movs.push(datosMov);
-            }
-
-            save();
-            if(!idEdicion) document.getElementById('in-importe').value = ""; // Limpiar solo si no editamos
-        }
-
-
-        // --- DASHBOARD (SOLUCIÓN AGRUPACIÓN) ---
+        // --- DASHBOARD ---
         function renderizarDashboard(movs, ti, tg, mesSel) {
-            // KPIs
             const ahorro = ti > 0 ? Math.max(0, ((ti - tg) / ti) * 100) : 0;
             document.getElementById('kpi-ahorro').innerText = ahorro.toFixed(1) + "%";
             const dias = mesSel === new Date().toISOString().slice(0,7) ? new Date().getDate() : 30;
             document.getElementById('kpi-diario').innerText = (tg / dias).toFixed(1) + "€";
 
-            // Doughnut
             if (charts.doughnut) charts.doughnut.destroy();
             charts.doughnut = new Chart(document.getElementById('chartDoughnut'), {
-                type: 'doughnut',
-                data: { labels: ['Ingresos', 'Gastos'], datasets: [{ data: [ti, tg], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] },
-                options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
+                type: 'doughnut', data: { labels: ['Ingresos', 'Gastos'], datasets: [{ data: [ti, tg], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] }, options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
             });
 
-            // Top 5 Gastos
             const gastoCat = {};
             movs.filter(m => m.Gastos > 0).forEach(m => { gastoCat[m.Categoría] = (gastoCat[m.Categoría] || 0) + m.Gastos; });
             const top = Object.entries(gastoCat).sort((a,b) => b[1]-a[1]).slice(0,5);
             if (charts.bars) charts.bars.destroy();
             charts.bars = new Chart(document.getElementById('chartBars'), {
-                type: 'bar',
-                data: { labels: top.map(x=>x[0]), datasets: [{ data: top.map(x=>x[1]), backgroundColor: '#3b82f6', borderRadius: 6 }] },
-                options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false } } } }
+                type: 'bar', data: { labels: top.map(x=>x[0]), datasets: [{ data: top.map(x=>x[1]), backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false } } } }
             });
 
-            // BARRAS DE PRESUPUESTO (AGRUPADAS POR CATEGORÍA)
-            // 1. Obtener lista de categorías únicas configuradas como Gasto
             const configsGasto = db.config.filter(c => c.tipo === 'Gasto');
             const catsUnicas = [...new Set(configsGasto.map(c => c.categoria))].sort();
-
-            const htmlPres = catsUnicas.map(catNombre => {
-                // Sumar presupuestos de esa categoría (ej: Coche->Gasolina + Coche->Seguro)
-                const presupuestoTotal = configsGasto
-                    .filter(c => c.categoria === catNombre)
-                    .reduce((sum, c) => sum + c.importe, 0);
-
-                // Sumar gasto real de esa categoría en el mes
-                const gastadoReal = movs
-                    .filter(m => m.Categoría === catNombre && m.Gastos > 0)
-                    .reduce((sum, m) => sum + m.Gastos, 0);
-
-                if (presupuestoTotal === 0 && gastadoReal === 0) return ''; // Ocultar vacíos
-
+            document.getElementById('progreso-presupuestos').innerHTML = catsUnicas.map(catNombre => {
+                const presupuestoTotal = configsGasto.filter(c => c.categoria === catNombre).reduce((sum, c) => sum + c.importe, 0);
+                const gastadoReal = movs.filter(m => m.Categoría === catNombre && m.Gastos > 0).reduce((sum, m) => sum + m.Gastos, 0);
+                if (presupuestoTotal === 0 && gastadoReal === 0) return ''; 
                 const porc = presupuestoTotal > 0 ? Math.min((gastadoReal / presupuestoTotal) * 100, 100) : (gastadoReal > 0 ? 100 : 0);
-                const color = gastadoReal > presupuestoTotal ? 'bg-rose-500' : 'bg-blue-500';
-                
-                return `
-                <div class="card p-3 mb-2 shadow-sm border border-slate-100">
-                    <div class="flex justify-between text-[10px] font-black uppercase mb-1">
-                        <span>${catNombre}</span>
-                        <span class="${gastadoReal > presupuestoTotal ? 'text-rose-500' : 'text-slate-600'}">
-                            ${gastadoReal.toFixed(0)}€ / ${presupuestoTotal}€
-                        </span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill ${color}" style="width: ${porc}%"></div>
-                    </div>
-                </div>`;
+                return `<div class="card p-3 mb-2 shadow-sm border border-slate-100"><div class="flex justify-between text-[10px] font-black uppercase mb-1"><span>${catNombre}</span><span class="${gastadoReal > presupuestoTotal ? 'text-rose-500' : 'text-slate-600'}">${gastadoReal.toFixed(0)}€ / ${presupuestoTotal}€</span></div><div class="progress-bar"><div class="progress-fill ${gastadoReal > presupuestoTotal ? 'bg-rose-500' : 'bg-blue-500'}" style="width: ${porc}%"></div></div></div>`;
             }).join('');
-            
-            document.getElementById('progreso-presupuestos').innerHTML = htmlPres;
         }
 
-
-        // --- AJUSTES Y UTILIDADES ---
-        function guardarNuevaConfig() {
-            const tipo = document.getElementById('cfg-tipo').value;
-            const cat = document.getElementById('cfg-cat').value.trim().toUpperCase();
-            const con = document.getElementById('cfg-con').value.trim().toUpperCase();
-            const imp = parseFloat(document.getElementById('cfg-imp').value) || 0;
-            if(!cat || !con) return alert("Faltan datos");
-            
-            db.config.push({ id: Date.now(), tipo, categoria: cat, concepto: con, importe: imp });
-            
-            document.getElementById('cfg-con').value = "";
-            document.getElementById('cfg-imp').value = "";
-            save();
-            
-            // FORZAR ACTUALIZACIÓN DEL MURO AL INSTANTE
-            actualizarSelectsMuro();
-        }
-
-        function showTab(t) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(t).classList.add('active');
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active'));
-            document.getElementById('nav-'+t).classList.add('nav-active');
-            
-            // TRUCO: Si entramos en Muro, refrescar selects por si venimos de Ajustes
-            if(t === 'muro') {
-                actualizarSelectsMuro();
-                cancelarEdicion(); // Salir de modo edición si cambia de pestaña
-            }
-            actualizarUI();
-        }
-
-        // --- Funciones auxiliares mantenidas ---
-        function setTipo(t) {
-            tipoMuroActual = t;
-            // Corregir plural/singular para filtrar config
-            const tipoSingular = (t === 'Ingresos') ? 'Ingreso' : 'Gasto';
-            
-            document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active'));
-            document.getElementById('t-'+t).classList.add('active');
-            
-            // Actualizar el DOM de selects
-            const configs = db.config.filter(c => c.tipo === tipoSingular);
-            const cats = [...new Set(configs.map(c => c.categoria))].sort();
-            
-            const sel = document.getElementById('in-cat');
-            sel.innerHTML = `<option value="" disabled selected>CATEGORÍA...</option>` + 
-                            cats.map(c => `<option value="${c}">${c}</option>`).join('') + 
-                            `<option value="VARIOS">VARIOS</option>`;
-            document.getElementById('in-concepto-select').innerHTML = "";
-        }
-
-        function actualizarSelectsMuro() {
-            // Wrapper seguro para llamar a setTipo con el valor actual
-            setTipo(tipoMuroActual);
-        }
-
-        function cargarConceptosMuro() {
-            const cat = document.getElementById('in-cat').value;
-            const tipoSingular = (tipoMuroActual === 'Ingresos') ? 'Ingreso' : 'Gasto';
-            const conceptos = db.config.filter(c => c.tipo === tipoSingular && c.categoria === cat);
-            document.getElementById('in-concepto-select').innerHTML = conceptos.map(c => `<option value="${c.concepto}">${c.concepto}</option>`).join('');
-            if(conceptos.length > 0) document.getElementById('in-importe').value = conceptos[0].importe;
-        }
-
-        function renderizarListaAjustes() {
-            document.getElementById('lista-cats-ui').innerHTML = db.config.map((c, i) => `
-                <div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center text-[10px] font-bold shadow-sm">
-                    <div class="flex-1">
-                        <span class="${c.tipo === 'Ingreso' ? 'text-emerald-600':'text-rose-500'} uppercase">${c.tipo}</span> | 
-                        <span class="text-slate-800 uppercase">${c.categoria}</span>
-                        <div class="text-slate-400 uppercase mt-0.5">${c.concepto} <span class="text-slate-900 ml-2">${c.importe.toFixed(2)}€</span></div>
-                    </div>
-                    <button onclick="db.config.splice(${i},1); save();" class="text-slate-300 hover:text-rose-500 px-2"><i class="fas fa-trash"></i></button>
-                </div>`).join('');
-        }
-        
-        function actualizarDatalistCats() {
-            const cats = [...new Set(db.config.map(c => c.categoria))];
-            document.getElementById('lista-sugerencias-cat').innerHTML = cats.map(c => `<option value="${c}">`).join('');
-        }
-        
-        function eliminarMovimiento(id) { if(confirm("¿Eliminar definitivamente?")) { db.movs = db.movs.filter(m => m.ID !== id); save(); } }
-        function borrarTodoElSistema() { if(confirm("¡ATENCIÓN! Se borrará todo.")) { localStorage.clear(); location.reload(); } }
-        
+        // --- EXCEL & UTILIDADES ---
         function renderizarSelectorMeses() {
             const fechas = [...new Set(db.movs.map(m => m.Fecha.slice(0, 7)))].sort().reverse();
             const hoy = new Date().toISOString().slice(0, 7);
@@ -455,25 +358,43 @@
             const actual = select.value;
             select.innerHTML = fechas.map(f => `<option value="${f}" ${f===actual?'selected':''}>${f}</option>`).join('');
         }
-
-        function exportarExcel() {
-            const ws = XLSX.utils.json_to_sheet(db.movs, { header: ["ID", "Fecha", "Tipo", "Categoría", "Concepto", "Forma de Pago", "Importe", "Ingresos", "Gastos"] });
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Datos"); XLSX.writeFile(wb, `Finanzas_V9.2.xlsx`);
+        function guardarNuevaConfig() {
+            const tipo = document.getElementById('cfg-tipo').value, cat = document.getElementById('cfg-cat').value.trim().toUpperCase(), con = document.getElementById('cfg-con').value.trim().toUpperCase(), imp = parseFloat(document.getElementById('cfg-imp').value) || 0;
+            if(!cat || !con) return alert("Faltan datos");
+            db.config.push({ id: Date.now(), tipo, categoria: cat, concepto: con, importe: imp });
+            document.getElementById('cfg-con').value = ""; document.getElementById('cfg-imp').value = ""; save(); actualizarSelectsMuro();
         }
-        function importarExcel(e) {
-            const file = e.target.files[0]; if (!file) return;
-            const r = new FileReader();
+        function renderizarListaAjustes() {
+            document.getElementById('lista-cats-ui').innerHTML = db.config.map((c, i) => `<div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center text-[10px] font-bold shadow-sm"><div class="flex-1"><span class="${c.tipo === 'Ingreso' ? 'text-emerald-600':'text-rose-500'} uppercase">${c.tipo}</span> | <span class="text-slate-800 uppercase">${c.categoria}</span><div class="text-slate-400 uppercase mt-0.5">${c.concepto} <span class="text-slate-900 ml-2">${c.importe.toFixed(2)}€</span></div></div><button onclick="db.config.splice(${i},1); save();" class="text-slate-300 hover:text-rose-500 px-2"><i class="fas fa-trash"></i></button></div>`).join('');
+        }
+        function actualizarDatalistCats() { document.getElementById('lista-sugerencias-cat').innerHTML = [...new Set(db.config.map(c => c.categoria))].map(c => `<option value="${c}">`).join(''); }
+        function setTipo(t) { tipoMuroActual = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectsMuro(); }
+        function actualizarSelectsMuro() {
+            const tipoRef = tipoMuroActual === 'Ingresos' ? 'Ingreso' : 'Gasto';
+            const cats = [...new Set(db.config.filter(c => c.tipo === tipoRef).map(c => c.categoria))].sort();
+            document.getElementById('in-cat').innerHTML = `<option value="" disabled selected>CATEGORÍA...</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('') + `<option value="VARIOS">VARIOS</option>`;
+            document.getElementById('in-concepto-select').innerHTML = "";
+        }
+        function cargarConceptosMuro() {
+            const cat = document.getElementById('in-cat').value; const tipoRef = tipoMuroActual === 'Ingresos' ? 'Ingreso' : 'Gasto';
+            const conceptos = db.config.filter(c => c.tipo === tipoRef && c.categoria === cat);
+            document.getElementById('in-concepto-select').innerHTML = conceptos.map(c => `<option value="${c.concepto}">${c.concepto}</option>`).join('');
+            if(conceptos.length > 0) document.getElementById('in-importe').value = conceptos[0].importe;
+        }
+        function eliminarMovimiento(id) { if(confirm("¿Eliminar?")) { db.movs = db.movs.filter(m => m.ID !== id); save(); } }
+        function borrarTodoElSistema() { if(confirm("¿RESET TOTAL?")) { localStorage.clear(); location.reload(); } }
+        function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); if(t === 'muro') { actualizarSelectsMuro(); cancelarEdicion(); } actualizarUI(); }
+        function exportarExcel() { const ws = XLSX.utils.json_to_sheet(db.movs, { header: ["ID", "Fecha", "Tipo", "Categoría", "Concepto", "Forma de Pago", "Importe", "Ingresos", "Gastos", "Fijo"] }); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Datos"); XLSX.writeFile(wb, `Finanzas_V9.3.xlsx`); }
+        function importarExcel(e) { 
+            const f = e.target.files[0]; if(!f) return; const r = new FileReader();
             r.onload = (evt) => {
-                const wb = XLSX.read(evt.target.result, {type: 'binary'});
-                const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-                raw.forEach(fila => {
+                const w = XLSX.read(evt.target.result, {type: 'binary'}); const raw = XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]]);
+                raw.forEach(fila => { 
                     if(!fila.ID) fila.ID = "IMP-" + Math.random().toString(16).slice(2);
-                    if(fila.Fecha && typeof fila.Fecha === 'number') { fila.Fecha = new Date(Math.round((fila.Fecha - 25569) * 86400 * 1000)).toISOString().slice(0,10); }
+                    if(typeof fila.Fecha === 'number') fila.Fecha = new Date(Math.round((fila.Fecha - 25569) * 86400 * 1000)).toISOString().slice(0,10);
                     if (!db.movs.find(m => m.ID.toString() === fila.ID.toString())) db.movs.push(fila);
-                });
-                save();
-            };
-            r.readAsBinaryString(file);
+                }); save();
+            }; r.readAsBinaryString(f);
         }
 
         document.getElementById('in-fecha').valueAsDate = new Date();
@@ -481,4 +402,3 @@
     </script>
 </body>
 </html>
-
