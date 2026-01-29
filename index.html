@@ -1,17 +1,3 @@
-El problema es "invisible" pero crítico: Los tipos de datos.
-
-Aunque en el Muro los ves bien, es muy probable que al importar desde Excel, los números (Importe/Gastos) se estén guardando como Texto (ej: "50.00" entre comillas) en lugar de Números (50.00 real).
-
-El Muro es listo y usa parseFloat para sumar el saldo, por eso ahí sí sale el total.
-
-Los Gráficos y las Barras de Progreso intentan sumar directamente. En programación: 0 + "50" no es 50, es "050" (texto). Eso rompe las matemáticas de las gráficas y salen en blanco o dan error.
-
-He creado la Versión 9.5, que incluye un "Sanitizador de Datos" en la importación. Básicamente, obliga a que todo lo que entra se convierta a número real y limpia los nombres de las categorías (Mayúsculas y sin espacios extra) para que coincidan perfectamente.
-
-CÓDIGO FUENTE V9.5 (Corrección Gráficos Importados)
-Sustituye todo el código. Esta versión arregla los datos al entrar.
-
-HTML
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -409,3 +395,4 @@ HTML
     </script>
 </body>
 </html>
+
