@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V9.3 - RECURRENTES</title>
+    <title>FINANZAS V9.4 - PRO IMPORT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,7 +26,7 @@
 
     <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-md">
         <div>
-            <h1 class="font-black italic text-lg uppercase text-blue-400 leading-none">Finanzas V9.3</h1>
+            <h1 class="font-black italic text-lg uppercase text-blue-400 leading-none">Finanzas V9.4</h1>
             <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-widest"></p>
         </div>
         <select id="filtro-mes" onchange="actualizarUI()" class="!w-32 !h-9 !bg-slate-800 !text-white !text-xs font-bold border-none"></select>
@@ -54,33 +54,25 @@
                 <button onclick="setTipo('Ingresos')" id="t-Ingresos" class="btn-tipo active">Ingresos</button>
                 <button onclick="setTipo('Gastos')" id="t-Gastos" class="btn-tipo">Gastos</button>
             </div>
-            
             <div class="grid grid-cols-2 gap-2 mb-4">
                 <input type="date" id="in-fecha">
                 <input type="number" id="in-importe" placeholder="0.00 €" class="font-black text-blue-600 text-lg">
             </div>
-
             <div class="space-y-3">
                 <select id="in-cat" onchange="cargarConceptosMuro()" class="font-bold uppercase text-sm"></select>
                 <select id="in-concepto-select" class="font-bold uppercase text-sm"></select>
-                
                 <div class="flex items-center gap-2">
                     <select id="in-pago" class="text-xs font-bold uppercase bg-slate-50 flex-1">
                         <option value="BANCO">🏦 BANCO</option><option value="EFECTIVO">💵 EFECTIVO</option><option value="TARJETA">💳 TARJETA</option>
                     </select>
                     <label class="flex items-center gap-2 bg-indigo-50 px-3 py-2 rounded-lg border border-indigo-100 cursor-pointer">
                         <input type="checkbox" id="in-fijo" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                        <span class="text-[9px] font-black uppercase text-indigo-700">Fijo Mensual</span>
+                        <span class="text-[9px] font-black uppercase text-indigo-700">Fijo</span>
                     </label>
                 </div>
             </div>
-
-            <button id="btn-guardar" onclick="registrarMovimiento()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg active:scale-95 transition-transform">
-                Guardar Movimiento
-            </button>
-            <button id="btn-cancelar" onclick="cancelarEdicion()" class="w-full bg-slate-200 text-slate-500 py-2 rounded-lg font-bold text-[10px] uppercase mt-2 hidden">
-                Cancelar Edición
-            </button>
+            <button id="btn-guardar" onclick="registrarMovimiento()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg active:scale-95 transition-transform">Guardar Movimiento</button>
+            <button id="btn-cancelar" onclick="cancelarEdicion()" class="w-full bg-slate-200 text-slate-500 py-2 rounded-lg font-bold text-[10px] uppercase mt-2 hidden">Cancelar Edición</button>
         </div>
 
         <div id="lista-movs" class="space-y-2 mt-4 pb-12"></div>
@@ -97,7 +89,6 @@
                 <h4 id="kpi-diario" class="text-xl font-black text-rose-600">0€</h4>
             </div>
         </div>
-
         <div class="card">
             <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4 text-center">Distribución</h3>
             <canvas id="chartDoughnut" style="max-height: 200px;"></canvas>
@@ -111,16 +102,12 @@
     </div>
 
     <div id="config" class="tab-content p-4">
-        
         <div class="card bg-indigo-50 border border-indigo-200 mb-6">
             <div class="flex items-center gap-3 mb-2">
                 <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="fas fa-sync-alt"></i></div>
                 <h3 class="text-xs font-black uppercase text-indigo-800">Copia Mensual</h3>
             </div>
-            <p class="text-[10px] text-indigo-600 mb-3 leading-tight">Copia todos los movimientos marcados como "Fijo Mensual" del mes anterior al mes seleccionado actualmente.</p>
-            <button onclick="clonarFijos()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95">
-                📥 Clonar Fijos del Mes Anterior
-            </button>
+            <button onclick="clonarFijos()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95">📥 Clonar Fijos del Mes Anterior</button>
         </div>
 
         <div class="card border-2 border-slate-100">
@@ -142,8 +129,8 @@
 
         <div class="fixed bottom-[75px] left-4 right-4 bg-slate-900 p-3 rounded-2xl flex gap-2 items-center justify-between z-40 shadow-2xl">
             <div class="flex gap-2">
-                <button onclick="exportarExcel()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Excel</button>
-                <button onclick="document.getElementById('file-in').click()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Importar</button>
+                <button onclick="exportarExcel()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Excel Saliente</button>
+                <button onclick="document.getElementById('file-in').click()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Excel Entrante</button>
             </div>
             <input type="file" id="file-in" class="hidden" onchange="importarExcel(event)">
             <button onclick="borrarTodoElSistema()" class="text-rose-400 p-2"><i class="fas fa-trash-alt"></i></button>
@@ -151,7 +138,7 @@
     </div>
 
     <script>
-        // *** IMPORTANTE: Usa la clave donde tengas tus datos. Si usabas la V9_2, pon FINANZAS_V9_2_DATA ***
+        // Mantenemos la clave para no perder datos previos
         const KEY = 'SISTEMA_FINANZAS_V9_PRO'; 
         
         let db = JSON.parse(localStorage.getItem(KEY)) || { config: [], movs: [] };
@@ -165,6 +152,9 @@
             renderizarSelectorMeses();
             const mesSel = document.getElementById('filtro-mes').value || new Date().toISOString().slice(0,7);
             
+            // 1. ORDENAR POR FECHA (Descendente: más nuevo arriba)
+            db.movs.sort((a, b) => new Date(b.Fecha) - new Date(a.Fecha));
+
             const movsMes = db.movs.filter(m => m.Fecha.startsWith(mesSel));
             const totalIng = movsMes.reduce((s, m) => s + (parseFloat(m.Ingresos) || 0), 0);
             const totalGas = movsMes.reduce((s, m) => s + (parseFloat(m.Gastos) || 0), 0);
@@ -174,14 +164,13 @@
             document.getElementById('sum-gas').innerText = totalGas.toFixed(0) + "€";
             document.getElementById('mes-header').innerText = mesSel;
 
-            // Render Lista con icono de Fijo
             document.getElementById('lista-movs').innerHTML = movsMes.map(m => `
                 <div class="card flex justify-between items-center py-3 border-l-4 ${m.Ingresos > 0 ? 'border-emerald-500':'border-rose-500'}">
                     <div class="truncate mr-2 flex-1">
                         <div class="flex items-center gap-2 mb-1">
                             <span class="text-[8px] font-bold text-slate-400">${m.Fecha.slice(8,10)}</span>
                             <span class="text-[9px] font-black text-blue-500 uppercase tracking-tighter">${m.Categoría}</span>
-                            ${m.Fijo ? '<i class="fas fa-sync-alt text-[9px] text-indigo-500 ml-1" title="Fijo Mensual"></i>' : ''}
+                            ${m.Fijo ? '<i class="fas fa-sync-alt text-[9px] text-indigo-500 ml-1"></i>' : ''}
                         </div>
                         <p class="font-bold text-slate-800 uppercase text-xs truncate">${m.Concepto}</p>
                     </div>
@@ -190,132 +179,11 @@
                         <button onclick="prepararEdicion('${m.ID}')" class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fas fa-pencil-alt text-xs"></i></button>
                         <button onclick="eliminarMovimiento('${m.ID}')" class="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center"><i class="fas fa-trash text-xs"></i></button>
                     </div>
-                </div>`).reverse().join('');
+                </div>`).join(''); // Ya está ordenado, no hace falta .reverse()
 
             renderizarDashboard(movsMes, totalIng, totalGas, mesSel);
             renderizarListaAjustes();
             actualizarDatalistCats();
-        }
-
-        // --- SISTEMA DE CLONADO (NUEVO) ---
-        function clonarFijos() {
-            const mesDestinoStr = document.getElementById('filtro-mes').value;
-            if(!mesDestinoStr) return alert("Selecciona primero un mes destino.");
-
-            // Calcular mes anterior
-            const fechaDestino = new Date(mesDestinoStr + "-01");
-            const fechaAnterior = new Date(fechaDestino.getFullYear(), fechaDestino.getMonth() - 1, 1);
-            const mesAnteriorStr = fechaAnterior.toISOString().slice(0, 7);
-
-            // Buscar fijos del mes anterior
-            const fijosAnteriores = db.movs.filter(m => m.Fecha.startsWith(mesAnteriorStr) && m.Fijo === true);
-
-            if(fijosAnteriores.length === 0) return alert(`No hay movimientos marcados como 'Fijo' en ${mesAnteriorStr}`);
-
-            if(!confirm(`Se han encontrado ${fijosAnteriores.length} movimientos fijos en ${mesAnteriorStr}.\n¿Quieres copiarlos a ${mesDestinoStr}?`)) return;
-
-            let copiados = 0;
-            fijosAnteriores.forEach(m => {
-                // Crear nueva fecha manteniendo el día (Ojo con días > 28/30/31, JS lo ajusta solo)
-                const dia = parseInt(m.Fecha.split('-')[2]);
-                const nuevaFechaDate = new Date(fechaDestino.getFullYear(), fechaDestino.getMonth(), dia);
-                const nuevaFechaStr = nuevaFechaDate.toISOString().slice(0, 10);
-
-                // Evitar duplicados (mismo concepto, importe y fecha destino)
-                const existe = db.movs.some(exist => 
-                    exist.Fecha === nuevaFechaStr && 
-                    exist.Concepto === m.Concepto && 
-                    exist.Importe === m.Importe
-                );
-
-                if(!existe) {
-                    const copia = { ...m, ID: Date.now().toString() + Math.random(), Fecha: nuevaFechaStr };
-                    db.movs.push(copia);
-                    copiados++;
-                }
-            });
-
-            save();
-            alert(`Proceso terminado. Se han clonado ${copiados} movimientos.`);
-        }
-
-        // --- EDICIÓN Y REGISTRO ---
-        function registrarMovimiento() {
-            const f = document.getElementById('in-fecha').value;
-            const imp = parseFloat(document.getElementById('in-importe').value);
-            const cat = document.getElementById('in-cat').value;
-            const con = document.getElementById('in-concepto-select').value;
-            const pago = document.getElementById('in-pago').value;
-            const esFijo = document.getElementById('in-fijo').checked; // NUEVO
-
-            if(!f || !imp || !cat) return alert("Faltan datos");
-
-            const datosMov = {
-                "Fecha": f, "Tipo": tipoMuroActual, "Categoría": cat, "Concepto": con,
-                "Forma de Pago": pago, "Importe": imp, "Fijo": esFijo,
-                "Ingresos": (tipoMuroActual === 'Ingresos' ? imp : 0),
-                "Gastos": (tipoMuroActual === 'Gastos' ? imp : 0)
-            };
-
-            if (idEdicion) {
-                const index = db.movs.findIndex(m => m.ID === idEdicion);
-                if (index !== -1) {
-                    db.movs[index] = { ...db.movs[index], ...datosMov };
-                    alert("Actualizado");
-                    cancelarEdicion();
-                }
-            } else {
-                datosMov.ID = Date.now().toString();
-                db.movs.push(datosMov);
-            }
-            save();
-            if(!idEdicion) {
-                document.getElementById('in-importe').value = "";
-                document.getElementById('in-fijo').checked = false; // Resetear check
-            }
-        }
-
-        function prepararEdicion(id) {
-            const mov = db.movs.find(m => m.ID === id);
-            if (!mov) return;
-            idEdicion = id;
-            document.getElementById('btn-guardar').innerText = "ACTUALIZAR";
-            document.getElementById('btn-guardar').className = "w-full bg-amber-500 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg";
-            document.getElementById('btn-cancelar').classList.remove('hidden');
-            document.getElementById('card-formulario').classList.add('ring-2', 'ring-amber-400');
-            
-            setTipo(mov.Tipo === 'Ingreso' ? 'Ingresos' : 'Gastos');
-            setTimeout(() => {
-                document.getElementById('in-fecha').value = mov.Fecha;
-                document.getElementById('in-importe').value = mov.Importe;
-                document.getElementById('in-pago').value = mov['Forma de Pago'] || 'BANCO';
-                document.getElementById('in-fijo').checked = mov.Fijo || false; // Cargar estado fijo
-                
-                const selCat = document.getElementById('in-cat');
-                if(!selCat.querySelector(`option[value="${mov.Categoría}"]`)) {
-                    let opt = document.createElement('option'); opt.value = mov.Categoría; opt.text = mov.Categoría; selCat.add(opt);
-                }
-                selCat.value = mov.Categoría;
-                cargarConceptosMuro();
-                
-                const selCon = document.getElementById('in-concepto-select');
-                if(![...selCon.options].some(o => o.value === mov.Concepto)) {
-                    let opt = document.createElement('option'); opt.value = mov.Concepto; opt.text = mov.Concepto; selCon.add(opt);
-                }
-                selCon.value = mov.Concepto;
-                document.getElementById('muro').scrollIntoView({behavior: 'smooth'});
-            }, 50);
-        }
-
-        function cancelarEdicion() {
-            idEdicion = null;
-            document.getElementById('in-importe').value = "";
-            document.getElementById('in-fecha').valueAsDate = new Date();
-            document.getElementById('in-fijo').checked = false;
-            document.getElementById('btn-guardar').innerText = "GUARDAR MOVIMIENTO";
-            document.getElementById('btn-guardar').className = "w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg";
-            document.getElementById('btn-cancelar').classList.add('hidden');
-            document.getElementById('card-formulario').classList.remove('ring-2', 'ring-amber-400');
         }
 
         // --- DASHBOARD ---
@@ -349,13 +217,144 @@
             }).join('');
         }
 
-        // --- EXCEL & UTILIDADES ---
+        // --- IMPORTACIÓN / EXPORTACIÓN PRO ---
+        function exportarExcel() {
+            const nombre = prompt("¿Nombre del archivo?", "Mis_Finanzas");
+            if(!nombre) return;
+            const ws = XLSX.utils.json_to_sheet(db.movs, { header: ["ID", "Fecha", "Tipo", "Categoría", "Concepto", "Forma de Pago", "Importe", "Ingresos", "Gastos", "Fijo"] });
+            const wb = XLSX.utils.book_new(); 
+            XLSX.utils.book_append_sheet(wb, ws, "Datos"); 
+            XLSX.writeFile(wb, `${nombre}.xlsx`);
+        }
+
+        function importarExcel(e) { 
+            const f = e.target.files[0]; 
+            if(!f) return; 
+            
+            const r = new FileReader();
+            r.onload = (evt) => {
+                const w = XLSX.read(evt.target.result, {type: 'binary'}); 
+                const raw = XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]]);
+                
+                // 1. Confirmación
+                if(!confirm(`Se han detectado ${raw.length} movimientos.\n¿Estás seguro de que quieres importarlos?`)) {
+                    document.getElementById('file-in').value = ''; // Limpiar input
+                    return;
+                }
+
+                let nuevosConfig = 0;
+
+                raw.forEach(fila => { 
+                    // 2. Autocorrección de datos
+                    if(!fila.ID) fila.ID = "IMP-" + Math.random().toString(16).slice(2);
+                    if(typeof fila.Fecha === 'number') fila.Fecha = new Date(Math.round((fila.Fecha - 25569) * 86400 * 1000)).toISOString().slice(0,10);
+                    
+                    // Asegurar que el TIPO coincide con los valores numéricos
+                    const ing = parseFloat(fila.Ingresos) || 0;
+                    const gas = parseFloat(fila.Gastos) || 0;
+                    if(ing > 0) fila.Tipo = 'Ingreso';
+                    if(gas > 0) fila.Tipo = 'Gasto';
+                    if(!fila.Tipo && gas > 0) fila.Tipo = 'Gasto'; // Fallback
+
+                    // 3. GENERACIÓN AUTOMÁTICA DE CONFIG (Para que salgan en Gráficos)
+                    if(fila.Categoría && fila.Concepto) {
+                        const existeConfig = db.config.find(c => c.categoria === fila.Categoría && c.concepto === fila.Concepto);
+                        if(!existeConfig) {
+                            db.config.push({
+                                id: Date.now() + Math.random(),
+                                tipo: fila.Tipo === 'Ingreso' ? 'Ingreso' : 'Gasto',
+                                categoria: fila.Categoría,
+                                concepto: fila.Concepto,
+                                importe: 0 // Presupuesto 0 por defecto
+                            });
+                            nuevosConfig++;
+                        }
+                    }
+
+                    // Evitar duplicados por ID
+                    if (!db.movs.find(m => m.ID.toString() === fila.ID.toString())) {
+                        db.movs.push(fila);
+                    }
+                }); 
+                
+                save();
+                alert(`Importación completada.\nSe han añadido ${nuevosConfig} nuevas categorías a Ajustes automáticamente.`);
+                document.getElementById('file-in').value = ''; // Limpiar input
+            }; 
+            r.readAsBinaryString(f);
+        }
+
+        // --- RESTO DE FUNCIONES ---
+        function clonarFijos() {
+            const mesDestinoStr = document.getElementById('filtro-mes').value;
+            if(!mesDestinoStr) return alert("Selecciona mes destino.");
+            const fd = new Date(mesDestinoStr + "-01");
+            const fa = new Date(fd.getFullYear(), fd.getMonth() - 1, 1);
+            const mesAnt = fa.toISOString().slice(0, 7);
+            const fijos = db.movs.filter(m => m.Fecha.startsWith(mesAnt) && m.Fijo === true);
+            if(fijos.length === 0) return alert(`No hay fijos en ${mesAnt}`);
+            if(!confirm(`Copiar ${fijos.length} fijos de ${mesAnt} a ${mesDestinoStr}?`)) return;
+            fijos.forEach(m => {
+                const dia = parseInt(m.Fecha.split('-')[2]);
+                const nf = new Date(fd.getFullYear(), fd.getMonth(), dia).toISOString().slice(0, 10);
+                if(!db.movs.some(e => e.Fecha === nf && e.Concepto === m.Concepto && e.Importe === m.Importe)) {
+                    db.movs.push({ ...m, ID: Date.now()+Math.random(), Fecha: nf });
+                }
+            });
+            save();
+        }
+
+        function registrarMovimiento() {
+            const f = document.getElementById('in-fecha').value;
+            const imp = parseFloat(document.getElementById('in-importe').value);
+            const cat = document.getElementById('in-cat').value;
+            const con = document.getElementById('in-concepto-select').value;
+            const pago = document.getElementById('in-pago').value;
+            const esFijo = document.getElementById('in-fijo').checked;
+
+            if(!f || !imp || !cat) return alert("Faltan datos");
+
+            const datosMov = { "Fecha": f, "Tipo": tipoMuroActual, "Categoría": cat, "Concepto": con, "Forma de Pago": pago, "Importe": imp, "Fijo": esFijo, "Ingresos": (tipoMuroActual === 'Ingresos' ? imp : 0), "Gastos": (tipoMuroActual === 'Gastos' ? imp : 0) };
+
+            if (idEdicion) {
+                const index = db.movs.findIndex(m => m.ID === idEdicion);
+                if (index !== -1) { db.movs[index] = { ...db.movs[index], ...datosMov }; cancelarEdicion(); }
+            } else {
+                datosMov.ID = Date.now().toString(); db.movs.push(datosMov);
+            }
+            save();
+            if(!idEdicion) { document.getElementById('in-importe').value = ""; document.getElementById('in-fijo').checked = false; }
+        }
+
+        function prepararEdicion(id) {
+            const mov = db.movs.find(m => m.ID === id); if (!mov) return;
+            idEdicion = id;
+            document.getElementById('btn-guardar').innerText = "ACTUALIZAR";
+            document.getElementById('btn-guardar').className = "w-full bg-amber-500 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg";
+            document.getElementById('btn-cancelar').classList.remove('hidden');
+            document.getElementById('card-formulario').classList.add('ring-2', 'ring-amber-400');
+            setTipo(mov.Tipo === 'Ingreso' ? 'Ingresos' : 'Gastos');
+            setTimeout(() => {
+                document.getElementById('in-fecha').value = mov.Fecha; document.getElementById('in-importe').value = mov.Importe; document.getElementById('in-pago').value = mov['Forma de Pago'] || 'BANCO'; document.getElementById('in-fijo').checked = mov.Fijo || false;
+                const selCat = document.getElementById('in-cat');
+                if(!selCat.querySelector(`option[value="${mov.Categoría}"]`)) { let o=document.createElement('option'); o.value=mov.Categoría; o.text=mov.Categoría; selCat.add(o); }
+                selCat.value = mov.Categoría; cargarConceptosMuro();
+                const selCon = document.getElementById('in-concepto-select');
+                if(![...selCon.options].some(o=>o.value===mov.Concepto)){ let o=document.createElement('option'); o.value=mov.Concepto; o.text=mov.Concepto; selCon.add(o); }
+                selCon.value = mov.Concepto; document.getElementById('muro').scrollIntoView({behavior:'smooth'});
+            }, 50);
+        }
+
+        function cancelarEdicion() {
+            idEdicion = null; document.getElementById('in-importe').value = ""; document.getElementById('in-fecha').valueAsDate = new Date(); document.getElementById('in-fijo').checked = false;
+            document.getElementById('btn-guardar').innerText = "GUARDAR MOVIMIENTO"; document.getElementById('btn-guardar').className = "w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg";
+            document.getElementById('btn-cancelar').classList.add('hidden'); document.getElementById('card-formulario').classList.remove('ring-2', 'ring-amber-400');
+        }
+
         function renderizarSelectorMeses() {
             const fechas = [...new Set(db.movs.map(m => m.Fecha.slice(0, 7)))].sort().reverse();
-            const hoy = new Date().toISOString().slice(0, 7);
-            if (!fechas.includes(hoy)) fechas.unshift(hoy);
-            const select = document.getElementById('filtro-mes');
-            const actual = select.value;
+            const hoy = new Date().toISOString().slice(0, 7); if (!fechas.includes(hoy)) fechas.unshift(hoy);
+            const select = document.getElementById('filtro-mes'); const actual = select.value;
             select.innerHTML = fechas.map(f => `<option value="${f}" ${f===actual?'selected':''}>${f}</option>`).join('');
         }
         function guardarNuevaConfig() {
@@ -364,9 +363,7 @@
             db.config.push({ id: Date.now(), tipo, categoria: cat, concepto: con, importe: imp });
             document.getElementById('cfg-con').value = ""; document.getElementById('cfg-imp').value = ""; save(); actualizarSelectsMuro();
         }
-        function renderizarListaAjustes() {
-            document.getElementById('lista-cats-ui').innerHTML = db.config.map((c, i) => `<div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center text-[10px] font-bold shadow-sm"><div class="flex-1"><span class="${c.tipo === 'Ingreso' ? 'text-emerald-600':'text-rose-500'} uppercase">${c.tipo}</span> | <span class="text-slate-800 uppercase">${c.categoria}</span><div class="text-slate-400 uppercase mt-0.5">${c.concepto} <span class="text-slate-900 ml-2">${c.importe.toFixed(2)}€</span></div></div><button onclick="db.config.splice(${i},1); save();" class="text-slate-300 hover:text-rose-500 px-2"><i class="fas fa-trash"></i></button></div>`).join('');
-        }
+        function renderizarListaAjustes() { document.getElementById('lista-cats-ui').innerHTML = db.config.map((c, i) => `<div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center text-[10px] font-bold shadow-sm"><div class="flex-1"><span class="${c.tipo === 'Ingreso' ? 'text-emerald-600':'text-rose-500'} uppercase">${c.tipo}</span> | <span class="text-slate-800 uppercase">${c.categoria}</span><div class="text-slate-400 uppercase mt-0.5">${c.concepto} <span class="text-slate-900 ml-2">${c.importe.toFixed(2)}€</span></div></div><button onclick="db.config.splice(${i},1); save();" class="text-slate-300 hover:text-rose-500 px-2"><i class="fas fa-trash"></i></button></div>`).join(''); }
         function actualizarDatalistCats() { document.getElementById('lista-sugerencias-cat').innerHTML = [...new Set(db.config.map(c => c.categoria))].map(c => `<option value="${c}">`).join(''); }
         function setTipo(t) { tipoMuroActual = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectsMuro(); }
         function actualizarSelectsMuro() {
@@ -384,18 +381,6 @@
         function eliminarMovimiento(id) { if(confirm("¿Eliminar?")) { db.movs = db.movs.filter(m => m.ID !== id); save(); } }
         function borrarTodoElSistema() { if(confirm("¿RESET TOTAL?")) { localStorage.clear(); location.reload(); } }
         function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); if(t === 'muro') { actualizarSelectsMuro(); cancelarEdicion(); } actualizarUI(); }
-        function exportarExcel() { const ws = XLSX.utils.json_to_sheet(db.movs, { header: ["ID", "Fecha", "Tipo", "Categoría", "Concepto", "Forma de Pago", "Importe", "Ingresos", "Gastos", "Fijo"] }); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Datos"); XLSX.writeFile(wb, `Finanzas_V9.3.xlsx`); }
-        function importarExcel(e) { 
-            const f = e.target.files[0]; if(!f) return; const r = new FileReader();
-            r.onload = (evt) => {
-                const w = XLSX.read(evt.target.result, {type: 'binary'}); const raw = XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]]);
-                raw.forEach(fila => { 
-                    if(!fila.ID) fila.ID = "IMP-" + Math.random().toString(16).slice(2);
-                    if(typeof fila.Fecha === 'number') fila.Fecha = new Date(Math.round((fila.Fecha - 25569) * 86400 * 1000)).toISOString().slice(0,10);
-                    if (!db.movs.find(m => m.ID.toString() === fila.ID.toString())) db.movs.push(fila);
-                }); save();
-            }; r.readAsBinaryString(f);
-        }
 
         document.getElementById('in-fecha').valueAsDate = new Date();
         actualizarUI();
