@@ -1,9 +1,23 @@
+El problema es "invisible" pero crítico: Los tipos de datos.
+
+Aunque en el Muro los ves bien, es muy probable que al importar desde Excel, los números (Importe/Gastos) se estén guardando como Texto (ej: "50.00" entre comillas) en lugar de Números (50.00 real).
+
+El Muro es listo y usa parseFloat para sumar el saldo, por eso ahí sí sale el total.
+
+Los Gráficos y las Barras de Progreso intentan sumar directamente. En programación: 0 + "50" no es 50, es "050" (texto). Eso rompe las matemáticas de las gráficas y salen en blanco o dan error.
+
+He creado la Versión 9.5, que incluye un "Sanitizador de Datos" en la importación. Básicamente, obliga a que todo lo que entra se convierta a número real y limpia los nombres de las categorías (Mayúsculas y sin espacios extra) para que coincidan perfectamente.
+
+CÓDIGO FUENTE V9.5 (Corrección Gráficos Importados)
+Sustituye todo el código. Esta versión arregla los datos al entrar.
+
+HTML
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V9.4 - PRO IMPORT</title>
+    <title>FINANZAS V9.5 - FINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,7 +40,7 @@
 
     <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-md">
         <div>
-            <h1 class="font-black italic text-lg uppercase text-blue-400 leading-none">Finanzas V9.4</h1>
+            <h1 class="font-black italic text-lg uppercase text-blue-400 leading-none">Finanzas V9.5</h1>
             <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-widest"></p>
         </div>
         <select id="filtro-mes" onchange="actualizarUI()" class="!w-32 !h-9 !bg-slate-800 !text-white !text-xs font-bold border-none"></select>
@@ -129,8 +143,8 @@
 
         <div class="fixed bottom-[75px] left-4 right-4 bg-slate-900 p-3 rounded-2xl flex gap-2 items-center justify-between z-40 shadow-2xl">
             <div class="flex gap-2">
-                <button onclick="exportarExcel()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Excel Saliente</button>
-                <button onclick="document.getElementById('file-in').click()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Excel Entrante</button>
+                <button onclick="exportarExcel()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Exportar</button>
+                <button onclick="document.getElementById('file-in').click()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Importar</button>
             </div>
             <input type="file" id="file-in" class="hidden" onchange="importarExcel(event)">
             <button onclick="borrarTodoElSistema()" class="text-rose-400 p-2"><i class="fas fa-trash-alt"></i></button>
@@ -138,7 +152,7 @@
     </div>
 
     <script>
-        // Mantenemos la clave para no perder datos previos
+        // Mantenemos la clave para no perder datos
         const KEY = 'SISTEMA_FINANZAS_V9_PRO'; 
         
         let db = JSON.parse(localStorage.getItem(KEY)) || { config: [], movs: [] };
@@ -152,10 +166,12 @@
             renderizarSelectorMeses();
             const mesSel = document.getElementById('filtro-mes').value || new Date().toISOString().slice(0,7);
             
-            // 1. ORDENAR POR FECHA (Descendente: más nuevo arriba)
+            // Orden: Más reciente primero
             db.movs.sort((a, b) => new Date(b.Fecha) - new Date(a.Fecha));
 
             const movsMes = db.movs.filter(m => m.Fecha.startsWith(mesSel));
+            
+            // Corrección segura de sumas
             const totalIng = movsMes.reduce((s, m) => s + (parseFloat(m.Ingresos) || 0), 0);
             const totalGas = movsMes.reduce((s, m) => s + (parseFloat(m.Gastos) || 0), 0);
 
@@ -179,14 +195,14 @@
                         <button onclick="prepararEdicion('${m.ID}')" class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fas fa-pencil-alt text-xs"></i></button>
                         <button onclick="eliminarMovimiento('${m.ID}')" class="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center"><i class="fas fa-trash text-xs"></i></button>
                     </div>
-                </div>`).join(''); // Ya está ordenado, no hace falta .reverse()
+                </div>`).join(''); 
 
             renderizarDashboard(movsMes, totalIng, totalGas, mesSel);
             renderizarListaAjustes();
             actualizarDatalistCats();
         }
 
-        // --- DASHBOARD ---
+        // --- DASHBOARD (Con corrección de tipos) ---
         function renderizarDashboard(movs, ti, tg, mesSel) {
             const ahorro = ti > 0 ? Math.max(0, ((ti - tg) / ti) * 100) : 0;
             document.getElementById('kpi-ahorro').innerText = ahorro.toFixed(1) + "%";
@@ -198,9 +214,16 @@
                 type: 'doughnut', data: { labels: ['Ingresos', 'Gastos'], datasets: [{ data: [ti, tg], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] }, options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
             });
 
+            // Agregación segura (Numérica)
             const gastoCat = {};
-            movs.filter(m => m.Gastos > 0).forEach(m => { gastoCat[m.Categoría] = (gastoCat[m.Categoría] || 0) + m.Gastos; });
+            movs.filter(m => (parseFloat(m.Gastos)||0) > 0).forEach(m => { 
+                const cat = m.Categoría || "OTROS";
+                const val = parseFloat(m.Gastos) || 0;
+                gastoCat[cat] = (gastoCat[cat] || 0) + val; 
+            });
+            
             const top = Object.entries(gastoCat).sort((a,b) => b[1]-a[1]).slice(0,5);
+            
             if (charts.bars) charts.bars.destroy();
             charts.bars = new Chart(document.getElementById('chartBars'), {
                 type: 'bar', data: { labels: top.map(x=>x[0]), datasets: [{ data: top.map(x=>x[1]), backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false } } } }
@@ -208,83 +231,82 @@
 
             const configsGasto = db.config.filter(c => c.tipo === 'Gasto');
             const catsUnicas = [...new Set(configsGasto.map(c => c.categoria))].sort();
+            
             document.getElementById('progreso-presupuestos').innerHTML = catsUnicas.map(catNombre => {
-                const presupuestoTotal = configsGasto.filter(c => c.categoria === catNombre).reduce((sum, c) => sum + c.importe, 0);
-                const gastadoReal = movs.filter(m => m.Categoría === catNombre && m.Gastos > 0).reduce((sum, m) => sum + m.Gastos, 0);
+                const presupuestoTotal = configsGasto.filter(c => c.categoria === catNombre).reduce((sum, c) => sum + (parseFloat(c.importe)||0), 0);
+                const gastadoReal = movs.filter(m => m.Categoría === catNombre && (parseFloat(m.Gastos)||0) > 0).reduce((sum, m) => sum + (parseFloat(m.Gastos)||0), 0);
+                
                 if (presupuestoTotal === 0 && gastadoReal === 0) return ''; 
                 const porc = presupuestoTotal > 0 ? Math.min((gastadoReal / presupuestoTotal) * 100, 100) : (gastadoReal > 0 ? 100 : 0);
+                
                 return `<div class="card p-3 mb-2 shadow-sm border border-slate-100"><div class="flex justify-between text-[10px] font-black uppercase mb-1"><span>${catNombre}</span><span class="${gastadoReal > presupuestoTotal ? 'text-rose-500' : 'text-slate-600'}">${gastadoReal.toFixed(0)}€ / ${presupuestoTotal}€</span></div><div class="progress-bar"><div class="progress-fill ${gastadoReal > presupuestoTotal ? 'bg-rose-500' : 'bg-blue-500'}" style="width: ${porc}%"></div></div></div>`;
             }).join('');
         }
 
-        // --- IMPORTACIÓN / EXPORTACIÓN PRO ---
+        // --- IMPORTACIÓN / EXPORTACIÓN (SANITIZADA) ---
         function exportarExcel() {
-            const nombre = prompt("¿Nombre del archivo?", "Mis_Finanzas");
+            const nombre = prompt("Nombre del archivo:", "Finanzas");
             if(!nombre) return;
             const ws = XLSX.utils.json_to_sheet(db.movs, { header: ["ID", "Fecha", "Tipo", "Categoría", "Concepto", "Forma de Pago", "Importe", "Ingresos", "Gastos", "Fijo"] });
-            const wb = XLSX.utils.book_new(); 
-            XLSX.utils.book_append_sheet(wb, ws, "Datos"); 
-            XLSX.writeFile(wb, `${nombre}.xlsx`);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Datos"); XLSX.writeFile(wb, `${nombre}.xlsx`);
         }
 
         function importarExcel(e) { 
-            const f = e.target.files[0]; 
-            if(!f) return; 
-            
+            const f = e.target.files[0]; if(!f) return; 
             const r = new FileReader();
             r.onload = (evt) => {
                 const w = XLSX.read(evt.target.result, {type: 'binary'}); 
                 const raw = XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]]);
                 
-                // 1. Confirmación
-                if(!confirm(`Se han detectado ${raw.length} movimientos.\n¿Estás seguro de que quieres importarlos?`)) {
-                    document.getElementById('file-in').value = ''; // Limpiar input
-                    return;
+                if(!confirm(`Detectados ${raw.length} movimientos.\n¿Importar y generar categorías?`)) {
+                    document.getElementById('file-in').value = ''; return;
                 }
 
-                let nuevosConfig = 0;
-
+                let count = 0;
                 raw.forEach(fila => { 
-                    // 2. Autocorrección de datos
+                    // SANITIZACIÓN DE DATOS (CRÍTICO)
                     if(!fila.ID) fila.ID = "IMP-" + Math.random().toString(16).slice(2);
+                    
+                    // Fechas
                     if(typeof fila.Fecha === 'number') fila.Fecha = new Date(Math.round((fila.Fecha - 25569) * 86400 * 1000)).toISOString().slice(0,10);
                     
-                    // Asegurar que el TIPO coincide con los valores numéricos
+                    // NÚMEROS: Forzar conversión a Float real (evita texto)
                     const ing = parseFloat(fila.Ingresos) || 0;
                     const gas = parseFloat(fila.Gastos) || 0;
-                    if(ing > 0) fila.Tipo = 'Ingreso';
-                    if(gas > 0) fila.Tipo = 'Gasto';
-                    if(!fila.Tipo && gas > 0) fila.Tipo = 'Gasto'; // Fallback
+                    const imp = parseFloat(fila.Importe) || (ing + gas); // Si falta importe, lo deduce
+                    
+                    fila.Ingresos = ing;
+                    fila.Gastos = gas;
+                    fila.Importe = imp;
+                    
+                    // CATEGORÍAS: Limpieza de espacios y mayúsculas
+                    const catClean = (fila.Categoría || fila.Categoria || "OTROS").toString().trim().toUpperCase();
+                    const conClean = (fila.Concepto || "Varios").toString().trim().toUpperCase();
+                    
+                    fila.Categoría = catClean;
+                    fila.Concepto = conClean;
+                    fila.Tipo = ing > 0 ? 'Ingreso' : 'Gasto';
 
-                    // 3. GENERACIÓN AUTOMÁTICA DE CONFIG (Para que salgan en Gráficos)
-                    if(fila.Categoría && fila.Concepto) {
-                        const existeConfig = db.config.find(c => c.categoria === fila.Categoría && c.concepto === fila.Concepto);
-                        if(!existeConfig) {
-                            db.config.push({
-                                id: Date.now() + Math.random(),
-                                tipo: fila.Tipo === 'Ingreso' ? 'Ingreso' : 'Gasto',
-                                categoria: fila.Categoría,
-                                concepto: fila.Concepto,
-                                importe: 0 // Presupuesto 0 por defecto
-                            });
-                            nuevosConfig++;
-                        }
+                    // Generar Config si no existe
+                    const existeConfig = db.config.find(c => c.categoria === catClean && c.concepto === conClean);
+                    if(!existeConfig) {
+                        db.config.push({ id: Date.now() + Math.random(), tipo: fila.Tipo, categoria: catClean, concepto: conClean, importe: 0 });
                     }
 
-                    // Evitar duplicados por ID
                     if (!db.movs.find(m => m.ID.toString() === fila.ID.toString())) {
                         db.movs.push(fila);
+                        count++;
                     }
                 }); 
                 
                 save();
-                alert(`Importación completada.\nSe han añadido ${nuevosConfig} nuevas categorías a Ajustes automáticamente.`);
-                document.getElementById('file-in').value = ''; // Limpiar input
+                alert(`Importados ${count} movimientos correctamente.`);
+                document.getElementById('file-in').value = ''; 
             }; 
             r.readAsBinaryString(f);
         }
 
-        // --- RESTO DE FUNCIONES ---
+        // --- RESTO ---
         function clonarFijos() {
             const mesDestinoStr = document.getElementById('filtro-mes').value;
             if(!mesDestinoStr) return alert("Selecciona mes destino.");
@@ -306,7 +328,7 @@
 
         function registrarMovimiento() {
             const f = document.getElementById('in-fecha').value;
-            const imp = parseFloat(document.getElementById('in-importe').value);
+            const imp = parseFloat(document.getElementById('in-importe').value); // Asegura numero
             const cat = document.getElementById('in-cat').value;
             const con = document.getElementById('in-concepto-select').value;
             const pago = document.getElementById('in-pago').value;
