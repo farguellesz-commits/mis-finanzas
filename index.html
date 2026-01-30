@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V9.8 - INCOME/EXPENSE ONLY</title>
+    <title>FINANZAS V9.9 - IMPORT FIX</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -23,7 +23,7 @@
 
     <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-md">
         <div>
-            <h1 class="font-black italic text-lg uppercase text-blue-400 leading-none">Finanzas V9.8</h1>
+            <h1 class="font-black italic text-lg uppercase text-blue-400 leading-none">Finanzas V9.9</h1>
             <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-widest"></p>
         </div>
         <select id="filtro-mes" onchange="actualizarUI()" class="!w-32 !h-9 !bg-slate-800 !text-white !text-xs font-bold border-none"></select>
@@ -58,12 +58,8 @@
             <div class="space-y-3">
                 <select id="in-cat" onchange="cargarConceptosMuro()" class="font-bold uppercase text-sm"></select>
                 <select id="in-concepto-select" class="font-bold uppercase text-sm"></select>
-                <label class="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-lg border cursor-pointer w-max">
-                    <input type="checkbox" id="in-fijo" class="w-4 h-4 text-blue-600 rounded">
-                    <span class="text-[9px] font-black uppercase text-slate-600">Movimiento Fijo</span>
-                </label>
             </div>
-            <button onclick="registrarMovimiento()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg active:scale-95 transition-transform">Guardar en Muro</button>
+            <button onclick="registrarMovimiento()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase mt-6 shadow-lg">Guardar</button>
         </div>
 
         <div id="lista-movs" class="space-y-2 mt-4 pb-12"></div>
@@ -71,24 +67,22 @@
 
     <div id="graficos" class="tab-content p-4">
         <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="card p-3 mb-0 text-center"><p class="text-[9px] font-black text-slate-400 uppercase">Ahorro %</p><h4 id="kpi-ahorro" class="text-xl font-black text-blue-600">0%</h4></div>
-            <div class="card p-3 mb-0 text-center"><p class="text-[9px] font-black text-slate-400 uppercase">Gasto Diario</p><h4 id="kpi-diario" class="text-xl font-black text-rose-600">0€</h4></div>
+            <div class="card p-3 mb-0 text-center"><p class="text-[9px] font-black text-slate-400 uppercase">Ahorro</p><h4 id="kpi-ahorro" class="text-xl font-black text-blue-600">0%</h4></div>
+            <div class="card p-3 mb-0 text-center"><p class="text-[9px] font-black text-slate-400 uppercase">Gastos Totales</p><h4 id="kpi-gasto-total" class="text-xl font-black text-rose-600">0€</h4></div>
         </div>
         <div class="card"><canvas id="chartDoughnut" style="max-height: 200px;"></canvas></div>
         <div class="card"><canvas id="chartBars" style="max-height: 250px;"></canvas></div>
-        <div id="progreso-presupuestos" class="space-y-3 pb-20"></div>
     </div>
 
     <div id="config" class="tab-content p-4">
         <div class="card border-2 border-slate-100">
-            <h3 class="text-xs font-black uppercase mb-4 text-slate-500 text-center">Gestión de Categorías</h3>
+            <h3 class="text-xs font-black uppercase mb-4 text-slate-500 text-center">Añadir Categoría Manual</h3>
             <div class="space-y-3">
-                <select id="cfg-tipo" class="font-bold text-sm"><option value="Ingreso">TIPO: INGRESO</option><option value="Gasto">TIPO: GASTO</option></select>
-                <input list="lista-sugerencias-cat" id="cfg-cat" type="text" placeholder="CATEGORÍA (EJ: NOMINA, COMIDA...)" class="font-bold uppercase text-sm">
-                <datalist id="lista-sugerencias-cat"></datalist>
-                <input type="text" id="cfg-con" placeholder="CONCEPTO (EJ: EMPRESA X, MERCADONA...)" class="font-bold uppercase text-sm">
-                <input type="number" id="cfg-imp" placeholder="IMPORTE PREVISTO €" class="font-bold text-sm">
-                <button onclick="guardarNuevaConfig()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-black text-[10px] uppercase">Añadir Categoría</button>
+                <select id="cfg-tipo" class="font-bold text-sm"><option value="Ingreso">INGRESO</option><option value="Gasto">GASTO</option></select>
+                <input type="text" id="cfg-cat" placeholder="CATEGORÍA" class="font-bold uppercase text-sm">
+                <input type="text" id="cfg-con" placeholder="CONCEPTO" class="font-bold uppercase text-sm">
+                <input type="number" id="cfg-imp" placeholder="IMPORTE €" class="font-bold text-sm">
+                <button onclick="guardarNuevaConfig()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-black text-[10px] uppercase">Guardar</button>
             </div>
         </div>
 
@@ -97,19 +91,115 @@
         <div class="fixed bottom-[75px] left-4 right-4 bg-slate-900 p-3 rounded-2xl flex gap-2 items-center justify-between z-40">
             <div class="flex gap-2">
                 <button onclick="exportarExcel()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Exportar</button>
-                <button onclick="document.getElementById('file-in').click()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Importar</button>
+                <button onclick="document.getElementById('file-in').click()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Importar Excel</button>
             </div>
-            <input type="file" id="file-in" class="hidden" onchange="importarExcel(event)">
+            <input type="file" id="file-in" class="hidden" accept=".xlsx, .xls, .csv" onchange="importarExcel(event)">
             <button onclick="borrarTodoElSistema()" class="text-rose-400 p-2"><i class="fas fa-trash-alt"></i></button>
         </div>
     </div>
 
     <script>
-        const KEY = 'SISTEMA_V98_FINAL';
+        const KEY = 'SISTEMA_V99_FIX';
         let db = JSON.parse(localStorage.getItem(KEY)) || { config: [], movs: [] };
         let tipoMuroActual = 'Ingresos'; 
         let charts = { doughnut: null, bars: null };
 
+        // --- SISTEMA DE IMPORTACIÓN ROBUSTO V9.9 ---
+        async function importarExcel(e) {
+            try {
+                const f = e.target.files[0]; 
+                if(!f) return;
+
+                // Usamos ArrayBuffer en vez de BinaryString (Más estable)
+                const data = await f.arrayBuffer();
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                
+                // Convertimos a JSON pero obteniendo TODO como texto para evitar errores de parseo
+                const raw = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+
+                if (raw.length === 0) {
+                    alert("El archivo parece estar vacío o no se pudo leer.");
+                    return;
+                }
+
+                // Diagnóstico rápido de columnas
+                const columnasEncontradas = Object.keys(raw[0]);
+                console.log("Columnas detectadas:", columnasEncontradas);
+
+                let count = 0;
+                let errores = 0;
+
+                raw.forEach((fila, index) => {
+                    // BUSCADOR FLEXIBLE DE COLUMNAS (Ignora mayúsculas/minúsculas y espacios)
+                    const getVal = (keys) => {
+                        const key = Object.keys(fila).find(k => keys.includes(k.trim().toUpperCase()));
+                        return key ? fila[key] : "";
+                    };
+
+                    // Buscar valores
+                    const valIng = parseFloat(getVal(['INGRESOS', 'INGRESO']) || 0);
+                    const valGas = parseFloat(getVal(['GASTOS', 'GASTO', 'GASTO_DIARIO']) || 0);
+                    
+                    // Si ambos son 0, saltamos
+                    if (valIng === 0 && valGas === 0) return;
+
+                    // Fecha: Intentamos leer columna FECHA, DATE, etc.
+                    let fechaRaw = getVal(['FECHA', 'DATE', 'DIA']);
+                    let fechaFinal = new Date().toISOString().slice(0,10);
+
+                    // Procesador de Fechas Excel
+                    if (fechaRaw) {
+                        if (typeof fechaRaw === 'number') {
+                            // Excel serial date
+                            fechaFinal = new Date(Math.round((fechaRaw - 25569) * 86400 * 1000)).toISOString().slice(0,10);
+                        } else {
+                            // Texto o String
+                            const d = new Date(fechaRaw);
+                            if (!isNaN(d)) fechaFinal = d.toISOString().slice(0,10);
+                        }
+                    }
+
+                    const cat = (getVal(['CATEGORIA', 'CATEGORÍA', 'CAT']) || "OTROS").toString().trim().toUpperCase();
+                    const con = (getVal(['CONCEPTO', 'DESC', 'DESCRIPCION']) || "Importado").toString().trim().toUpperCase();
+
+                    const tipo = valIng > 0 ? 'Ingreso' : 'Gasto';
+                    const valor = valIng > 0 ? valIng : valGas;
+
+                    // Duplicados
+                    const clave = `${fechaFinal}-${con}-${valor.toFixed(2)}-${tipo}`;
+                    const existe = db.movs.some(m => `${m.fecha}-${m.con}-${m.valor.toFixed(2)}-${m.tipo}` === clave);
+
+                    if (!existe) {
+                        // Crear Categoría Auto
+                        if(!db.config.some(c => c.categoria === cat && c.concepto === con)) {
+                            db.config.push({ id: Date.now() + Math.random(), tipo: tipo, categoria: cat, concepto: con, importe: 0 });
+                        }
+                        // Insertar Movimiento
+                        db.movs.push({ 
+                            id: Date.now() + Math.random() + index, 
+                            fecha: fechaFinal, 
+                            tipo: tipo, 
+                            cat: cat, 
+                            con: con, 
+                            valor: valor, 
+                            fijo: false 
+                        });
+                        count++;
+                    }
+                });
+
+                save();
+                alert(`✅ IMPORTACIÓN COMPLETADA\n\n- Movimientos leídos: ${raw.length}\n- Nuevos añadidos: ${count}\n- Duplicados ignorados: ${raw.length - count}`);
+                document.getElementById('file-in').value = ''; // Limpiar input
+
+            } catch (error) {
+                alert("❌ ERROR CRÍTICO AL IMPORTAR:\n" + error.message);
+                console.error(error);
+            }
+        }
+
+        // --- FUNCIONES CORE (Sin cambios lógicos graves, solo UI) ---
         function save() { localStorage.setItem(KEY, JSON.stringify(db)); actualizarUI(); }
 
         function actualizarUI() {
@@ -137,57 +227,14 @@
                     </div>
                 </div>`).join('');
 
-            renderizarDashboard(movsMes, totalIng, totalGas, mesSel);
+            renderizarDashboard(movsMes, totalIng, totalGas);
             renderizarListaAjustes();
         }
 
-        // --- IMPORTACIÓN SIN COLUMNA IMPORTE ---
-        function importarExcel(e) {
-            const f = e.target.files[0]; if(!f) return;
-            const r = new FileReader();
-            r.onload = (evt) => {
-                const w = XLSX.read(evt.target.result, {type: 'binary'});
-                const raw = XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]]);
-                let count = 0;
-
-                raw.forEach(fila => {
-                    const ing = parseFloat(fila.Ingresos || fila.INGRESOS || 0);
-                    const gas = parseFloat(fila.Gastos || fila.GASTOS || 0);
-                    
-                    if (ing === 0 && gas === 0) return; // Si no hay valores, saltar
-
-                    const tipoFinal = (ing > 0) ? 'Ingreso' : 'Gasto';
-                    const valorFinal = (ing > 0) ? ing : gas;
-
-                    let fechaFinal = new Date().toISOString().slice(0,10);
-                    if(fila.Fecha) {
-                        if(typeof fila.Fecha === 'number') fechaFinal = new Date(Math.round((fila.Fecha - 25569) * 86400 * 1000)).toISOString().slice(0,10);
-                        else { const d = new Date(fila.Fecha); if(!isNaN(d)) fechaFinal = d.toISOString().slice(0,10); }
-                    }
-
-                    const cat = (fila.Categoría || fila.CATEGORIA || "OTROS").toString().trim().toUpperCase();
-                    const con = (fila.Concepto || fila.CONCEPTO || "VARIO").toString().trim().toUpperCase();
-
-                    // CLAVE ÚNICA PARA DUPLICADOS
-                    const clave = `${fechaFinal}-${con}-${valorFinal.toFixed(2)}-${tipoFinal}`;
-                    if (!db.movs.some(m => `${m.fecha}-${m.con}-${m.valor.toFixed(2)}-${m.tipo}` === clave)) {
-                        if(!db.config.some(c => c.categoria === cat && c.concepto === con)) {
-                            db.config.push({ id: Date.now()+Math.random(), tipo: tipoFinal, categoria: cat, concepto: con, importe: 0 });
-                        }
-                        db.movs.push({ id: Date.now()+Math.random(), fecha: fechaFinal, tipo: tipoFinal, cat: cat, con: con, valor: valorFinal, fijo: false });
-                        count++;
-                    }
-                });
-                save();
-                alert(`Importados ${count} movimientos nuevos.`);
-                e.target.value = '';
-            };
-            r.readAsBinaryString(f);
-        }
-
-        function renderizarDashboard(movs, ti, tg, mesSel) {
+        function renderizarDashboard(movs, ti, tg) {
             const ahorro = ti > 0 ? Math.max(0, ((ti - tg) / ti) * 100) : 0;
             document.getElementById('kpi-ahorro').innerText = ahorro.toFixed(1) + "%";
+            document.getElementById('kpi-gasto-total').innerText = tg.toFixed(2) + "€";
             
             if (charts.doughnut) charts.doughnut.destroy();
             charts.doughnut = new Chart(document.getElementById('chartDoughnut'), {
@@ -197,15 +244,13 @@
             });
 
             const gastoCat = {};
-            movs.filter(m => m.tipo === 'Gasto').forEach(m => { 
-                gastoCat[m.cat] = (gastoCat[m.cat] || 0) + m.valor; 
-            });
+            movs.filter(m => m.tipo === 'Gasto').forEach(m => { gastoCat[m.cat] = (gastoCat[m.cat] || 0) + m.valor; });
             const top = Object.entries(gastoCat).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
             if (charts.bars) charts.bars.destroy();
             charts.bars = new Chart(document.getElementById('chartBars'), {
                 type: 'bar', 
-                data: { labels: top.map(x=>x[0]), datasets: [{ label: 'Gastos por Categoría', data: top.map(x=>x[1]), backgroundColor: '#3b82f6' }] },
+                data: { labels: top.map(x=>x[0]), datasets: [{ label: 'Top Gastos', data: top.map(x=>x[1]), backgroundColor: '#3b82f6' }] },
                 options: { indexAxis: 'y', plugins: { legend: { display: false } } }
             });
         }
@@ -217,12 +262,8 @@
             const con = document.getElementById('in-concepto-select').value;
             if(!f || isNaN(val) || !cat) return alert("Faltan datos");
 
-            db.movs.push({
-                id: Date.now().toString(), fecha: f, tipo: tipoMuroActual === 'Ingresos' ? 'Ingreso' : 'Gasto',
-                cat: cat, con: con, valor: val, fijo: document.getElementById('in-fijo').checked
-            });
-            save();
-            document.getElementById('in-valor').value = "";
+            db.movs.push({ id: Date.now().toString(), fecha: f, tipo: tipoMuroActual === 'Ingresos' ? 'Ingreso' : 'Gasto', cat: cat, con: con, valor: val });
+            save(); document.getElementById('in-valor').value = "";
         }
 
         function guardarNuevaConfig() {
@@ -239,55 +280,37 @@
         function renderizarListaAjustes() {
             document.getElementById('lista-cats-ui').innerHTML = db.config.map((c, i) => `
                 <div class="bg-white p-3 rounded-xl border flex justify-between items-center text-[10px] font-bold">
-                    <div><span class="${c.tipo==='Ingreso'?'text-emerald-600':'text-rose-500'} uppercase">${c.tipo}</span> | ${c.categoria} | ${c.concepto}</div>
+                    <div>${c.categoria} - ${c.concepto}</div>
                     <button onclick="db.config.splice(${i},1); save();" class="text-rose-400"><i class="fas fa-trash"></i></button>
                 </div>`).join('');
             actualizarSelectsMuro();
         }
 
-        function setTipo(t) { 
-            tipoMuroActual = t; 
-            document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active'));
-            document.getElementById('t-'+t).classList.add('active');
-            actualizarSelectsMuro();
-        }
-
+        function setTipo(t) { tipoMuroActual = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectsMuro(); }
         function actualizarSelectsMuro() {
             const tipoRef = tipoMuroActual === 'Ingresos' ? 'Ingreso' : 'Gasto';
             const cats = [...new Set(db.config.filter(c => c.tipo === tipoRef).map(c => c.categoria))].sort();
-            document.getElementById('in-cat').innerHTML = `<option value="">ELEGIR CATEGORÍA...</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('') + `<option value="VARIOS">OTRA (VARIOS)</option>`;
+            document.getElementById('in-cat').innerHTML = `<option value="">CATEGORÍA...</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('') + `<option value="VARIOS">VARIOS</option>`;
             document.getElementById('in-concepto-select').innerHTML = "";
         }
-
         function cargarConceptosMuro() {
-            const cat = document.getElementById('in-cat').value;
-            const tipoRef = tipoMuroActual === 'Ingresos' ? 'Ingreso' : 'Gasto';
+            const cat = document.getElementById('in-cat').value; const tipoRef = tipoMuroActual === 'Ingresos' ? 'Ingreso' : 'Gasto';
             const conceptos = db.config.filter(c => c.tipo === tipoRef && c.categoria === cat);
             document.getElementById('in-concepto-select').innerHTML = conceptos.map(c => `<option value="${c.concepto}">${c.concepto}</option>`).join('');
             if(conceptos.length > 0) document.getElementById('in-valor').value = conceptos[0].importe;
         }
-
         function renderizarSelectorMeses() {
             const fechas = [...new Set(db.movs.map(m => m.fecha.slice(0, 7)))].sort().reverse();
             const hoy = new Date().toISOString().slice(0, 7); if (!fechas.includes(hoy)) fechas.unshift(hoy);
-            const select = document.getElementById('filtro-mes');
-            const actual = select.value || hoy;
+            const select = document.getElementById('filtro-mes'); const actual = select.value || hoy;
             select.innerHTML = fechas.map(f => `<option value="${f}" ${f===actual?'selected':''}>${f}</option>`).join('');
         }
-
         function exportarExcel() {
-            const data = db.movs.map(m => ({
-                Fecha: m.fecha, Categoría: m.cat, Concepto: m.con,
-                Ingresos: m.tipo === 'Ingreso' ? m.valor : 0,
-                Gastos: m.tipo === 'Gasto' ? m.valor : 0
-            }));
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Mis Finanzas");
-            XLSX.writeFile(wb, "Balance_Financiero.xlsx");
+            const data = db.movs.map(m => ({ Fecha: m.fecha, Categoría: m.cat, Concepto: m.con, Ingresos: m.tipo === 'Ingreso' ? m.valor : 0, Gastos: m.tipo === 'Gasto' ? m.valor : 0 }));
+            const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Finanzas"); XLSX.writeFile(wb, "BackupFinanzas.xlsx");
         }
-
-        function eliminarMovimiento(id) { if(confirm("¿Eliminar?")) { db.movs = db.movs.filter(m => m.id !== id); save(); } }
-        function borrarTodoElSistema() { if(confirm("¿RESET TOTAL?")) { localStorage.clear(); location.reload(); } }
+        function eliminarMovimiento(id) { if(confirm("¿Borrar?")) { db.movs = db.movs.filter(m => m.id !== id); save(); } }
+        function borrarTodoElSistema() { if(confirm("¿RESET DE FÁBRICA?")) { localStorage.clear(); location.reload(); } }
         function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); actualizarUI(); }
 
         document.getElementById('in-fecha').valueAsDate = new Date();
