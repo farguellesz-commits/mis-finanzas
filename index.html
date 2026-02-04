@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V11.8 - FINAL</title>
+    <title>FINANZAS V11.9 - FINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -25,7 +25,6 @@
         .btn-tipo.active { background: #1e293b !important; color: white !important; transform: scale(1.02); }
         html.dark .btn-tipo.active { background: #3b82f6 !important; }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s; }
-        /* Animación suave para los toggles */
         .btn-toggle { transition: all 0.2s ease; }
         .btn-toggle:active { transform: scale(0.9); }
     </style>
@@ -36,7 +35,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V11.8</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V11.9</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -107,7 +106,12 @@
             </button>
         </div>
         
-        <div id="lista-movs" class="space-y-2 mt-4 pb-24"></div>
+        <div class="relative mb-3">
+            <i class="fas fa-search absolute left-4 top-3.5 text-slate-300"></i>
+            <input type="text" id="search-muro" placeholder="Buscar movimientos..." onkeyup="filtrarMuro()" class="pl-10 !rounded-full shadow-sm border-none bg-white dark:bg-slate-800 text-sm">
+        </div>
+
+        <div id="lista-movs" class="space-y-2 pb-24"></div>
     </div>
 
     <div id="graficos" class="tab-content p-4 max-w-2xl mx-auto">
@@ -152,7 +156,7 @@
     <script>
         // CONFIGURACIÓN
         Chart.register(ChartDataLabels);
-        const DB_KEY = 'FINANZAS_V11_8_MASTER'; 
+        const DB_KEY = 'FINANZAS_V11_9_MASTER'; 
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || { movs: [], config: [], huchas: [] };
         
         let idEditandoMov = null;
@@ -163,7 +167,7 @@
 
         function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); actualizarUI(); }
 
-        // --- IMPORTADOR V11.8 ---
+        // --- IMPORTADOR ---
         function buscarValor(fila, claves) {
             const keysFila = Object.keys(fila);
             for (let claveBuscada of claves) {
@@ -199,7 +203,6 @@
                     let tipoFinal = buscarValor(m, ['tipo', 'type']);
                     if(!tipoFinal) {
                         const ing = parseFloat(buscarValor(m, ['ingreso']) || 0);
-                        const gas = parseFloat(buscarValor(m, ['gasto']) || 0);
                         tipoFinal = ing > 0 ? 'Ingreso' : 'Gasto';
                     }
 
@@ -228,7 +231,7 @@
                         }
                     });
                 }
-                alert(`Importación V11.8 completada.`);
+                alert(`Importación completada.`);
                 save();
             } catch(err) { alert("Error: " + err.message); }
         }
@@ -237,20 +240,19 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos");
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.config), "Presupuestos");
-            XLSX.writeFile(wb, `Finanzas_V11_8_${new Date().toISOString().slice(0,10)}.xlsx`);
+            XLSX.writeFile(wb, `Finanzas_V11_9_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
         // --- LÓGICA UI ---
         function cambiarMes(nuevoMes) { mesSeleccionado = nuevoMes; actualizarUI(); }
-
-        // NUEVA FUNCIÓN: TOGGLE DIRECTO
         function toggleAtributo(id, prop) {
             const idx = db.movs.findIndex(m => String(m.id) === String(id));
             if(idx !== -1) {
                 db.movs[idx][prop] = !db.movs[idx][prop];
-                save(); // Guarda y repinta al instante
+                save();
             }
         }
+        function filtrarMuro() { actualizarUI(); }
 
         function actualizarUI() {
             const meses = [...new Set(db.movs.map(m => m.fecha.slice(0,7)))].sort().reverse();
@@ -261,7 +263,12 @@
             document.getElementById('filtro-mes').innerHTML = meses.map(m => `<option value="${m}" ${m===mesSeleccionado?'selected':''}>${m}</option>`).join('');
             document.getElementById('mes-header').innerText = mesSeleccionado;
 
-            const movsMes = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado));
+            // Filtrar mes y búsqueda
+            const query = document.getElementById('search-muro').value.toLowerCase();
+            const movsMes = db.movs.filter(m => 
+                m.fecha.startsWith(mesSeleccionado) && 
+                (m.con.toLowerCase().includes(query) || m.cat.toLowerCase().includes(query))
+            );
             
             // Cálculos
             const ingFijo = movsMes.filter(m => m.tipo === 'Ingreso' && !m.extra).reduce((s,m)=>s+m.valor,0);
@@ -275,7 +282,7 @@
             document.getElementById('sum-gas-fijo').innerText = gasFijo.toFixed(0) + "€";
             document.getElementById('sum-gas-extra').innerText = gasExtra.toFixed(0) + "€";
 
-            // RENDER LISTA CON BOTONES INTERACTIVOS
+            // RENDER LISTA
             document.getElementById('lista-movs').innerHTML = movsMes.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).map(m => `
                 <div class="card flex justify-between items-center py-3 border-l-4 ${m.tipo==='Ingreso'?'border-emerald-500':'border-rose-500'} hover:bg-slate-50 transition-colors">
                     <div class="truncate flex-1">
@@ -293,7 +300,6 @@
                                 EXTRA <i class="fas fa-bomb ml-1"></i>
                             </button>
                         </div>
-
                     </div>
                     <div class="flex items-center gap-3 pl-2">
                         <span class="font-black text-sm ${m.tipo==='Ingreso'?'text-emerald-600':'text-rose-600'}">${m.valor.toFixed(2)}€</span>
@@ -308,7 +314,7 @@
             renderConfigList();
         }
 
-        // --- FORMULARIO & OTROS ---
+        // --- RESTO DE FUNCIONES ---
         function setTipoMuro(t) { 
             tipoMuro = t; 
             document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active'));
