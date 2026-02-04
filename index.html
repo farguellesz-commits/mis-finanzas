@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V11.7 - FINAL</title>
+    <title>FINANZAS V11.8 - FINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -25,6 +25,9 @@
         .btn-tipo.active { background: #1e293b !important; color: white !important; transform: scale(1.02); }
         html.dark .btn-tipo.active { background: #3b82f6 !important; }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s; }
+        /* Animación suave para los toggles */
+        .btn-toggle { transition: all 0.2s ease; }
+        .btn-toggle:active { transform: scale(0.9); }
     </style>
 </head>
 <body class="light">
@@ -33,7 +36,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V11.7</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V11.8</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -77,37 +80,28 @@
                 <p id="label-modo" class="text-[10px] font-black uppercase text-blue-500 tracking-wider">Nuevo Movimiento</p>
                 <button id="btn-cancel" onclick="cancelarEdicion()" class="hidden text-[10px] bg-rose-100 text-rose-600 px-2 py-0.5 rounded-md font-black uppercase">Cancelar</button>
             </div>
-            
             <div class="flex gap-2 mb-3">
                 <button onclick="setTipoMuro('Ingreso')" id="t-Ingreso" class="btn-tipo active">Ingreso</button>
                 <button onclick="setTipoMuro('Gasto')" id="t-Gasto" class="btn-tipo">Gasto</button>
             </div>
-
             <div class="grid grid-cols-3 gap-2 mb-3">
-                <div class="col-span-1">
-                     <input type="date" id="in-fecha" class="text-xs">
-                </div>
-                <div class="col-span-2">
-                    <input type="number" step="0.01" id="in-valor" placeholder="0.00 €" class="font-black text-blue-600 text-lg text-right">
-                </div>
+                <div class="col-span-1"><input type="date" id="in-fecha" class="text-xs"></div>
+                <div class="col-span-2"><input type="number" step="0.01" id="in-valor" placeholder="0.00 €" class="font-black text-blue-600 text-lg text-right"></div>
             </div>
-
             <div class="space-y-3">
                 <select id="in-cat" onchange="cargarConceptosMuro()" class="font-bold uppercase text-xs bg-slate-50"></select>
                 <select id="in-con" class="font-bold uppercase text-xs bg-slate-50"></select>
-                
                 <div class="flex gap-2 mt-2">
-                    <label class="flex-1 flex items-center justify-center gap-2 bg-indigo-50 dark:bg-slate-800 p-2 rounded-lg border border-indigo-100 dark:border-slate-700 cursor-pointer transition-all hover:bg-indigo-100">
+                    <label class="flex-1 flex items-center justify-center gap-2 bg-indigo-50 dark:bg-slate-800 p-2 rounded-lg border border-indigo-100 dark:border-slate-700 cursor-pointer">
                         <input type="checkbox" id="in-fijo" class="w-4 h-4 text-indigo-600 rounded">
                         <span class="text-[10px] font-black uppercase text-indigo-800 dark:text-indigo-300">Fijo <i class="fas fa-thumbtack ml-1"></i></span>
                     </label>
-                    <label class="flex-1 flex items-center justify-center gap-2 bg-amber-50 dark:bg-slate-800 p-2 rounded-lg border border-amber-100 dark:border-slate-700 cursor-pointer transition-all hover:bg-amber-100">
+                    <label class="flex-1 flex items-center justify-center gap-2 bg-amber-50 dark:bg-slate-800 p-2 rounded-lg border border-amber-100 dark:border-slate-700 cursor-pointer">
                         <input type="checkbox" id="in-extra" class="w-4 h-4 text-amber-600 rounded">
                         <span class="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300">Extra <i class="fas fa-bomb ml-1"></i></span>
                     </label>
                 </div>
             </div>
-
             <button onclick="guardarRegistro()" class="w-full bg-slate-900 dark:bg-blue-600 text-white py-3 rounded-xl font-black text-xs uppercase mt-4 shadow-lg active:scale-95 transition-all">
                 <i class="fas fa-save mr-2"></i>Guardar
             </button>
@@ -158,7 +152,7 @@
     <script>
         // CONFIGURACIÓN
         Chart.register(ChartDataLabels);
-        const DB_KEY = 'FINANZAS_V11_7_MASTER'; 
+        const DB_KEY = 'FINANZAS_V11_8_MASTER'; 
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || { movs: [], config: [], huchas: [] };
         
         let idEditandoMov = null;
@@ -169,9 +163,8 @@
 
         function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); actualizarUI(); }
 
-        // --- IMPORTADOR INTELIGENTE V2 ---
+        // --- IMPORTADOR V11.8 ---
         function buscarValor(fila, claves) {
-            // Busca en el objeto 'fila' alguna propiedad que coincida con las 'claves' (insensible a mayúsculas)
             const keysFila = Object.keys(fila);
             for (let claveBuscada of claves) {
                 const encontrada = keysFila.find(k => k.toLowerCase().trim() === claveBuscada.toLowerCase());
@@ -185,12 +178,9 @@
                 const f = e.target.files[0]; if(!f) return;
                 const data = await f.arrayBuffer();
                 const wb = XLSX.read(data);
-                
-                // 1. MOVIMIENTOS
                 const rawMovs = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" });
                 
                 db.movs = rawMovs.map((m, i) => {
-                    // a) Fechas
                     let fechaFinal = new Date().toISOString().slice(0,10);
                     const rawF = buscarValor(m, ['fecha', 'date', 'f']);
                     if(rawF) {
@@ -202,126 +192,90 @@
                             if(!isNaN(d)) fechaFinal = d.toISOString().slice(0,10);
                         }
                     }
+                    const val = parseFloat(buscarValor(m, ['valor', 'importe', 'amount', 'euros', 'ingreso', 'gasto']) || 0);
+                    const catFinal = (buscarValor(m, ['cat', 'categoria', 'categoría', 'familia']) || "VARIOS").toString().toUpperCase();
+                    const conFinal = (buscarValor(m, ['con', 'concepto', 'descripción']) || "IMPORTADO").toString().toUpperCase();
 
-                    // b) Dinero (Buscamos en todas las posibles columnas)
-                    const valRaw = buscarValor(m, ['valor', 'importe', 'amount', 'euros', 'ingreso', 'gasto', 'precio']);
-                    const val = parseFloat(valRaw || 0);
-
-                    // c) Categoría (IMPORTANTE: Busca Categoria, Cat, Familia, Rubro)
-                    const catRaw = buscarValor(m, ['cat', 'categoria', 'categoría', 'category', 'familia', 'rubro']);
-                    const catFinal = (catRaw || "VARIOS").toString().toUpperCase();
-
-                    // d) Concepto
-                    const conRaw = buscarValor(m, ['con', 'concepto', 'descripción', 'descripcion', 'detalle']);
-                    const conFinal = (conRaw || "IMPORTADO").toString().toUpperCase();
-
-                    // e) Tipo
                     let tipoFinal = buscarValor(m, ['tipo', 'type']);
                     if(!tipoFinal) {
-                        // Inferencia por columnas separadas
-                        const ing = parseFloat(buscarValor(m, ['ingreso', 'income']) || 0);
-                        const gas = parseFloat(buscarValor(m, ['gasto', 'expense']) || 0);
-                        if(ing > 0) tipoFinal = 'Ingreso';
-                        else if(gas > 0) tipoFinal = 'Gasto';
-                        else tipoFinal = 'Gasto';
+                        const ing = parseFloat(buscarValor(m, ['ingreso']) || 0);
+                        const gas = parseFloat(buscarValor(m, ['gasto']) || 0);
+                        tipoFinal = ing > 0 ? 'Ingreso' : 'Gasto';
                     }
 
-                    // f) Extras/Fijos
                     const fijoRaw = buscarValor(m, ['fijo', 'fixed']);
                     const extraRaw = buscarValor(m, ['extra']);
                     const isFijo = (String(fijoRaw).toLowerCase() === 'true' || String(fijoRaw).toUpperCase() === 'SI' || fijoRaw === 1);
                     const isExtra = (String(extraRaw).toLowerCase() === 'true' || String(extraRaw).toUpperCase() === 'SI' || extraRaw === 1);
 
-                    return {
-                        id: Date.now() + i,
-                        fecha: fechaFinal,
-                        tipo: tipoFinal,
-                        cat: catFinal,
-                        con: conFinal,
-                        valor: Math.abs(val),
-                        fijo: isFijo,
-                        extra: isExtra
-                    };
+                    return { id: Date.now() + i, fecha: fechaFinal, tipo: tipoFinal, cat: catFinal, con: conFinal, valor: Math.abs(val), fijo: isFijo, extra: isExtra };
                 }).filter(m => m.valor > 0);
 
-                // 2. AJUSTES (PRESUPUESTOS)
                 if(wb.SheetNames.length > 1) {
                     const rawCfg = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[1]]);
                     db.config = rawCfg.map((c, i) => ({
                         id: Date.now() + i + 5000,
                         tipo: c.tipo || 'Gasto',
-                        categoria: (buscarValor(c, ['cat','categoria','categoría']) || "VARIOS").toUpperCase(),
+                        categoria: (buscarValor(c, ['cat','categoria']) || "VARIOS").toUpperCase(),
                         concepto: (buscarValor(c, ['con','concepto']) || "VARIOS").toUpperCase(),
-                        importe: parseFloat(buscarValor(c, ['importe','valor','presupuesto']) || 0)
+                        importe: parseFloat(buscarValor(c, ['importe','valor']) || 0)
                     }));
                 } else {
-                    // Reconstrucción automática si no hay hoja 2
                     db.config = [];
                     db.movs.forEach(m => {
-                        const existe = db.config.find(c => c.categoria === m.cat && c.concepto === m.con);
-                        if(!existe) {
-                            db.config.push({
-                                id: Date.now() + Math.random(),
-                                tipo: m.tipo,
-                                categoria: m.cat,
-                                concepto: m.con,
-                                importe: m.valor
-                            });
+                        if(!db.config.find(c => c.categoria === m.cat && c.concepto === m.con)) {
+                            db.config.push({ id: Date.now()+Math.random(), tipo: m.tipo, categoria: m.cat, concepto: m.con, importe: m.valor });
                         }
                     });
                 }
-                
-                alert(`Importación V11.7 Éxito.\n${db.movs.length} Movimientos.\n${db.config.length} Categorías recuperadas.`);
+                alert(`Importación V11.8 completada.`);
                 save();
-            } catch(err) {
-                alert("Error: " + err.message);
-            }
+            } catch(err) { alert("Error: " + err.message); }
         }
 
         function exportarTodo() {
             const wb = XLSX.utils.book_new();
-            const wsMovs = XLSX.utils.json_to_sheet(db.movs);
-            XLSX.utils.book_append_sheet(wb, wsMovs, "Movimientos");
-            const wsConfig = XLSX.utils.json_to_sheet(db.config);
-            XLSX.utils.book_append_sheet(wb, wsConfig, "Presupuestos");
-            XLSX.writeFile(wb, `Finanzas_V11_7_${new Date().toISOString().slice(0,10)}.xlsx`);
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.config), "Presupuestos");
+            XLSX.writeFile(wb, `Finanzas_V11_8_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
         // --- LÓGICA UI ---
         function cambiarMes(nuevoMes) { mesSeleccionado = nuevoMes; actualizarUI(); }
 
+        // NUEVA FUNCIÓN: TOGGLE DIRECTO
+        function toggleAtributo(id, prop) {
+            const idx = db.movs.findIndex(m => String(m.id) === String(id));
+            if(idx !== -1) {
+                db.movs[idx][prop] = !db.movs[idx][prop];
+                save(); // Guarda y repinta al instante
+            }
+        }
+
         function actualizarUI() {
-            // Meses
             const meses = [...new Set(db.movs.map(m => m.fecha.slice(0,7)))].sort().reverse();
             const hoy = new Date().toISOString().slice(0,7);
             if(!meses.includes(hoy)) meses.unshift(hoy);
             if(!meses.includes(mesSeleccionado) && meses.length > 0) mesSeleccionado = meses[0];
 
-            const sel = document.getElementById('filtro-mes');
-            sel.innerHTML = meses.map(m => `<option value="${m}" ${m===mesSeleccionado?'selected':''}>${m}</option>`).join('');
+            document.getElementById('filtro-mes').innerHTML = meses.map(m => `<option value="${m}" ${m===mesSeleccionado?'selected':''}>${m}</option>`).join('');
             document.getElementById('mes-header').innerText = mesSeleccionado;
 
-            // Filtros
             const movsMes = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado));
             
-            // Cálculos Detallados (Solicitados)
+            // Cálculos
             const ingFijo = movsMes.filter(m => m.tipo === 'Ingreso' && !m.extra).reduce((s,m)=>s+m.valor,0);
             const ingExtra = movsMes.filter(m => m.tipo === 'Ingreso' && m.extra).reduce((s,m)=>s+m.valor,0);
             const gasFijo = movsMes.filter(m => m.tipo === 'Gasto' && !m.extra).reduce((s,m)=>s+m.valor,0);
             const gasExtra = movsMes.filter(m => m.tipo === 'Gasto' && m.extra).reduce((s,m)=>s+m.valor,0);
 
-            const totalIng = ingFijo + ingExtra;
-            const totalGas = gasFijo + gasExtra;
-            const disponible = totalIng - totalGas;
-
-            // Render Dashboard
-            document.getElementById('disp-real').innerText = disponible.toFixed(2) + "€";
+            document.getElementById('disp-real').innerText = (ingFijo+ingExtra - (gasFijo+gasExtra)).toFixed(2) + "€";
             document.getElementById('sum-ing-fijo').innerText = ingFijo.toFixed(0) + "€";
             document.getElementById('sum-ing-extra').innerText = ingExtra.toFixed(0) + "€";
             document.getElementById('sum-gas-fijo').innerText = gasFijo.toFixed(0) + "€";
             document.getElementById('sum-gas-extra').innerText = gasExtra.toFixed(0) + "€";
 
-            // Render Lista Movimientos (Iconos visuales restaurados)
+            // RENDER LISTA CON BOTONES INTERACTIVOS
             document.getElementById('lista-movs').innerHTML = movsMes.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).map(m => `
                 <div class="card flex justify-between items-center py-3 border-l-4 ${m.tipo==='Ingreso'?'border-emerald-500':'border-rose-500'} hover:bg-slate-50 transition-colors">
                     <div class="truncate flex-1">
@@ -329,17 +283,23 @@
                             <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-1.5 rounded">${m.cat}</span>
                             <span class="text-[9px] text-slate-300">${m.fecha.slice(8,10)}/${m.fecha.slice(5,7)}</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <p class="font-black text-xs uppercase text-slate-700 dark:text-slate-200">${m.con}</p>
-                            ${m.fijo ? '<i class="fas fa-thumbtack text-[10px] text-indigo-500" title="Fijo"></i>' : ''}
-                            ${m.extra ? '<i class="fas fa-bomb text-[10px] text-amber-500" title="Extra"></i>' : ''}
+                        <p class="font-black text-xs uppercase text-slate-700 dark:text-slate-200 mb-2">${m.con}</p>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="toggleAtributo('${m.id}', 'fijo')" class="btn-toggle text-[9px] font-black px-2 py-0.5 rounded border ${m.fijo ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-300 border-slate-100'}">
+                                FIJO <i class="fas fa-thumbtack ml-1"></i>
+                            </button>
+                            <button onclick="toggleAtributo('${m.id}', 'extra')" class="btn-toggle text-[9px] font-black px-2 py-0.5 rounded border ${m.extra ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-50 text-slate-300 border-slate-100'}">
+                                EXTRA <i class="fas fa-bomb ml-1"></i>
+                            </button>
                         </div>
+
                     </div>
                     <div class="flex items-center gap-3 pl-2">
                         <span class="font-black text-sm ${m.tipo==='Ingreso'?'text-emerald-600':'text-rose-600'}">${m.valor.toFixed(2)}€</span>
                         <div class="flex flex-col gap-2">
-                            <button onclick="cargarParaEditar('${m.id}')" class="w-6 h-6 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center hover:bg-blue-100"><i class="fas fa-pen text-[10px]"></i></button>
-                            <button onclick="borrarMov('${m.id}')" class="w-6 h-6 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-100"><i class="fas fa-times text-[10px]"></i></button>
+                            <button onclick="cargarParaEditar('${m.id}')" class="w-7 h-7 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center hover:bg-blue-100"><i class="fas fa-pen text-[10px]"></i></button>
+                            <button onclick="borrarMov('${m.id}')" class="w-7 h-7 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-100"><i class="fas fa-trash text-[10px]"></i></button>
                         </div>
                     </div>
                 </div>`).join('');
@@ -348,21 +308,18 @@
             renderConfigList();
         }
 
-        // --- FORMULARIO MURO ---
+        // --- FORMULARIO & OTROS ---
         function setTipoMuro(t) { 
             tipoMuro = t; 
             document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active'));
             document.getElementById('t-'+t).classList.add('active');
             actualizarSelectsMuro();
         }
-
         function actualizarSelectsMuro() {
             const cats = [...new Set(db.config.filter(c => c.tipo.includes(tipoMuro)).map(c => c.categoria))].sort();
-            const sel = document.getElementById('in-cat');
-            sel.innerHTML = `<option value="">CATEGORÍA...</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('in-cat').innerHTML = `<option value="">CATEGORÍA...</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('');
             document.getElementById('in-con').innerHTML = `<option value="">CONCEPTO...</option>`;
         }
-
         function cargarConceptosMuro() {
             const cat = document.getElementById('in-cat').value;
             const cons = db.config.filter(c => c.tipo.includes(tipoMuro) && c.categoria === cat);
@@ -370,7 +327,6 @@
             selCon.innerHTML = cons.map(c => `<option value="${c.concepto}" data-imp="${c.importe}">${c.concepto}</option>`).join('');
             if(cons.length > 0) document.getElementById('in-valor').value = cons[0].importe;
         }
-
         function guardarRegistro() {
             const f = document.getElementById('in-fecha').value;
             const val = parseFloat(document.getElementById('in-valor').value);
@@ -384,18 +340,14 @@
                 fijo: document.getElementById('in-fijo').checked,
                 extra: document.getElementById('in-extra').checked
             };
-
             if(idEditandoMov) {
                 const idx = db.movs.findIndex(m => String(m.id) === String(idEditandoMov));
                 if(idx !== -1) db.movs[idx] = nuevo;
                 cancelarEdicion();
             } else { db.movs.push(nuevo); }
-            
-            // Reset parcial para agilizar
             document.getElementById('in-valor').value = "";
             save();
         }
-
         function cargarParaEditar(id) {
             const m = db.movs.find(x => String(x.id) === String(id)); if(!m) return;
             idEditandoMov = String(id);
@@ -413,53 +365,34 @@
             document.getElementById('btn-cancel').classList.remove('hidden');
             document.getElementById('card-form').scrollIntoView({ behavior: 'smooth' });
         }
-
         function cancelarEdicion() { idEditandoMov = null; document.getElementById('label-modo').innerText="Nuevo Movimiento"; document.getElementById('btn-cancel').classList.add('hidden'); document.getElementById('in-valor').value=""; }
         function borrarMov(id) { if(confirm("¿Borrar?")) { db.movs = db.movs.filter(m => String(m.id) !== String(id)); save(); } }
 
-        // --- GRÁFICOS (COLORES NUEVOS) ---
         function renderCharts(iF, iE, gF, gE) {
-            const ctx = document.getElementById('chartApilado');
-            if(!ctx) return;
+            const ctx = document.getElementById('chartApilado'); if(!ctx) return;
             if(charts.apilado) charts.apilado.destroy();
             charts.apilado = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['INGRESOS', 'GASTOS'],
                     datasets: [
-                        { 
-                            label: 'Ordinario', 
-                            data: [Math.round(iF), Math.round(gF)], 
-                            backgroundColor: ['#10b981', '#f43f5e'], // Verde Esmeralda / Rojo
-                            borderRadius: 4, stack: 'Stack 0'
-                        },
-                        { 
-                            label: 'Extra', 
-                            data: [Math.round(iE), Math.round(gE)], 
-                            backgroundColor: ['#06b6d4', '#f59e0b'], // Cian / Naranja (Diferenciados)
-                            borderRadius: 4, stack: 'Stack 0'
-                        }
+                        { label: 'Ordinario', data: [Math.round(iF), Math.round(gF)], backgroundColor: ['#10b981', '#f43f5e'], borderRadius: 4, stack: 'Stack 0' },
+                        { label: 'Extra', data: [Math.round(iE), Math.round(gE)], backgroundColor: ['#06b6d4', '#f59e0b'], borderRadius: 4, stack: 'Stack 0' }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, display: false } },
-                    plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true, font: { size: 10, weight: 'bold' } } },
-                        datalabels: { color: '#fff', font: { weight: 'bold', size: 10 }, formatter: (v) => v > 0 ? v + '€' : '' }
-                    }
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, font: { size: 10, weight: 'bold' } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 10 }, formatter: (v) => v > 0 ? v + '€' : '' } }
                 }
             });
         }
-
-        // --- AJUSTES (ACORDEON) ---
         function guardarConfig() {
             const t = document.getElementById('cfg-tipo').value;
             const cat = document.getElementById('cfg-cat').value.trim().toUpperCase();
             const con = document.getElementById('cfg-con').value.trim().toUpperCase();
             const imp = parseFloat(document.getElementById('cfg-imp').value) || 0;
             if(!cat || !con) return alert("Faltan datos");
-
             const nuevo = { id: idEditandoCfg || Date.now().toString(), tipo: t, categoria: cat, concepto: con, importe: imp };
             if(idEditandoCfg) {
                 const idx = db.config.findIndex(c => String(c.id) === String(idEditandoCfg));
@@ -468,7 +401,6 @@
             } else { db.config.push(nuevo); }
             save();
         }
-
         function renderConfigList() {
             const list = document.getElementById('lista-config-acordeon');
             const grouped = {};
@@ -479,42 +411,17 @@
                         ${cat} <i class="fas fa-chevron-down"></i>
                     </button>
                     <div id="acc-${cat.replace(/\s+/g,'-')}" class="accordion-content">
-                        ${grouped[cat].map(c => `
-                            <div class="p-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-[10px] font-bold">
-                                <div>${c.concepto} <span class="text-[9px] text-slate-400">(${c.tipo})</span></div>
-                                <div class="flex items-center gap-2">
-                                    <span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">${c.importe}€</span>
-                                    <button onclick="cargarCfgEditar('${c.id}')"><i class="fas fa-pen text-blue-400"></i></button>
-                                    <button onclick="borrarCfg('${c.id}')"><i class="fas fa-trash text-rose-400"></i></button>
-                                </div>
-                            </div>
-                        `).join('')}
+                        ${grouped[cat].map(c => `<div class="p-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-[10px] font-bold"><div>${c.concepto} <span class="text-[9px] text-slate-400">(${c.tipo})</span></div><div class="flex items-center gap-2"><span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">${c.importe}€</span><button onclick="cargarCfgEditar('${c.id}')"><i class="fas fa-pen text-blue-400"></i></button><button onclick="borrarCfg('${c.id}')"><i class="fas fa-trash text-rose-400"></i></button></div></div>`).join('')}
                     </div>
                 </div>`).join('');
         }
         function toggleAcc(id) { const el = document.getElementById('acc-'+id); el.style.maxHeight = el.style.maxHeight ? null : el.scrollHeight + "px"; }
-        function cargarCfgEditar(id) {
-            const c = db.config.find(x => String(x.id) === String(id));
-            idEditandoCfg = String(id);
-            document.getElementById('cfg-tipo').value = c.tipo;
-            document.getElementById('cfg-cat').value = c.categoria;
-            document.getElementById('cfg-con').value = c.concepto;
-            document.getElementById('cfg-imp').value = c.importe;
-            document.getElementById('btn-cancel-cfg').classList.remove('hidden');
-            document.getElementById('cfg-titulo').innerText = "EDITANDO";
-            document.getElementById('nav-config').click();
-        }
+        function cargarCfgEditar(id) { const c = db.config.find(x => String(x.id) === String(id)); idEditandoCfg = String(id); document.getElementById('cfg-tipo').value = c.tipo; document.getElementById('cfg-cat').value = c.categoria; document.getElementById('cfg-con').value = c.concepto; document.getElementById('cfg-imp').value = c.importe; document.getElementById('btn-cancel-cfg').classList.remove('hidden'); document.getElementById('cfg-titulo').innerText = "EDITANDO"; document.getElementById('nav-config').click(); }
         function cancelarEdicionConfig() { idEditandoCfg=null; document.getElementById('btn-cancel-cfg').classList.add('hidden'); document.getElementById('cfg-titulo').innerText="Nuevo"; document.getElementById('cfg-cat').value=""; document.getElementById('cfg-con').value=""; document.getElementById('cfg-imp').value=""; }
         function borrarCfg(id) { if(confirm("¿Borrar?")) { db.config = db.config.filter(c => String(c.id) !== String(id)); save(); } }
         function borrarTodo() { if(confirm("¿BORRAR TODO?")) { localStorage.clear(); location.reload(); } }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
-        function showTab(t) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(t).classList.add('active');
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active', 'text-blue-500'));
-            document.getElementById('nav-'+t).classList.add('nav-active', 'text-blue-500');
-            if(t==='graficos') actualizarUI();
-        }
+        function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active', 'text-blue-500')); document.getElementById('nav-'+t).classList.add('nav-active', 'text-blue-500'); if(t==='graficos') actualizarUI(); }
 
         document.getElementById('in-fecha').valueAsDate = new Date();
         actualizarUI();
