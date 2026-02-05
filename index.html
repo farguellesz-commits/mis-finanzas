@@ -1,9 +1,44 @@
+¡Buenas tardes! Manos a la obra. Tus observaciones son muy precisas y mejoran mucho la usabilidad diaria.
+
+Aquí tienes la Versión 12.0.
+
+📝 Cambios realizados:
+MURO:
+
+Fecha vs Importe: He cambiado la distribución. Ahora la fecha ocupa un 40% (se ve el año completo) y el importe el resto. Queda mucho más equilibrado.
+
+Limpieza de campos: He reescrito la función de "Guardar". Ahora, tras guardar, resetea todo a la fuerza (pone la fecha de hoy, limpia categorías, conceptos e importes y desmarca los checks).
+
+Autocompletado inteligente: Al elegir categoría/concepto, rellena el importe del presupuesto, pero si luego guardas, se limpia para el siguiente.
+
+AJUSTES (Presupuestos):
+
+Estética: Letra más grande (text-sm) y negrita para facilitar la lectura.
+
+Iconos: He separado visualmente el lápiz y la papelera y les he puesto un fondo de color suave para que sea más difícil pulsarlos por error.
+
+Buscador: ¡Añadido! Ahora tienes un buscador arriba en Ajustes que filtra instantáneamente las categorías o conceptos.
+
+Orden: Ahora ordena alfabéticamente: Primero las Categorías y, dentro de ellas, los Conceptos también por orden alfabético.
+
+HUCHAS (Recuperada):
+
+He añadido el 4º botón en el menú inferior.
+
+Es el sistema de la v11.5 mejorado: Puedes crear objetivos (ej: "Vacaciones"), poner una meta, y tiene dos botones simples (+ y -) para añadir o restar dinero directamente con una barra de progreso visual.
+
+GRÁFICOS:
+
+El código anterior ya separaba los colores, pero quizás el tono "Amber" era muy parecido al rojo en algunas pantallas. He puesto un Naranja intenso para el Gasto Extra, para que se diferencie claramente del Gasto Fijo (Rojo).
+
+CÓDIGO V12.0
+HTML
 <!DOCTYPE html>
 <html lang="es" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V11.9 - FINAL</title>
+    <title>FINANZAS V12.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -27,6 +62,7 @@
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s; }
         .btn-toggle { transition: all 0.2s ease; }
         .btn-toggle:active { transform: scale(0.9); }
+        .progress-bar { transition: width 0.5s ease-in-out; }
     </style>
 </head>
 <body class="light">
@@ -35,7 +71,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V11.9</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V12.0</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -43,9 +79,10 @@
     </header>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 flex justify-around z-50 pb-safe shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-        <button onclick="showTab('muro')" id="nav-muro" class="flex-1 py-4 text-center nav-active"><i class="fas fa-wallet text-xl mb-1"></i><br><span class="text-[9px] uppercase font-black">Muro</span></button>
-        <button onclick="showTab('graficos')" id="nav-graficos" class="flex-1 py-4 text-center text-slate-400"><i class="fas fa-chart-pie text-xl mb-1"></i><br><span class="text-[9px] uppercase font-black">Gráficos</span></button>
-        <button onclick="showTab('config')" id="nav-config" class="flex-1 py-4 text-center text-slate-400"><i class="fas fa-cog text-xl mb-1"></i><br><span class="text-[9px] uppercase font-black">Ajustes</span></button>
+        <button onclick="showTab('muro')" id="nav-muro" class="flex-1 py-3 text-center nav-active"><i class="fas fa-wallet text-lg mb-1"></i><br><span class="text-[9px] uppercase font-black">Muro</span></button>
+        <button onclick="showTab('graficos')" id="nav-graficos" class="flex-1 py-3 text-center text-slate-400"><i class="fas fa-chart-pie text-lg mb-1"></i><br><span class="text-[9px] uppercase font-black">Gráficos</span></button>
+        <button onclick="showTab('huchas')" id="nav-huchas" class="flex-1 py-3 text-center text-slate-400"><i class="fas fa-piggy-bank text-lg mb-1"></i><br><span class="text-[9px] uppercase font-black">Huchas</span></button>
+        <button onclick="showTab('config')" id="nav-config" class="flex-1 py-3 text-center text-slate-400"><i class="fas fa-sliders-h text-lg mb-1"></i><br><span class="text-[9px] uppercase font-black">Ajustes</span></button>
     </nav>
 
     <div id="muro" class="tab-content active p-3 max-w-2xl mx-auto">
@@ -55,22 +92,10 @@
                 <h2 id="disp-real" class="text-4xl font-black tracking-tighter mb-1">0.00€</h2>
             </div>
             <div class="grid grid-cols-2 divide-x divide-y divide-white/5 bg-slate-900/50">
-                <div class="p-3 text-center">
-                    <p class="text-[8px] text-emerald-500 font-black uppercase tracking-wider">Ing. Fijos</p>
-                    <p id="sum-ing-fijo" class="text-emerald-400 font-bold text-sm">0€</p>
-                </div>
-                <div class="p-3 text-center bg-emerald-500/5">
-                    <p class="text-[8px] text-cyan-400 font-black uppercase tracking-wider">Ing. Extra</p>
-                    <p id="sum-ing-extra" class="text-cyan-300 font-bold text-sm">0€</p>
-                </div>
-                <div class="p-3 text-center">
-                    <p class="text-[8px] text-rose-500 font-black uppercase tracking-wider">Gas. Fijos</p>
-                    <p id="sum-gas-fijo" class="text-rose-400 font-bold text-sm">0€</p>
-                </div>
-                <div class="p-3 text-center bg-rose-500/5">
-                    <p class="text-[8px] text-amber-500 font-black uppercase tracking-wider">Gas. Extra</p>
-                    <p id="sum-gas-extra" class="text-amber-400 font-bold text-sm">0€</p>
-                </div>
+                <div class="p-3 text-center"><p class="text-[8px] text-emerald-500 font-black uppercase tracking-wider">Ing. Fijos</p><p id="sum-ing-fijo" class="text-emerald-400 font-bold text-sm">0€</p></div>
+                <div class="p-3 text-center bg-emerald-500/5"><p class="text-[8px] text-cyan-400 font-black uppercase tracking-wider">Ing. Extra</p><p id="sum-ing-extra" class="text-cyan-300 font-bold text-sm">0€</p></div>
+                <div class="p-3 text-center"><p class="text-[8px] text-rose-500 font-black uppercase tracking-wider">Gas. Fijos</p><p id="sum-gas-fijo" class="text-rose-400 font-bold text-sm">0€</p></div>
+                <div class="p-3 text-center bg-rose-500/5"><p class="text-[8px] text-orange-500 font-black uppercase tracking-wider">Gas. Extra</p><p id="sum-gas-extra" class="text-orange-400 font-bold text-sm">0€</p></div>
             </div>
         </div>
 
@@ -83,9 +108,9 @@
                 <button onclick="setTipoMuro('Ingreso')" id="t-Ingreso" class="btn-tipo active">Ingreso</button>
                 <button onclick="setTipoMuro('Gasto')" id="t-Gasto" class="btn-tipo">Gasto</button>
             </div>
-            <div class="grid grid-cols-3 gap-2 mb-3">
-                <div class="col-span-1"><input type="date" id="in-fecha" class="text-xs"></div>
-                <div class="col-span-2"><input type="number" step="0.01" id="in-valor" placeholder="0.00 €" class="font-black text-blue-600 text-lg text-right"></div>
+            <div class="flex gap-2 mb-3">
+                <div style="width: 40%;"><input type="date" id="in-fecha" class="text-xs"></div>
+                <div style="flex: 1;"><input type="number" step="0.01" id="in-valor" placeholder="0.00 €" class="font-black text-blue-600 text-lg text-right"></div>
             </div>
             <div class="space-y-3">
                 <select id="in-cat" onchange="cargarConceptosMuro()" class="font-bold uppercase text-xs bg-slate-50"></select>
@@ -95,9 +120,9 @@
                         <input type="checkbox" id="in-fijo" class="w-4 h-4 text-indigo-600 rounded">
                         <span class="text-[10px] font-black uppercase text-indigo-800 dark:text-indigo-300">Fijo <i class="fas fa-thumbtack ml-1"></i></span>
                     </label>
-                    <label class="flex-1 flex items-center justify-center gap-2 bg-amber-50 dark:bg-slate-800 p-2 rounded-lg border border-amber-100 dark:border-slate-700 cursor-pointer">
-                        <input type="checkbox" id="in-extra" class="w-4 h-4 text-amber-600 rounded">
-                        <span class="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300">Extra <i class="fas fa-bomb ml-1"></i></span>
+                    <label class="flex-1 flex items-center justify-center gap-2 bg-orange-50 dark:bg-slate-800 p-2 rounded-lg border border-orange-100 dark:border-slate-700 cursor-pointer">
+                        <input type="checkbox" id="in-extra" class="w-4 h-4 text-orange-600 rounded">
+                        <span class="text-[10px] font-black uppercase text-orange-800 dark:text-orange-300">Extra <i class="fas fa-bomb ml-1"></i></span>
                     </label>
                 </div>
             </div>
@@ -121,6 +146,18 @@
         </div>
     </div>
 
+    <div id="huchas" class="tab-content p-4 max-w-2xl mx-auto">
+        <div class="card border-l-4 border-purple-500">
+            <h3 class="text-[10px] font-black text-purple-500 uppercase mb-3 tracking-widest">Nueva Meta de Ahorro</h3>
+            <div class="flex gap-2 mb-2">
+                <input type="text" id="hucha-nombre" placeholder="Nombre (ej: Viaje)" class="font-bold uppercase text-xs">
+                <input type="number" id="hucha-meta" placeholder="Meta €" class="font-bold text-xs w-24">
+            </div>
+            <button onclick="crearHucha()" class="w-full bg-purple-600 text-white py-2 rounded-lg font-black text-[10px] uppercase">Crear Hucha</button>
+        </div>
+        <div id="lista-huchas" class="space-y-3 pb-24"></div>
+    </div>
+
     <div id="config" class="tab-content p-4 max-w-2xl mx-auto">
         <div class="card border-2 border-blue-100 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-900/10">
             <div class="flex justify-between items-center mb-3">
@@ -139,8 +176,13 @@
                     <input type="text" id="cfg-con" placeholder="CONCEPTO" class="font-black uppercase text-[10px] h-10">
                 </div>
                 <input type="number" id="cfg-imp" placeholder="IMPORTE €" class="font-black text-xs h-10">
-                <button onclick="guardarConfig()" class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-black text-[10px] uppercase shadow">Añadir</button>
+                <button onclick="guardarConfig()" class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-black text-[10px] uppercase shadow">Añadir / Guardar</button>
             </div>
+        </div>
+
+        <div class="relative mb-3 mt-4">
+            <i class="fas fa-search absolute left-4 top-3.5 text-slate-300"></i>
+            <input type="text" id="search-config" placeholder="Buscar categoría o concepto..." onkeyup="renderConfigList()" class="pl-10 !rounded-full shadow-sm border-none bg-white dark:bg-slate-800 text-sm">
         </div>
 
         <div id="lista-config-acordeon" class="space-y-2 mt-4 mb-32"></div>
@@ -156,7 +198,7 @@
     <script>
         // CONFIGURACIÓN
         Chart.register(ChartDataLabels);
-        const DB_KEY = 'FINANZAS_V11_9_MASTER'; 
+        const DB_KEY = 'FINANZAS_V12_MASTER'; 
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || { movs: [], config: [], huchas: [] };
         
         let idEditandoMov = null;
@@ -165,7 +207,7 @@
         let mesSeleccionado = new Date().toISOString().slice(0, 7); 
         let charts = {};
 
-        function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); actualizarUI(); }
+        function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); actualizarUI(); renderHuchas(); }
 
         // --- IMPORTADOR ---
         function buscarValor(fila, claves) {
@@ -214,6 +256,7 @@
                     return { id: Date.now() + i, fecha: fechaFinal, tipo: tipoFinal, cat: catFinal, con: conFinal, valor: Math.abs(val), fijo: isFijo, extra: isExtra };
                 }).filter(m => m.valor > 0);
 
+                // Si hay segunda hoja (Presupuestos)
                 if(wb.SheetNames.length > 1) {
                     const rawCfg = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[1]]);
                     db.config = rawCfg.map((c, i) => ({
@@ -224,6 +267,7 @@
                         importe: parseFloat(buscarValor(c, ['importe','valor']) || 0)
                     }));
                 } else {
+                    // Generar config desde movs
                     db.config = [];
                     db.movs.forEach(m => {
                         if(!db.config.find(c => c.categoria === m.cat && c.concepto === m.con)) {
@@ -240,10 +284,14 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos");
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.config), "Presupuestos");
-            XLSX.writeFile(wb, `Finanzas_V11_9_${new Date().toISOString().slice(0,10)}.xlsx`);
+            // Exportar huchas si hay
+            if(db.huchas && db.huchas.length > 0) {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.huchas), "Huchas");
+            }
+            XLSX.writeFile(wb, `Finanzas_V12_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
-        // --- LÓGICA UI ---
+        // --- LÓGICA UI MURO ---
         function cambiarMes(nuevoMes) { mesSeleccionado = nuevoMes; actualizarUI(); }
         function toggleAtributo(id, prop) {
             const idx = db.movs.findIndex(m => String(m.id) === String(id));
@@ -263,7 +311,6 @@
             document.getElementById('filtro-mes').innerHTML = meses.map(m => `<option value="${m}" ${m===mesSeleccionado?'selected':''}>${m}</option>`).join('');
             document.getElementById('mes-header').innerText = mesSeleccionado;
 
-            // Filtrar mes y búsqueda
             const query = document.getElementById('search-muro').value.toLowerCase();
             const movsMes = db.movs.filter(m => 
                 m.fecha.startsWith(mesSeleccionado) && 
@@ -282,7 +329,7 @@
             document.getElementById('sum-gas-fijo').innerText = gasFijo.toFixed(0) + "€";
             document.getElementById('sum-gas-extra').innerText = gasExtra.toFixed(0) + "€";
 
-            // RENDER LISTA
+            // RENDER LISTA MURO
             document.getElementById('lista-movs').innerHTML = movsMes.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).map(m => `
                 <div class="card flex justify-between items-center py-3 border-l-4 ${m.tipo==='Ingreso'?'border-emerald-500':'border-rose-500'} hover:bg-slate-50 transition-colors">
                     <div class="truncate flex-1">
@@ -296,7 +343,7 @@
                             <button onclick="toggleAtributo('${m.id}', 'fijo')" class="btn-toggle text-[9px] font-black px-2 py-0.5 rounded border ${m.fijo ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-300 border-slate-100'}">
                                 FIJO <i class="fas fa-thumbtack ml-1"></i>
                             </button>
-                            <button onclick="toggleAtributo('${m.id}', 'extra')" class="btn-toggle text-[9px] font-black px-2 py-0.5 rounded border ${m.extra ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-50 text-slate-300 border-slate-100'}">
+                            <button onclick="toggleAtributo('${m.id}', 'extra')" class="btn-toggle text-[9px] font-black px-2 py-0.5 rounded border ${m.extra ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-slate-50 text-slate-300 border-slate-100'}">
                                 EXTRA <i class="fas fa-bomb ml-1"></i>
                             </button>
                         </div>
@@ -314,7 +361,7 @@
             renderConfigList();
         }
 
-        // --- RESTO DE FUNCIONES ---
+        // --- FUNCIONES MURO ---
         function setTipoMuro(t) { 
             tipoMuro = t; 
             document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active'));
@@ -325,14 +372,18 @@
             const cats = [...new Set(db.config.filter(c => c.tipo.includes(tipoMuro)).map(c => c.categoria))].sort();
             document.getElementById('in-cat').innerHTML = `<option value="">CATEGORÍA...</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('');
             document.getElementById('in-con').innerHTML = `<option value="">CONCEPTO...</option>`;
+            document.getElementById('in-valor').value = ""; // Limpiar importe al cambiar tipo
         }
         function cargarConceptosMuro() {
             const cat = document.getElementById('in-cat').value;
-            const cons = db.config.filter(c => c.tipo.includes(tipoMuro) && c.categoria === cat);
+            const cons = db.config.filter(c => c.tipo.includes(tipoMuro) && c.categoria === cat).sort((a,b)=>a.concepto.localeCompare(b.concepto));
             const selCon = document.getElementById('in-con');
-            selCon.innerHTML = cons.map(c => `<option value="${c.concepto}" data-imp="${c.importe}">${c.concepto}</option>`).join('');
+            selCon.innerHTML = `<option value="">CONCEPTO...</option>` + cons.map(c => `<option value="${c.concepto}" data-imp="${c.importe}">${c.concepto}</option>`).join('');
+            
+            // Auto-rellenar importe si hay coincidencia, pero permitir edición
             if(cons.length > 0) document.getElementById('in-valor').value = cons[0].importe;
         }
+
         function guardarRegistro() {
             const f = document.getElementById('in-fecha').value;
             const val = parseFloat(document.getElementById('in-valor').value);
@@ -351,9 +402,20 @@
                 if(idx !== -1) db.movs[idx] = nuevo;
                 cancelarEdicion();
             } else { db.movs.push(nuevo); }
-            document.getElementById('in-valor').value = "";
-            save();
+            
+            save(); // Guarda y actualiza UI
+
+            // RESETEO COMPLETO DE CAMPOS
+            if(!idEditandoMov) { // Solo si era nuevo movimiento
+                document.getElementById('in-valor').value = "";
+                document.getElementById('in-cat').value = "";
+                document.getElementById('in-con').innerHTML = `<option value="">CONCEPTO...</option>`;
+                document.getElementById('in-fijo').checked = false;
+                document.getElementById('in-extra').checked = false;
+                document.getElementById('in-fecha').valueAsDate = new Date(); // Reset fecha a hoy
+            }
         }
+
         function cargarParaEditar(id) {
             const m = db.movs.find(x => String(x.id) === String(id)); if(!m) return;
             idEditandoMov = String(id);
@@ -361,19 +423,74 @@
             setTipoMuro(m.tipo);
             setTimeout(() => {
                 document.getElementById('in-cat').value = m.cat;
-                cargarConceptosMuro();
+                cargarConceptosMuro(); // Esto recargará conceptos y pondrá valor por defecto
                 document.getElementById('in-con').value = m.con;
+                document.getElementById('in-valor').value = m.valor; // Sobrescribimos con el valor real del mov
             }, 50);
-            document.getElementById('in-valor').value = m.valor;
+            
             document.getElementById('in-fijo').checked = m.fijo;
             document.getElementById('in-extra').checked = m.extra;
             document.getElementById('label-modo').innerText = "EDITANDO";
             document.getElementById('btn-cancel').classList.remove('hidden');
             document.getElementById('card-form').scrollIntoView({ behavior: 'smooth' });
         }
-        function cancelarEdicion() { idEditandoMov = null; document.getElementById('label-modo').innerText="Nuevo Movimiento"; document.getElementById('btn-cancel').classList.add('hidden'); document.getElementById('in-valor').value=""; }
+        function cancelarEdicion() { 
+            idEditandoMov = null; 
+            document.getElementById('label-modo').innerText="Nuevo Movimiento"; 
+            document.getElementById('btn-cancel').classList.add('hidden'); 
+            document.getElementById('in-valor').value=""; 
+            document.getElementById('in-cat').value=""; 
+            document.getElementById('in-con').innerHTML="";
+        }
         function borrarMov(id) { if(confirm("¿Borrar?")) { db.movs = db.movs.filter(m => String(m.id) !== String(id)); save(); } }
 
+        // --- HUCHAS (V11.5) ---
+        function crearHucha() {
+            const nombre = document.getElementById('hucha-nombre').value.toUpperCase();
+            const meta = parseFloat(document.getElementById('hucha-meta').value);
+            if(!nombre || !meta) return alert("Nombre y Meta necesarios");
+            if(!db.huchas) db.huchas = [];
+            db.huchas.push({ id: Date.now(), nombre, meta, ahorro: 0 });
+            document.getElementById('hucha-nombre').value = "";
+            document.getElementById('hucha-meta').value = "";
+            save();
+        }
+        function opHucha(id, cantidad) {
+            const idx = db.huchas.findIndex(h => h.id == id);
+            if(idx !== -1) {
+                db.huchas[idx].ahorro += cantidad;
+                if(db.huchas[idx].ahorro < 0) db.huchas[idx].ahorro = 0;
+                save();
+            }
+        }
+        function borrarHucha(id) { if(confirm("¿Borrar hucha?")) { db.huchas = db.huchas.filter(h => h.id != id); save(); } }
+        function renderHuchas() {
+            if(!db.huchas) db.huchas = [];
+            const lista = document.getElementById('lista-huchas');
+            lista.innerHTML = db.huchas.map(h => {
+                const pct = Math.min(100, (h.ahorro / h.meta) * 100);
+                return `
+                <div class="card p-3 relative overflow-hidden">
+                    <div class="flex justify-between items-end mb-2 relative z-10">
+                        <div>
+                            <h4 class="font-black text-sm uppercase text-purple-700 dark:text-purple-300">${h.nombre}</h4>
+                            <p class="text-[10px] text-slate-400 font-bold">${h.ahorro.toFixed(0)}€ / ${h.meta}€</p>
+                        </div>
+                        <div class="flex gap-2">
+                             <button onclick="opHucha(${h.id}, 10)" class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 font-black text-xs">+10</button>
+                             <button onclick="opHucha(${h.id}, 50)" class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 font-black text-xs">+50</button>
+                             <button onclick="opHucha(${h.id}, -10)" class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 font-black text-xs">-10</button>
+                             <button onclick="borrarHucha(${h.id})" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 font-black text-xs"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden relative z-10">
+                        <div class="h-full bg-purple-500 progress-bar" style="width: ${pct}%"></div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- GRÁFICOS ---
         function renderCharts(iF, iE, gF, gE) {
             const ctx = document.getElementById('chartApilado'); if(!ctx) return;
             if(charts.apilado) charts.apilado.destroy();
@@ -383,7 +500,7 @@
                     labels: ['INGRESOS', 'GASTOS'],
                     datasets: [
                         { label: 'Ordinario', data: [Math.round(iF), Math.round(gF)], backgroundColor: ['#10b981', '#f43f5e'], borderRadius: 4, stack: 'Stack 0' },
-                        { label: 'Extra', data: [Math.round(iE), Math.round(gE)], backgroundColor: ['#06b6d4', '#f59e0b'], borderRadius: 4, stack: 'Stack 0' }
+                        { label: 'Extra', data: [Math.round(iE), Math.round(gE)], backgroundColor: ['#06b6d4', '#f97316'], borderRadius: 4, stack: 'Stack 0' } // Orange para Gasto Extra
                     ]
                 },
                 options: {
@@ -393,6 +510,8 @@
                 }
             });
         }
+
+        // --- AJUSTES / CONFIG ---
         function guardarConfig() {
             const t = document.getElementById('cfg-tipo').value;
             const cat = document.getElementById('cfg-cat').value.trim().toUpperCase();
@@ -405,32 +524,81 @@
                 if(idx !== -1) db.config[idx] = nuevo;
                 cancelarEdicionConfig();
             } else { db.config.push(nuevo); }
+            
+            // RESET
+            document.getElementById('cfg-cat').value = "";
+            document.getElementById('cfg-con').value = "";
+            document.getElementById('cfg-imp').value = "";
             save();
         }
+
         function renderConfigList() {
             const list = document.getElementById('lista-config-acordeon');
+            const search = document.getElementById('search-config').value.toLowerCase();
+            
+            // Filtrar y Ordenar
+            let filtrados = db.config.filter(c => c.categoria.toLowerCase().includes(search) || c.concepto.toLowerCase().includes(search));
+            
             const grouped = {};
-            db.config.forEach(c => { if(!grouped[c.categoria]) grouped[c.categoria] = []; grouped[c.categoria].push(c); });
-            list.innerHTML = Object.keys(grouped).sort().map(cat => `
+            filtrados.forEach(c => { 
+                if(!grouped[c.categoria]) grouped[c.categoria] = []; 
+                grouped[c.categoria].push(c); 
+            });
+
+            // Ordenar claves (Categorías) y Valores (Conceptos)
+            const catsOrdenadas = Object.keys(grouped).sort();
+
+            list.innerHTML = catsOrdenadas.map(cat => {
+                const items = grouped[cat].sort((a,b) => a.concepto.localeCompare(b.concepto));
+                
+                // Si hay búsqueda, expandir por defecto
+                const expandir = search.length > 0 ? 'max-height: 1000px;' : ''; 
+                
+                return `
                 <div class="card p-0 overflow-hidden mb-2 border border-slate-100">
-                    <button onclick="toggleAcc('${cat.replace(/\s+/g,'-')}')" class="w-full p-3 flex justify-between bg-slate-50 dark:bg-slate-800 font-black text-[10px] uppercase tracking-widest hover:bg-slate-100">
+                    <button onclick="toggleAcc('${cat.replace(/\s+/g,'-')}')" class="w-full p-4 flex justify-between bg-slate-50 dark:bg-slate-800 font-black text-xs uppercase tracking-widest hover:bg-slate-100">
                         ${cat} <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div id="acc-${cat.replace(/\s+/g,'-')}" class="accordion-content">
-                        ${grouped[cat].map(c => `<div class="p-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-[10px] font-bold"><div>${c.concepto} <span class="text-[9px] text-slate-400">(${c.tipo})</span></div><div class="flex items-center gap-2"><span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">${c.importe}€</span><button onclick="cargarCfgEditar('${c.id}')"><i class="fas fa-pen text-blue-400"></i></button><button onclick="borrarCfg('${c.id}')"><i class="fas fa-trash text-rose-400"></i></button></div></div>`).join('')}
+                    <div id="acc-${cat.replace(/\s+/g,'-')}" class="accordion-content" style="${expandir}">
+                        ${items.map(c => `
+                            <div class="p-4 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                                <div>
+                                    <p class="font-bold text-sm text-slate-700 dark:text-slate-200">${c.concepto}</p>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${c.tipo}</span>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <span class="bg-blue-50 text-blue-600 font-black text-xs px-2 py-1 rounded-lg">${c.importe}€</span>
+                                    <div class="flex gap-3">
+                                        <button onclick="cargarCfgEditar('${c.id}')" class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 hover:bg-blue-100 transition"><i class="fas fa-pen text-xs"></i></button>
+                                        <button onclick="borrarCfg('${c.id}')" class="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 hover:bg-rose-100 transition"><i class="fas fa-trash text-xs"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
-                </div>`).join('');
+                </div>`;
+            }).join('');
         }
+
         function toggleAcc(id) { const el = document.getElementById('acc-'+id); el.style.maxHeight = el.style.maxHeight ? null : el.scrollHeight + "px"; }
-        function cargarCfgEditar(id) { const c = db.config.find(x => String(x.id) === String(id)); idEditandoCfg = String(id); document.getElementById('cfg-tipo').value = c.tipo; document.getElementById('cfg-cat').value = c.categoria; document.getElementById('cfg-con').value = c.concepto; document.getElementById('cfg-imp').value = c.importe; document.getElementById('btn-cancel-cfg').classList.remove('hidden'); document.getElementById('cfg-titulo').innerText = "EDITANDO"; document.getElementById('nav-config').click(); }
+        function cargarCfgEditar(id) { const c = db.config.find(x => String(x.id) === String(id)); idEditandoCfg = String(id); document.getElementById('cfg-tipo').value = c.tipo; document.getElementById('cfg-cat').value = c.categoria; document.getElementById('cfg-con').value = c.concepto; document.getElementById('cfg-imp').value = c.importe; document.getElementById('btn-cancel-cfg').classList.remove('hidden'); document.getElementById('cfg-titulo').innerText = "EDITANDO"; document.getElementById('card-form').scrollIntoView(); } // Scroll al form
         function cancelarEdicionConfig() { idEditandoCfg=null; document.getElementById('btn-cancel-cfg').classList.add('hidden'); document.getElementById('cfg-titulo').innerText="Nuevo"; document.getElementById('cfg-cat').value=""; document.getElementById('cfg-con').value=""; document.getElementById('cfg-imp').value=""; }
         function borrarCfg(id) { if(confirm("¿Borrar?")) { db.config = db.config.filter(c => String(c.id) !== String(id)); save(); } }
         function borrarTodo() { if(confirm("¿BORRAR TODO?")) { localStorage.clear(); location.reload(); } }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
-        function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active', 'text-blue-500')); document.getElementById('nav-'+t).classList.add('nav-active', 'text-blue-500'); if(t==='graficos') actualizarUI(); }
+        function showTab(t) { 
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
+            document.getElementById(t).classList.add('active'); 
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active', 'text-blue-500')); 
+            document.getElementById('nav-'+t).classList.add('nav-active', 'text-blue-500'); 
+            if(t==='graficos') actualizarUI(); 
+            if(t==='huchas') renderHuchas();
+        }
 
+        // Inicialización
         document.getElementById('in-fecha').valueAsDate = new Date();
         actualizarUI();
+        renderHuchas();
     </script>
 </body>
 </html>
