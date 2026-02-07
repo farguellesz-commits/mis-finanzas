@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V13.1 - MASTER</title>
+    <title>FINANZAS V13.2 - MASTER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -32,7 +32,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.1</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.2</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -161,9 +161,19 @@
         Chart.register(ChartDataLabels);
         const DB_KEY = 'FINANZAS_V13_MASTER'; 
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || { movs: [], config: [], huchas: [] };
+        
+        // --- AUTO-REPARACIÓN DE DATOS ANTIGUOS ---
+        // Esto asegura que todos los movimientos tengan forma de pago visible
+        let migracion = false;
+        db.movs.forEach(m => {
+            if(!m.pago) { m.pago = "EFECTIVO"; migracion = true; }
+        });
+        if(migracion) { console.log("Datos antiguos actualizados con forma de pago."); localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+        // ------------------------------------------
+
         let tipoMuro = 'Ingreso';
         let mesSeleccionado = new Date().toISOString().slice(0, 7);
-        let idEditandoMov = null; // Variable para saber si editamos
+        let idEditandoMov = null;
         let charts = {};
         let movParaHucha = null;
 
@@ -175,7 +185,6 @@
             const cats = [...new Set(db.config.filter(c => c.tipo.includes(tipoMuro)).map(c => c.categoria))].sort();
             document.getElementById('in-cat').innerHTML = `<option value="">CATEGORÍA...</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('');
             document.getElementById('in-con').innerHTML = `<option value="">CONCEPTO...</option>`;
-            // Solo limpia si no estamos editando
             if(!idEditandoMov) document.getElementById('in-valor').value = "";
         }
         function cargarConceptosMuro() {
@@ -190,7 +199,7 @@
             if(isNaN(val) || !con) return alert("Faltan datos obligatorios");
             
             const nuevo = {
-                id: idEditandoMov || Date.now().toString(), // Mantiene ID si editamos
+                id: idEditandoMov || Date.now().toString(),
                 fecha: document.getElementById('in-fecha').value,
                 tipo: tipoMuro,
                 cat: document.getElementById('in-cat').value,
@@ -199,10 +208,9 @@
                 pago: document.getElementById('in-pago').value,
                 fijo: document.getElementById('in-fijo').checked,
                 extra: document.getElementById('in-extra').checked,
-                huchaId: null // Reset hucha if edited (simple approach) or keep it? Let's reset for safety unless complex logic
+                huchaId: null 
             };
 
-            // Si editamos, preservamos el huchaId si existía
             if(idEditandoMov) {
                 const old = db.movs.find(m => String(m.id) === String(idEditandoMov));
                 if(old) nuevo.huchaId = old.huchaId;
@@ -212,7 +220,7 @@
                 db.movs.push(nuevo);
             }
 
-            cancelarEdicion(); // Resetea formulario
+            cancelarEdicion();
             save();
         }
 
@@ -221,26 +229,23 @@
             if(!m) return;
             idEditandoMov = id;
             
-            // Cargar datos en form
             document.getElementById('in-fecha').value = m.fecha;
             document.getElementById('in-valor').value = m.valor;
             setTipoMuro(m.tipo);
             
-            // Simular carga de selects
+            // Forzar carga de selects
             document.getElementById('in-cat').value = m.cat;
             cargarConceptosMuro();
             document.getElementById('in-con').value = m.con;
-            document.getElementById('in-pago').value = m.pago || 'EFECTIVO';
+            document.getElementById('in-pago').value = m.pago || 'EFECTIVO'; // Fallback visual
             document.getElementById('in-fijo').checked = m.fijo;
             document.getElementById('in-extra').checked = m.extra;
 
-            // Cambiar UI botones
             document.getElementById('btn-guardar').innerText = "ACTUALIZAR MOVIMIENTO";
             document.getElementById('btn-guardar').classList.remove('bg-slate-900');
             document.getElementById('btn-guardar').classList.add('bg-emerald-600');
             document.getElementById('btn-cancelar').classList.remove('hidden');
             
-            // Scroll arriba
             document.getElementById('muro').scrollIntoView({behavior:'smooth'});
         }
 
@@ -264,7 +269,12 @@
             const mesPasado = datePasado.toISOString().slice(0, 7);
             const fijos = db.movs.filter(m => m.fecha.startsWith(mesPasado) && m.fijo);
             if(!fijos.length) return alert("No hay fijos el mes anterior");
-            fijos.forEach(m => db.movs.push({...m, id: Date.now()+Math.random(), fecha: mesSeleccionado + "-01"}));
+            
+            fijos.forEach(m => {
+                const nuevo = {...m, id: Date.now()+Math.random(), fecha: mesSeleccionado + "-01"};
+                if(!nuevo.pago) nuevo.pago = "EFECTIVO"; // Asegura forma de pago al clonar
+                db.movs.push(nuevo);
+            });
             save(); alert(`Clonados ${fijos.length} movimientos.`);
         }
 
@@ -297,7 +307,7 @@
                             <span class="text-[10px] text-slate-500 font-bold">${m.fecha.slice(8,10)}/${m.fecha.slice(5,7)}</span>
                         </div>
                         <p class="font-black text-xs uppercase text-slate-700">${m.con} 
-                           ${m.pago ? `<span class="text-[8px] font-normal text-slate-400">(${m.pago})</span>` : ''}
+                           <span class="text-[8px] font-normal text-slate-400">(${m.pago})</span>
                         </p>
                         <div class="flex gap-2 mt-1">
                             ${m.fijo?'<span class="text-[8px] font-black px-1.5 bg-indigo-50 text-indigo-600 rounded">FIJO</span>':''}
