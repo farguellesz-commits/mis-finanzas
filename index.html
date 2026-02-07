@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V13.0 - MASTER</title>
+    <title>FINANZAS V13.1 - MASTER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -32,7 +32,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.0</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.1</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -91,7 +91,8 @@
                     </label>
                 </div>
             </div>
-            <button onclick="guardarRegistro()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-xs uppercase mt-4 shadow-lg active:scale-95 transition-all">Guardar Movimiento</button>
+            <button onclick="guardarRegistro()" id="btn-guardar" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-xs uppercase mt-4 shadow-lg active:scale-95 transition-all">Guardar Movimiento</button>
+            <button onclick="cancelarEdicion()" id="btn-cancelar" class="hidden w-full bg-slate-200 text-slate-500 py-3 rounded-xl font-black text-xs uppercase mt-2">Cancelar Edición</button>
         </div>
 
         <input type="text" id="search-muro" placeholder="Buscar movimientos..." onkeyup="actualizarUI()" class="w-full mb-3 !rounded-full shadow-sm border-none bg-white text-sm">
@@ -162,6 +163,7 @@
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || { movs: [], config: [], huchas: [] };
         let tipoMuro = 'Ingreso';
         let mesSeleccionado = new Date().toISOString().slice(0, 7);
+        let idEditandoMov = null; // Variable para saber si editamos
         let charts = {};
         let movParaHucha = null;
 
@@ -173,7 +175,8 @@
             const cats = [...new Set(db.config.filter(c => c.tipo.includes(tipoMuro)).map(c => c.categoria))].sort();
             document.getElementById('in-cat').innerHTML = `<option value="">CATEGORÍA...</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('');
             document.getElementById('in-con').innerHTML = `<option value="">CONCEPTO...</option>`;
-            document.getElementById('in-valor').value = "";
+            // Solo limpia si no estamos editando
+            if(!idEditandoMov) document.getElementById('in-valor').value = "";
         }
         function cargarConceptosMuro() {
             const cat = document.getElementById('in-cat').value;
@@ -185,8 +188,9 @@
             const val = parseFloat(document.getElementById('in-valor').value);
             const con = document.getElementById('in-con').value;
             if(isNaN(val) || !con) return alert("Faltan datos obligatorios");
+            
             const nuevo = {
-                id: Date.now().toString(),
+                id: idEditandoMov || Date.now().toString(), // Mantiene ID si editamos
                 fecha: document.getElementById('in-fecha').value,
                 tipo: tipoMuro,
                 cat: document.getElementById('in-cat').value,
@@ -195,11 +199,63 @@
                 pago: document.getElementById('in-pago').value,
                 fijo: document.getElementById('in-fijo').checked,
                 extra: document.getElementById('in-extra').checked,
-                huchaId: null
+                huchaId: null // Reset hucha if edited (simple approach) or keep it? Let's reset for safety unless complex logic
             };
-            db.movs.push(nuevo);
-            document.getElementById('in-valor').value = "";
+
+            // Si editamos, preservamos el huchaId si existía
+            if(idEditandoMov) {
+                const old = db.movs.find(m => String(m.id) === String(idEditandoMov));
+                if(old) nuevo.huchaId = old.huchaId;
+                const idx = db.movs.findIndex(m => String(m.id) === String(idEditandoMov));
+                db.movs[idx] = nuevo;
+            } else {
+                db.movs.push(nuevo);
+            }
+
+            cancelarEdicion(); // Resetea formulario
             save();
+        }
+
+        function editarMov(id) {
+            const m = db.movs.find(x => String(x.id) === String(id));
+            if(!m) return;
+            idEditandoMov = id;
+            
+            // Cargar datos en form
+            document.getElementById('in-fecha').value = m.fecha;
+            document.getElementById('in-valor').value = m.valor;
+            setTipoMuro(m.tipo);
+            
+            // Simular carga de selects
+            document.getElementById('in-cat').value = m.cat;
+            cargarConceptosMuro();
+            document.getElementById('in-con').value = m.con;
+            document.getElementById('in-pago').value = m.pago || 'EFECTIVO';
+            document.getElementById('in-fijo').checked = m.fijo;
+            document.getElementById('in-extra').checked = m.extra;
+
+            // Cambiar UI botones
+            document.getElementById('btn-guardar').innerText = "ACTUALIZAR MOVIMIENTO";
+            document.getElementById('btn-guardar').classList.remove('bg-slate-900');
+            document.getElementById('btn-guardar').classList.add('bg-emerald-600');
+            document.getElementById('btn-cancelar').classList.remove('hidden');
+            
+            // Scroll arriba
+            document.getElementById('muro').scrollIntoView({behavior:'smooth'});
+        }
+
+        function cancelarEdicion() {
+            idEditandoMov = null;
+            document.getElementById('in-valor').value = "";
+            document.getElementById('in-cat').value = "";
+            document.getElementById('in-con').innerHTML = "";
+            document.getElementById('in-fijo').checked = false;
+            document.getElementById('in-extra').checked = false;
+            
+            document.getElementById('btn-guardar').innerText = "GUARDAR MOVIMIENTO";
+            document.getElementById('btn-guardar').classList.add('bg-slate-900');
+            document.getElementById('btn-guardar').classList.remove('bg-emerald-600');
+            document.getElementById('btn-cancelar').classList.add('hidden');
         }
 
         function clonarFijos() {
@@ -240,7 +296,9 @@
                             <span class="text-[9px] font-black text-slate-500 bg-slate-100 px-1.5 rounded">${m.cat}</span>
                             <span class="text-[10px] text-slate-500 font-bold">${m.fecha.slice(8,10)}/${m.fecha.slice(5,7)}</span>
                         </div>
-                        <p class="font-black text-xs uppercase text-slate-700">${m.con} <span class="text-[8px] font-normal text-slate-400">(${m.pago})</span></p>
+                        <p class="font-black text-xs uppercase text-slate-700">${m.con} 
+                           ${m.pago ? `<span class="text-[8px] font-normal text-slate-400">(${m.pago})</span>` : ''}
+                        </p>
                         <div class="flex gap-2 mt-1">
                             ${m.fijo?'<span class="text-[8px] font-black px-1.5 bg-indigo-50 text-indigo-600 rounded">FIJO</span>':''}
                             ${m.extra?'<span class="text-[8px] font-black px-1.5 bg-orange-50 text-orange-600 rounded">EXTRA</span>':''}
@@ -250,8 +308,9 @@
                     <div class="flex items-center gap-2 pl-2">
                         <span class="font-black text-sm ${m.tipo==='Ingreso'?'text-emerald-600':'text-rose-600'}">${m.valor.toFixed(2)}€</span>
                         <div class="flex flex-col gap-1">
-                            <button onclick="abrirModalHucha('${m.id}')" class="w-7 h-7 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center"><i class="fas fa-piggy-bank text-xs"></i></button>
-                            <button onclick="borrarMov('${m.id}')" class="w-7 h-7 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center"><i class="fas fa-trash text-xs"></i></button>
+                            <button onclick="abrirModalHucha('${m.id}')" class="w-6 h-6 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center"><i class="fas fa-piggy-bank text-[10px]"></i></button>
+                            <button onclick="editarMov('${m.id}')" class="w-6 h-6 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center"><i class="fas fa-pencil-alt text-[10px]"></i></button>
+                            <button onclick="borrarMov('${m.id}')" class="w-6 h-6 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center"><i class="fas fa-trash text-[10px]"></i></button>
                         </div>
                     </div>
                 </div>`).join('');
@@ -287,7 +346,7 @@
             charts.tendencia = new Chart(ctx, { type:'line', data:{ labels, datasets:[{label:'Ingresos', data:dataIng, borderColor:'#10b981', tension:0.3, fill:false}, {label:'Gastos', data:dataGas, borderColor:'#f43f5e', tension:0.3, fill:false}]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{display:false} }}});
         }
 
-        // --- CONFIG Y SEMÁFORO ---
+        // --- CONFIG ---
         function guardarConfig() { const t = document.getElementById('cfg-tipo').value; const cat = document.getElementById('cfg-cat').value.toUpperCase(); const con = document.getElementById('cfg-con').value.toUpperCase(); const imp = parseFloat(document.getElementById('cfg-imp').value) || 0; if(cat && con) { db.config.push({id:Date.now(), tipo:t, categoria:cat, concepto:con, importe:imp}); save(); } }
         function renderConfigList() {
             const list = document.getElementById('lista-config-acordeon');
@@ -302,7 +361,7 @@
             }).join('');
         }
 
-        // --- BACKUP (RECUPERADO) ---
+        // --- BACKUP ---
         function exportarTodo() {
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos");
