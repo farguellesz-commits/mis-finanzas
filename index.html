@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V13.2 - MASTER</title>
+    <title>FINANZAS V13.3 - MASTER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -24,6 +24,10 @@
         .btn-tipo { background: #f1f5f9; color: #64748b; height: 40px; border-radius: 0.75rem; font-weight: 800; text-transform: uppercase; flex: 1; font-size: 0.7rem; transition: 0.2s; }
         .btn-tipo.active { background: #1e293b !important; color: white !important; transform: scale(1.02); }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s; }
+        /* Ajuste para los botones de acción en tarjeta */
+        .card-action-btn { flex: 1; padding: 12px 0; text-align: center; font-size: 14px; transition: background 0.2s; color: #94a3b8; }
+        .card-action-btn:hover { background-color: #f8fafc; }
+        html.dark .card-action-btn:hover { background-color: #334155; }
     </style>
 </head>
 <body class="light">
@@ -32,7 +36,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.2</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.3</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -96,7 +100,7 @@
         </div>
 
         <input type="text" id="search-muro" placeholder="Buscar movimientos..." onkeyup="actualizarUI()" class="w-full mb-3 !rounded-full shadow-sm border-none bg-white text-sm">
-        <div id="lista-movs" class="space-y-2 pb-24"></div>
+        <div id="lista-movs" class="space-y-3 pb-24"></div>
     </div>
 
     <div id="graficos" class="tab-content p-4 max-w-2xl mx-auto space-y-4">
@@ -162,14 +166,13 @@
         const DB_KEY = 'FINANZAS_V13_MASTER'; 
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || { movs: [], config: [], huchas: [] };
         
-        // --- AUTO-REPARACIÓN DE DATOS ANTIGUOS ---
-        // Esto asegura que todos los movimientos tengan forma de pago visible
+        // --- AUTO-REPARACIÓN DATOS ---
         let migracion = false;
         db.movs.forEach(m => {
             if(!m.pago) { m.pago = "EFECTIVO"; migracion = true; }
         });
-        if(migracion) { console.log("Datos antiguos actualizados con forma de pago."); localStorage.setItem(DB_KEY, JSON.stringify(db)); }
-        // ------------------------------------------
+        if(migracion) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+        // -----------------------------
 
         let tipoMuro = 'Ingreso';
         let mesSeleccionado = new Date().toISOString().slice(0, 7);
@@ -233,11 +236,10 @@
             document.getElementById('in-valor').value = m.valor;
             setTipoMuro(m.tipo);
             
-            // Forzar carga de selects
             document.getElementById('in-cat').value = m.cat;
             cargarConceptosMuro();
             document.getElementById('in-con').value = m.con;
-            document.getElementById('in-pago').value = m.pago || 'EFECTIVO'; // Fallback visual
+            document.getElementById('in-pago').value = m.pago || 'EFECTIVO';
             document.getElementById('in-fijo').checked = m.fijo;
             document.getElementById('in-extra').checked = m.extra;
 
@@ -272,7 +274,7 @@
             
             fijos.forEach(m => {
                 const nuevo = {...m, id: Date.now()+Math.random(), fecha: mesSeleccionado + "-01"};
-                if(!nuevo.pago) nuevo.pago = "EFECTIVO"; // Asegura forma de pago al clonar
+                if(!nuevo.pago) nuevo.pago = "EFECTIVO";
                 db.movs.push(nuevo);
             });
             save(); alert(`Clonados ${fijos.length} movimientos.`);
@@ -299,31 +301,40 @@
             document.getElementById('sum-gas-fijo').innerText = gF.toFixed(0) + "€";
             document.getElementById('sum-gas-extra').innerText = gE.toFixed(0) + "€";
 
-            document.getElementById('lista-movs').innerHTML = movsMes.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).map(m => `
-                <div class="card flex justify-between items-center py-3 border-l-4 ${m.tipo==='Ingreso'?'border-emerald-500':'border-rose-500'}">
-                    <div class="truncate flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[9px] font-black text-slate-500 bg-slate-100 px-1.5 rounded">${m.cat}</span>
-                            <span class="text-[10px] text-slate-500 font-bold">${m.fecha.slice(8,10)}/${m.fecha.slice(5,7)}</span>
+            // LOGICA ORDENACIÓN MEJORADA (Fecha + Hora Creación)
+            const sortedMovs = movsMes.sort((a,b) => {
+                const dateDiff = new Date(b.fecha) - new Date(a.fecha);
+                if (dateDiff !== 0) return dateDiff; // Orden por fecha
+                return b.id - a.id; // Desempate: El ID (timestamp) más alto (más nuevo) va primero
+            });
+
+            document.getElementById('lista-movs').innerHTML = sortedMovs.map(m => `
+                <div class="card p-0 overflow-hidden border-l-4 ${m.tipo==='Ingreso'?'border-emerald-500':'border-rose-500'}">
+                    <div class="p-3 flex justify-between items-start">
+                        <div class="truncate flex-1 pr-2">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[9px] font-black text-slate-500 bg-slate-100 px-1.5 rounded uppercase">${m.cat}</span>
+                                <span class="text-[10px] text-slate-500 font-bold">${m.fecha.slice(8,10)}/${m.fecha.slice(5,7)}</span>
+                            </div>
+                            <p class="font-black text-xs uppercase text-slate-700 leading-tight">${m.con}</p>
+                            <div class="flex gap-2 mt-1.5 flex-wrap">
+                                ${m.fijo?'<span class="text-[8px] font-black px-1.5 bg-indigo-50 text-indigo-600 rounded">FIJO</span>':''}
+                                ${m.extra?'<span class="text-[8px] font-black px-1.5 bg-orange-50 text-orange-600 rounded">EXTRA</span>':''}
+                                ${m.huchaId?'<span class="text-[8px] font-black px-1.5 bg-purple-50 text-purple-600 rounded">HUCHA</span>':''}
+                            </div>
                         </div>
-                        <p class="font-black text-xs uppercase text-slate-700">${m.con} 
-                           <span class="text-[8px] font-normal text-slate-400">(${m.pago})</span>
-                        </p>
-                        <div class="flex gap-2 mt-1">
-                            ${m.fijo?'<span class="text-[8px] font-black px-1.5 bg-indigo-50 text-indigo-600 rounded">FIJO</span>':''}
-                            ${m.extra?'<span class="text-[8px] font-black px-1.5 bg-orange-50 text-orange-600 rounded">EXTRA</span>':''}
-                            ${m.huchaId?'<span class="text-[8px] font-black px-1.5 bg-purple-50 text-purple-600 rounded">HUCHA</span>':''}
+                        <div class="text-right whitespace-nowrap">
+                            <span class="font-black text-lg block ${m.tipo==='Ingreso'?'text-emerald-600':'text-rose-600'}">${m.valor.toFixed(2)}€</span>
+                            <span class="text-[9px] text-slate-400 font-bold uppercase block mt-1">${m.pago}</span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 pl-2">
-                        <span class="font-black text-sm ${m.tipo==='Ingreso'?'text-emerald-600':'text-rose-600'}">${m.valor.toFixed(2)}€</span>
-                        <div class="flex flex-col gap-1">
-                            <button onclick="abrirModalHucha('${m.id}')" class="w-6 h-6 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center"><i class="fas fa-piggy-bank text-[10px]"></i></button>
-                            <button onclick="editarMov('${m.id}')" class="w-6 h-6 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center"><i class="fas fa-pencil-alt text-[10px]"></i></button>
-                            <button onclick="borrarMov('${m.id}')" class="w-6 h-6 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center"><i class="fas fa-trash text-[10px]"></i></button>
-                        </div>
+                    <div class="flex border-t border-slate-100 dark:border-slate-800 divide-x divide-slate-100 dark:divide-slate-800">
+                        <button onclick="abrirModalHucha('${m.id}')" class="card-action-btn hover:text-purple-600 group"><i class="fas fa-piggy-bank text-sm group-hover:scale-110 transition-transform"></i></button>
+                        <button onclick="editarMov('${m.id}')" class="card-action-btn hover:text-blue-600 group"><i class="fas fa-pencil-alt text-sm group-hover:scale-110 transition-transform"></i></button>
+                        <button onclick="borrarMov('${m.id}')" class="card-action-btn hover:text-rose-600 group"><i class="fas fa-trash text-sm group-hover:scale-110 transition-transform"></i></button>
                     </div>
                 </div>`).join('');
+            
             renderCharts(iF, iE, gF, gE);
         }
 
