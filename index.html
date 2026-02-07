@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V13.3 - MASTER</title>
+    <title>FINANZAS V13.4 - MASTER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -24,7 +24,6 @@
         .btn-tipo { background: #f1f5f9; color: #64748b; height: 40px; border-radius: 0.75rem; font-weight: 800; text-transform: uppercase; flex: 1; font-size: 0.7rem; transition: 0.2s; }
         .btn-tipo.active { background: #1e293b !important; color: white !important; transform: scale(1.02); }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s; }
-        /* Ajuste para los botones de acción en tarjeta */
         .card-action-btn { flex: 1; padding: 12px 0; text-align: center; font-size: 14px; transition: background 0.2s; color: #94a3b8; }
         .card-action-btn:hover { background-color: #f8fafc; }
         html.dark .card-action-btn:hover { background-color: #334155; }
@@ -36,7 +35,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.3</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.4</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -80,6 +79,8 @@
                     <select id="in-cat" onchange="cargarConceptosMuro()" class="font-bold uppercase text-[10px] bg-slate-50"></select>
                     <select id="in-con" class="font-bold uppercase text-[10px] bg-slate-50"></select>
                 </div>
+                <input type="text" id="in-nota" placeholder="Detalle / Nota (Opcional)" class="font-bold text-[11px] text-slate-600 bg-slate-50">
+                
                 <select id="in-pago" class="font-bold uppercase text-[10px] bg-slate-50">
                     <option value="EFECTIVO">Efectivo</option>
                     <option value="DÉBITO">Débito</option>
@@ -166,13 +167,11 @@
         const DB_KEY = 'FINANZAS_V13_MASTER'; 
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || { movs: [], config: [], huchas: [] };
         
-        // --- AUTO-REPARACIÓN DATOS ---
         let migracion = false;
         db.movs.forEach(m => {
             if(!m.pago) { m.pago = "EFECTIVO"; migracion = true; }
         });
         if(migracion) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
-        // -----------------------------
 
         let tipoMuro = 'Ingreso';
         let mesSeleccionado = new Date().toISOString().slice(0, 7);
@@ -207,6 +206,7 @@
                 tipo: tipoMuro,
                 cat: document.getElementById('in-cat').value,
                 con: con,
+                nota: document.getElementById('in-nota').value.trim(), // Nueva propiedad NOTA
                 valor: val,
                 pago: document.getElementById('in-pago').value,
                 fijo: document.getElementById('in-fijo').checked,
@@ -239,6 +239,7 @@
             document.getElementById('in-cat').value = m.cat;
             cargarConceptosMuro();
             document.getElementById('in-con').value = m.con;
+            document.getElementById('in-nota').value = m.nota || ""; // Cargar Nota
             document.getElementById('in-pago').value = m.pago || 'EFECTIVO';
             document.getElementById('in-fijo').checked = m.fijo;
             document.getElementById('in-extra').checked = m.extra;
@@ -256,6 +257,7 @@
             document.getElementById('in-valor').value = "";
             document.getElementById('in-cat').value = "";
             document.getElementById('in-con').innerHTML = "";
+            document.getElementById('in-nota').value = ""; // Limpiar Nota
             document.getElementById('in-fijo').checked = false;
             document.getElementById('in-extra').checked = false;
             
@@ -269,15 +271,36 @@
             const datePasado = new Date(mesSeleccionado + "-01");
             datePasado.setMonth(datePasado.getMonth() - 1);
             const mesPasado = datePasado.toISOString().slice(0, 7);
-            const fijos = db.movs.filter(m => m.fecha.startsWith(mesPasado) && m.fijo);
-            if(!fijos.length) return alert("No hay fijos el mes anterior");
             
-            fijos.forEach(m => {
-                const nuevo = {...m, id: Date.now()+Math.random(), fecha: mesSeleccionado + "-01"};
-                if(!nuevo.pago) nuevo.pago = "EFECTIVO";
-                db.movs.push(nuevo);
+            // Fijos del mes pasado
+            const fijosAnteriores = db.movs.filter(m => m.fecha.startsWith(mesPasado) && m.fijo);
+            if(!fijosAnteriores.length) return alert("No hay fijos el mes anterior");
+            
+            // Fijos que ya tengo este mes (para no duplicar)
+            const fijosActuales = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && m.fijo);
+
+            let count = 0;
+            fijosAnteriores.forEach(m => {
+                // Inteligencia: Chequea si ya existe mismo concepto y mismo valor (aprox) en este mes
+                const yaExiste = fijosActuales.some(actual => 
+                    actual.cat === m.cat && 
+                    actual.con === m.con && 
+                    Math.abs(actual.valor - m.valor) < 0.1 // Margen error flotante
+                );
+
+                if(!yaExiste) {
+                    const nuevo = {...m, id: Date.now()+Math.random(), fecha: mesSeleccionado + "-01", nota: ""};
+                    if(!nuevo.pago) nuevo.pago = "EFECTIVO";
+                    db.movs.push(nuevo);
+                    count++;
+                }
             });
-            save(); alert(`Clonados ${fijos.length} movimientos.`);
+
+            if(count > 0) {
+                save(); alert(`Se han clonado ${count} movimientos nuevos.`);
+            } else {
+                alert("No se ha clonado nada: Ya tienes todos los fijos copiados en este mes.");
+            }
         }
 
         function actualizarUI() {
@@ -288,7 +311,7 @@
             document.getElementById('mes-header').innerText = mesSeleccionado;
 
             const q = document.getElementById('search-muro').value.toLowerCase();
-            const movsMes = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && (m.con.toLowerCase().includes(q) || m.cat.toLowerCase().includes(q)));
+            const movsMes = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && (m.con.toLowerCase().includes(q) || m.cat.toLowerCase().includes(q) || (m.nota && m.nota.toLowerCase().includes(q))));
             
             const iF = movsMes.filter(m => m.tipo === 'Ingreso' && !m.extra).reduce((s,m)=>s+m.valor,0);
             const iE = movsMes.filter(m => m.tipo === 'Ingreso' && m.extra).reduce((s,m)=>s+m.valor,0);
@@ -301,11 +324,10 @@
             document.getElementById('sum-gas-fijo').innerText = gF.toFixed(0) + "€";
             document.getElementById('sum-gas-extra').innerText = gE.toFixed(0) + "€";
 
-            // LOGICA ORDENACIÓN MEJORADA (Fecha + Hora Creación)
             const sortedMovs = movsMes.sort((a,b) => {
                 const dateDiff = new Date(b.fecha) - new Date(a.fecha);
-                if (dateDiff !== 0) return dateDiff; // Orden por fecha
-                return b.id - a.id; // Desempate: El ID (timestamp) más alto (más nuevo) va primero
+                if (dateDiff !== 0) return dateDiff; 
+                return b.id - a.id; 
             });
 
             document.getElementById('lista-movs').innerHTML = sortedMovs.map(m => `
@@ -317,6 +339,7 @@
                                 <span class="text-[10px] text-slate-500 font-bold">${m.fecha.slice(8,10)}/${m.fecha.slice(5,7)}</span>
                             </div>
                             <p class="font-black text-xs uppercase text-slate-700 leading-tight">${m.con}</p>
+                            ${m.nota ? `<p class="text-[10px] text-slate-500 italic mt-0.5 truncate"><i class="fas fa-info-circle text-[8px] mr-1"></i>${m.nota}</p>` : ''}
                             <div class="flex gap-2 mt-1.5 flex-wrap">
                                 ${m.fijo?'<span class="text-[8px] font-black px-1.5 bg-indigo-50 text-indigo-600 rounded">FIJO</span>':''}
                                 ${m.extra?'<span class="text-[8px] font-black px-1.5 bg-orange-50 text-orange-600 rounded">EXTRA</span>':''}
@@ -338,96 +361,34 @@
             renderCharts(iF, iE, gF, gE);
         }
 
-        // --- HUCHAS ---
+        // --- HUCHAS, TENDENCIAS, CONFIG, BACKUP (Igual que v13.3) ---
         function crearHucha() { const n = document.getElementById('hucha-nombre').value.toUpperCase(); const m = parseFloat(document.getElementById('hucha-meta').value); if(n && m) { db.huchas.push({id:Date.now(), nombre:n, meta:m, ahorro:0}); save(); } }
         function abrirModalHucha(mId) { movParaHucha = mId; document.getElementById('modal-hucha').classList.remove('hidden'); document.getElementById('modal-hucha-list').innerHTML = db.huchas.map(h => `<button onclick="vinculaMovHucha(${h.id})" class="w-full p-3 bg-purple-50 text-purple-700 rounded-xl font-bold text-xs uppercase flex justify-between"><span>${h.nombre}</span><span>${h.ahorro}€</span></button>`).join(''); }
         function cerrarModalHucha() { document.getElementById('modal-hucha').classList.add('hidden'); }
-        function vinculaMovHucha(hId) { 
-            const m = db.movs.find(x => x.id == movParaHucha); 
-            const h = db.huchas.find(x => x.id == hId);
-            if(m && h) { m.huchaId = hId; h.ahorro -= m.valor; save(); }
-            cerrarModalHucha();
-        }
+        function vinculaMovHucha(hId) { const m = db.movs.find(x => x.id == movParaHucha); const h = db.huchas.find(x => x.id == hId); if(m && h) { m.huchaId = hId; h.ahorro -= m.valor; save(); } cerrarModalHucha(); }
         function opHucha(id, cant) { const h = db.huchas.find(x=>x.id==id); if(h) { h.ahorro += cant; save(); } }
-        function renderHuchas() {
-            const list = document.getElementById('lista-huchas');
-            list.innerHTML = (db.huchas || []).map(h => {
-                const movs = db.movs.filter(m => m.huchaId == h.id);
-                return `<div class="card p-3"><div class="flex justify-between items-start mb-2"><div><h4 class="font-black text-xs uppercase text-purple-700">${h.nombre}</h4><p class="text-[10px] text-slate-400 font-bold">${h.ahorro.toFixed(0)}€ / ${h.meta}€</p></div><div class="flex gap-1"><button onclick="opHucha(${h.id}, 50)" class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 font-bold text-xs">+50</button><button onclick="borrarHucha(${h.id})" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 text-xs"><i class="fas fa-trash"></i></button></div></div><div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-purple-500" style="width: ${Math.min(100,(h.ahorro/h.meta)*100)}%"></div></div><button onclick="toggleAcc('hdet-${h.id}')" class="mt-3 text-[9px] font-bold text-slate-400 uppercase">Consultar Historial (${movs.length}) <i class="fas fa-chevron-down ml-1"></i></button><div id="acc-hdet-${h.id}" class="accordion-content mt-2 space-y-1">${movs.map(m => `<div class="flex justify-between text-[9px] bg-slate-50 p-1 rounded font-bold text-slate-500 uppercase"><span>${m.fecha.slice(8,10)} ${m.con}</span><span>-${m.valor}€</span></div>`).join('')}</div></div>`;
-            }).join('');
-        }
-
-        // --- TENDENCIA ---
-        function renderTendencia() {
-            const ctx = document.getElementById('chartTendencia'); if(!ctx) return;
-            const labels = []; for(let i=5; i>=0; i--) { const d = new Date(); d.setMonth(d.getMonth()-i); labels.push(d.toISOString().slice(0,7)); }
-            const dataIng = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Ingreso').reduce((s,x)=>s+x.valor,0));
-            const dataGas = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Gasto').reduce((s,x)=>s+x.valor,0));
-            if(charts.tendencia) charts.tendencia.destroy();
-            charts.tendencia = new Chart(ctx, { type:'line', data:{ labels, datasets:[{label:'Ingresos', data:dataIng, borderColor:'#10b981', tension:0.3, fill:false}, {label:'Gastos', data:dataGas, borderColor:'#f43f5e', tension:0.3, fill:false}]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{display:false} }}});
-        }
-
-        // --- CONFIG ---
+        function renderHuchas() { const list = document.getElementById('lista-huchas'); list.innerHTML = (db.huchas || []).map(h => { const movs = db.movs.filter(m => m.huchaId == h.id); return `<div class="card p-3"><div class="flex justify-between items-start mb-2"><div><h4 class="font-black text-xs uppercase text-purple-700">${h.nombre}</h4><p class="text-[10px] text-slate-400 font-bold">${h.ahorro.toFixed(0)}€ / ${h.meta}€</p></div><div class="flex gap-1"><button onclick="opHucha(${h.id}, 50)" class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 font-bold text-xs">+50</button><button onclick="borrarHucha(${h.id})" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 text-xs"><i class="fas fa-trash"></i></button></div></div><div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-purple-500" style="width: ${Math.min(100,(h.ahorro/h.meta)*100)}%"></div></div><button onclick="toggleAcc('hdet-${h.id}')" class="mt-3 text-[9px] font-bold text-slate-400 uppercase">Consultar Historial (${movs.length}) <i class="fas fa-chevron-down ml-1"></i></button><div id="acc-hdet-${h.id}" class="accordion-content mt-2 space-y-1">${movs.map(m => `<div class="flex justify-between text-[9px] bg-slate-50 p-1 rounded font-bold text-slate-500 uppercase"><span>${m.fecha.slice(8,10)} ${m.con}</span><span>-${m.valor}€</span></div>`).join('')}</div></div>`; }).join(''); }
+        function renderTendencia() { const ctx = document.getElementById('chartTendencia'); if(!ctx) return; const labels = []; for(let i=5; i>=0; i--) { const d = new Date(); d.setMonth(d.getMonth()-i); labels.push(d.toISOString().slice(0,7)); } const dataIng = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Ingreso').reduce((s,x)=>s+x.valor,0)); const dataGas = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Gasto').reduce((s,x)=>s+x.valor,0)); if(charts.tendencia) charts.tendencia.destroy(); charts.tendencia = new Chart(ctx, { type:'line', data:{ labels, datasets:[{label:'Ingresos', data:dataIng, borderColor:'#10b981', tension:0.3, fill:false}, {label:'Gastos', data:dataGas, borderColor:'#f43f5e', tension:0.3, fill:false}]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{display:false} }}}); }
         function guardarConfig() { const t = document.getElementById('cfg-tipo').value; const cat = document.getElementById('cfg-cat').value.toUpperCase(); const con = document.getElementById('cfg-con').value.toUpperCase(); const imp = parseFloat(document.getElementById('cfg-imp').value) || 0; if(cat && con) { db.config.push({id:Date.now(), tipo:t, categoria:cat, concepto:con, importe:imp}); save(); } }
-        function renderConfigList() {
-            const list = document.getElementById('lista-config-acordeon');
-            const grouped = {}; db.config.forEach(c => { if(!grouped[c.categoria]) grouped[c.categoria] = []; grouped[c.categoria].push(c); });
-            list.innerHTML = Object.keys(grouped).sort().map(cat => {
-                const items = grouped[cat].sort((a,b)=>a.concepto.localeCompare(b.concepto));
-                return `<div class="card p-0 overflow-hidden mb-2"><button onclick="toggleAcc('cfg-${cat.replace(/\s+/g,'-')}')" class="w-full p-4 flex justify-between bg-slate-50 font-black text-xs uppercase tracking-widest">${cat} <i class="fas fa-chevron-down"></i></button><div id="acc-cfg-${cat.replace(/\s+/g,'-')}" class="accordion-content">${items.map(c => {
-                    const gastado = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && m.cat === c.categoria && m.con === c.concepto).reduce((s,m)=>s+m.valor,0);
-                    const pct = c.importe > 0 ? Math.min(100, (gastado/c.importe)*100) : 0;
-                    return `<div class="p-4 border-t border-slate-100"><div class="flex justify-between items-center mb-1"><p class="font-bold text-xs text-slate-700">${c.concepto}</p><span class="text-[9px] font-black ${gastado>c.importe?'text-rose-500':'text-slate-400'}">${gastado.toFixed(0)}€ / ${c.importe}€</span></div><div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full ${pct>=100?'bg-rose-500':pct>75?'bg-amber-500':'bg-emerald-500'}" style="width:${pct}%"></div></div><button onclick="borrarCfg('${c.id}')" class="mt-2 text-[8px] text-rose-400 font-bold uppercase">Eliminar</button></div>`;
-                }).join('')}</div></div>`;
-            }).join('');
-        }
-
-        // --- BACKUP ---
-        function exportarTodo() {
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos");
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.config), "Presupuestos");
-            if(db.huchas.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.huchas), "Huchas");
-            XLSX.writeFile(wb, `Backup_Finanzas_V13_${new Date().toISOString().slice(0,10)}.xlsx`);
-        }
-        async function importarTodo(e) {
-            try {
-                const f = e.target.files[0]; if(!f) return;
-                const data = await f.arrayBuffer(); const wb = XLSX.read(data);
-                db.movs = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-                db.config = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[1]]);
-                if(wb.SheetNames[2]) db.huchas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[2]]);
-                save(); alert("Datos restaurados.");
-            } catch(err) { alert("Error al importar: " + err.message); }
-        }
-        function borrarTodo() { if(confirm("¿ELIMINAR TODO DE FORMA PERMANENTE?")) { localStorage.clear(); location.reload(); } }
-
-        // --- UTILIDADES ---
+        function renderConfigList() { const list = document.getElementById('lista-config-acordeon'); const grouped = {}; db.config.forEach(c => { if(!grouped[c.categoria]) grouped[c.categoria] = []; grouped[c.categoria].push(c); }); list.innerHTML = Object.keys(grouped).sort().map(cat => { const items = grouped[cat].sort((a,b)=>a.concepto.localeCompare(b.concepto)); return `<div class="card p-0 overflow-hidden mb-2"><button onclick="toggleAcc('cfg-${cat.replace(/\s+/g,'-')}')" class="w-full p-4 flex justify-between bg-slate-50 font-black text-xs uppercase tracking-widest">${cat} <i class="fas fa-chevron-down"></i></button><div id="acc-cfg-${cat.replace(/\s+/g,'-')}" class="accordion-content">${items.map(c => { const gastado = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && m.cat === c.categoria && m.con === c.concepto).reduce((s,m)=>s+m.valor,0); const pct = c.importe > 0 ? Math.min(100, (gastado/c.importe)*100) : 0; return `<div class="p-4 border-t border-slate-100"><div class="flex justify-between items-center mb-1"><p class="font-bold text-xs text-slate-700">${c.concepto}</p><span class="text-[9px] font-black ${gastado>c.importe?'text-rose-500':'text-slate-400'}">${gastado.toFixed(0)}€ / ${c.importe}€</span></div><div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full ${pct>=100?'bg-rose-500':pct>75?'bg-amber-500':'bg-emerald-500'}" style="width:${pct}%"></div></div><button onclick="borrarCfg('${c.id}')" class="mt-2 text-[8px] text-rose-400 font-bold uppercase">Eliminar</button></div>`; }).join('')}</div></div>`; }).join(''); }
+        function exportarTodo() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos"); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.config), "Presupuestos"); if(db.huchas.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.huchas), "Huchas"); XLSX.writeFile(wb, `Backup_Finanzas_V13_${new Date().toISOString().slice(0,10)}.xlsx`); }
+        async function importarTodo(e) { try { const f = e.target.files[0]; if(!f) return; const data = await f.arrayBuffer(); const wb = XLSX.read(data); db.movs = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]); db.config = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[1]]); if(wb.SheetNames[2]) db.huchas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[2]]); save(); alert("Datos restaurados."); } catch(err) { alert("Error al importar: " + err.message); } }
+        function borrarTodo() { if(confirm("¿ELIMINAR TODO?")) { localStorage.clear(); location.reload(); } }
         function cambiarMes(m) { mesSeleccionado = m; actualizarUI(); }
         function toggleAcc(id) { const el = document.getElementById('acc-'+id); el.style.maxHeight = el.style.maxHeight ? null : el.scrollHeight + "px"; }
         function borrarMov(id) { if(confirm("¿Borrar?")) { db.movs = db.movs.filter(m => String(m.id) !== String(id)); save(); } }
         function borrarCfg(id) { if(confirm("¿Borrar?")) { db.config = db.config.filter(c => String(c.id) !== String(id)); save(); } }
         function borrarHucha(id) { if(confirm("¿Borrar?")) { db.huchas = db.huchas.filter(h => h.id != id); save(); } }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
-        function showTab(t) { 
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); 
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); 
-            if(t==='graficos') { renderTendencia(); actualizarUI(); }
-            if(t==='huchas') renderHuchas();
-            if(t==='config') renderConfigList();
-        }
-
-        function renderCharts(iF, iE, gF, gE) {
-            const ctx = document.getElementById('chartApilado'); if(!ctx) return;
-            if(charts.apilado) charts.apilado.destroy();
-            charts.apilado = new Chart(ctx, { type:'bar', data:{ labels:['INGRESOS','GASTOS'], datasets:[
-                { label:'Ordinario', data:[iF, gF], backgroundColor:['#10b981','#f43f5e'], borderRadius:4, stack:'S0' },
-                { label:'Extra', data:[iE, gE], backgroundColor:['#22d3ee','#f97316'], borderRadius:4, stack:'S0' }
-            ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{color:'#fff', font:{weight:'bold', size:9}, formatter:(v)=>v>0?v+'€':''}}}});
-        }
+        function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); if(t==='graficos') { renderTendencia(); actualizarUI(); } if(t==='huchas') renderHuchas(); if(t==='config') renderConfigList(); }
+        function renderCharts(iF, iE, gF, gE) { const ctx = document.getElementById('chartApilado'); if(!ctx) return; if(charts.apilado) charts.apilado.destroy(); charts.apilado = new Chart(ctx, { type:'bar', data:{ labels:['INGRESOS','GASTOS'], datasets:[ { label:'Ordinario', data:[iF, gF], backgroundColor:['#10b981','#f43f5e'], borderRadius:4, stack:'S0' }, { label:'Extra', data:[iE, gE], backgroundColor:['#22d3ee','#f97316'], borderRadius:4, stack:'S0' }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{color:'#fff', font:{weight:'bold', size:9}, formatter:(v)=>v>0?v+'€':''}}}}); }
 
         document.getElementById('in-fecha').valueAsDate = new Date();
         actualizarUI();
+        
+        // --- INICIALIZACIÓN FUERTE ---
+        // Esto corrige el problema de que los selects salgan vacíos al principio.
+        setTipoMuro('Ingreso'); 
     </script>
 </body>
 </html>
