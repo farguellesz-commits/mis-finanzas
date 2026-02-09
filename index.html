@@ -1,38 +1,3 @@
-<!DOCTYPE html>
-<html lang="es" class="light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V13.5 - PRO</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script> tailwind.config = { darkMode: 'class' } </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    <style>
-        body { font-family: system-ui, -apple-system, sans-serif; padding-bottom: 110px; -webkit-tap-highlight-color: transparent; }
-        .card { background: white; border-radius: 1.25rem; padding: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 1rem; border: 1px solid #f1f5f9; }
-        html.dark .card { background-color: #1e293b; border-color: #334155; color: #e2e8f0; }
-        html.dark body { background-color: #0f172a; color: #e2e8f0; }
-        input, select { border: 1px solid #e2e8f0 !important; border-radius: 0.75rem; height: 44px; padding: 0 12px; width: 100%; outline: none; font-size: 14px !important; }
-        html.dark input, html.dark select { background-color: #334155; border-color: #475569 !important; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .nav-active { color: #3b82f6; border-top: 3px solid #3b82f6; font-weight: 900; background: rgba(59, 130, 246, 0.05); }
-        .btn-tipo { background: #f1f5f9; color: #64748b; height: 40px; border-radius: 0.75rem; font-weight: 800; text-transform: uppercase; flex: 1; font-size: 0.7rem; transition: 0.2s; }
-        .btn-tipo.active { background: #1e293b !important; color: white !important; transform: scale(1.02); }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s; }
-        .card-action-btn { flex: 1; padding: 12px 0; text-align: center; font-size: 14px; transition: background 0.2s; color: #94a3b8; }
-        .card-action-btn:hover { background-color: #f8fafc; }
-        html.dark .card-action-btn:hover { background-color: #334155; }
-        
-        /* TOAST STYLES */
-        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 100; transition: all 0.3s ease; opacity: 0; pointer-events: none; margin-top: -20px; }
-        #toast-container.show { opacity: 1; margin-top: 0; }
-        .toast-msg { background: rgba(15, 23, 42, 0.95); color: white; padding: 12px 24px; border-radius: 50px; font-size: 12px; font-weight: 800; text-transform: uppercase; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; backdrop-filter: blur(4px); }
-    </style>
 </head>
 <body class="light">
 
@@ -42,7 +7,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.5</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.6</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -119,9 +84,9 @@
             <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center tracking-widest">Comparativa Mensual</h3>
             <div class="h-[280px]"><canvas id="chartApilado"></canvas></div>
         </div>
-        <div class="card h-[380px]">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-2 text-center tracking-widest">Desglose de Gastos</h3>
-            <div class="h-[300px]"><canvas id="chartDonut"></canvas></div>
+        <div class="card h-[400px]">
+            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-2 text-center tracking-widest">Desglose de Gastos (>5%)</h3>
+            <div class="h-[320px]"><canvas id="chartDonut"></canvas></div>
         </div>
         <div class="card h-[350px]">
             <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center tracking-widest">Tendencia 6 Meses</h3>
@@ -387,30 +352,65 @@
 
         function renderDonut() {
             const ctx = document.getElementById('chartDonut'); if(!ctx) return;
-            // Solo gastos del mes
             const gastosMes = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && m.tipo === 'Gasto');
             
-            // Agrupar por categoría
+            // 1. Calcular total y agrupar por categoría
+            let totalGasto = 0;
             const porCat = {};
-            gastosMes.forEach(m => { porCat[m.cat] = (porCat[m.cat] || 0) + m.valor; });
+            gastosMes.forEach(m => { 
+                porCat[m.cat] = (porCat[m.cat] || 0) + m.valor; 
+                totalGasto += m.valor;
+            });
             
-            const labels = Object.keys(porCat);
-            const data = Object.values(porCat);
-            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'];
+            // 2. Separar categorías mayores al 5% y agrupar el resto en OTROS
+            const labels = [];
+            const data = [];
+            let otrosSum = 0;
+            const baseColors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'];
+            
+            Object.entries(porCat).sort((a,b)=>b[1]-a[1]).forEach(([cat, val]) => {
+                if(totalGasto > 0 && (val / totalGasto) < 0.05) {
+                    otrosSum += val;
+                } else {
+                    labels.push(`${cat} ${val.toFixed(0)}€`); // Añadimos el importe al nombre para la leyenda
+                    data.push(val);
+                }
+            });
+
+            if(otrosSum > 0) {
+                labels.push(`OTROS ${otrosSum.toFixed(0)}€`);
+                data.push(otrosSum);
+            }
+
+            // Asignar color Gris fijo si es "OTROS", sino colores normales
+            const bgColors = data.map((_, i) => {
+                if(labels[i].startsWith("OTROS")) return '#94a3b8'; // Gris Slate 400
+                return baseColors[i % baseColors.length];
+            });
 
             if(charts.donut) charts.donut.destroy();
             charts.donut = new Chart(ctx, {
                 type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 0 }] },
+                data: { labels: labels, datasets: [{ data: data, backgroundColor: bgColors, borderWidth: 0 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false, cutout: '65%',
                     plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } },
-                        datalabels: { color: '#fff', font: { weight: 'bold', size: 9 }, formatter: (v, ctx) => {
-                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                            let percentage = (v * 100 / sum).toFixed(0) + "%";
-                            return percentage;
-                        }}
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, padding: 10 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label; // Muestra "CATEGORIA 500€" en tooltip
+                                }
+                            }
+                        },
+                        datalabels: { 
+                            color: '#fff', font: { weight: 'bold', size: 9 }, 
+                            formatter: (v, ctx) => {
+                                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                let percentage = (v * 100 / sum).toFixed(0);
+                                return percentage > 4 ? percentage + "%" : ""; // Ocultar si es muy pequeño visualmente
+                            }
+                        }
                     }
                 }
             });
