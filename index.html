@@ -10,7 +10,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
     <style>
+        /* ESTILOS PERSONALIZADOS */
         body { font-family: system-ui, -apple-system, sans-serif; padding-bottom: 110px; -webkit-tap-highlight-color: transparent; }
         .card { background: white; border-radius: 1.25rem; padding: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 1rem; border: 1px solid #f1f5f9; }
         html.dark .card { background-color: #1e293b; border-color: #334155; color: #e2e8f0; }
@@ -28,7 +30,6 @@
         .card-action-btn:hover { background-color: #f8fafc; }
         html.dark .card-action-btn:hover { background-color: #334155; }
         
-        /* TOAST STYLES */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 100; transition: all 0.3s ease; opacity: 0; pointer-events: none; margin-top: -20px; }
         #toast-container.show { opacity: 1; margin-top: 0; }
         .toast-msg { background: rgba(15, 23, 42, 0.95); color: white; padding: 12px 24px; border-radius: 50px; font-size: 12px; font-weight: 800; text-transform: uppercase; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; backdrop-filter: blur(4px); }
@@ -193,7 +194,6 @@
 
         function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); actualizarUI(); renderHuchas(); }
         
-        // --- TOAST FUNCTION ---
         function notificar(msg) {
             const toast = document.getElementById('toast-container');
             document.getElementById('toast-text').innerText = msg;
@@ -201,7 +201,6 @@
             setTimeout(() => toast.classList.remove('show'), 2500);
         }
 
-        // --- MURO ---
         function setTipoMuro(t) { tipoMuro = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectsMuro(); }
         function actualizarSelectsMuro() {
             const cats = [...new Set(db.config.filter(c => c.tipo.includes(tipoMuro)).map(c => c.categoria))].sort();
@@ -375,7 +374,6 @@
             renderCharts(iF, iE, gF, gE);
         }
 
-        // --- FUNCIONES EXTRA ---
         function crearHucha() { const n = document.getElementById('hucha-nombre').value.toUpperCase(); const m = parseFloat(document.getElementById('hucha-meta').value); if(n && m) { db.huchas.push({id:Date.now(), nombre:n, meta:m, ahorro:0}); save(); notificar("Hucha Creada"); } }
         function abrirModalHucha(mId) { movParaHucha = mId; document.getElementById('modal-hucha').classList.remove('hidden'); document.getElementById('modal-hucha-list').innerHTML = db.huchas.map(h => `<button onclick="vinculaMovHucha(${h.id})" class="w-full p-3 bg-purple-50 text-purple-700 rounded-xl font-bold text-xs uppercase flex justify-between"><span>${h.nombre}</span><span>${h.ahorro}€</span></button>`).join(''); }
         function cerrarModalHucha() { document.getElementById('modal-hucha').classList.add('hidden'); }
@@ -389,7 +387,6 @@
             const ctx = document.getElementById('chartDonut'); if(!ctx) return;
             const gastosMes = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && m.tipo === 'Gasto');
             
-            // 1. Calcular total y agrupar por categoría
             let totalGasto = 0;
             const porCat = {};
             gastosMes.forEach(m => { 
@@ -397,7 +394,6 @@
                 totalGasto += m.valor;
             });
             
-            // 2. Separar categorías mayores al 5% y agrupar el resto en OTROS
             const labels = [];
             const data = [];
             let otrosSum = 0;
@@ -407,7 +403,7 @@
                 if(totalGasto > 0 && (val / totalGasto) < 0.05) {
                     otrosSum += val;
                 } else {
-                    labels.push(`${cat} ${val.toFixed(0)}€`); // Añadimos el importe al nombre para la leyenda
+                    labels.push(`${cat} ${val.toFixed(0)}€`);
                     data.push(val);
                 }
             });
@@ -417,9 +413,8 @@
                 data.push(otrosSum);
             }
 
-            // Asignar color Gris fijo si es "OTROS", sino colores normales
             const bgColors = data.map((_, i) => {
-                if(labels[i].startsWith("OTROS")) return '#94a3b8'; // Gris Slate 400
+                if(labels[i].startsWith("OTROS")) return '#94a3b8';
                 return baseColors[i % baseColors.length];
             });
 
@@ -431,19 +426,13 @@
                     responsive: true, maintainAspectRatio: false, cutout: '65%',
                     plugins: { 
                         legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, padding: 10 } },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.label; // Muestra "CATEGORIA 500€" en tooltip
-                                }
-                            }
-                        },
+                        tooltip: { callbacks: { label: function(context) { return context.label; } } },
                         datalabels: { 
                             color: '#fff', font: { weight: 'bold', size: 9 }, 
                             formatter: (v, ctx) => {
                                 let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                                 let percentage = (v * 100 / sum).toFixed(0);
-                                return percentage > 4 ? percentage + "%" : ""; // Ocultar si es muy pequeño visualmente
+                                return percentage > 4 ? percentage + "%" : "";
                             }
                         }
                     }
