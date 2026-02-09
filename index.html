@@ -178,7 +178,6 @@
 
     <script>
         Chart.register(ChartDataLabels);
-        // --- LLAVE MAESTRA DE DATOS (NO TOCAR PARA MANTENER DATOS) ---
         const DB_KEY = 'FINANZAS_V13_MASTER'; 
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || { movs: [], config: [], huchas: [] };
         
@@ -408,7 +407,7 @@
                 if(totalGasto > 0 && (val / totalGasto) < 0.05) {
                     otrosSum += val;
                 } else {
-                    labels.push(`${cat} ${val.toFixed(0)}€`); // Importe en leyenda
+                    labels.push(`${cat} ${val.toFixed(0)}€`); // Añadimos el importe al nombre para la leyenda
                     data.push(val);
                 }
             });
@@ -418,7 +417,7 @@
                 data.push(otrosSum);
             }
 
-            // Color Gris para OTROS
+            // Asignar color Gris fijo si es "OTROS", sino colores normales
             const bgColors = data.map((_, i) => {
                 if(labels[i].startsWith("OTROS")) return '#94a3b8'; // Gris Slate 400
                 return baseColors[i % baseColors.length];
@@ -432,13 +431,19 @@
                     responsive: true, maintainAspectRatio: false, cutout: '65%',
                     plugins: { 
                         legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, padding: 10 } },
-                        tooltip: { callbacks: { label: function(context) { return context.label; } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label; // Muestra "CATEGORIA 500€" en tooltip
+                                }
+                            }
+                        },
                         datalabels: { 
                             color: '#fff', font: { weight: 'bold', size: 9 }, 
                             formatter: (v, ctx) => {
                                 let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                                 let percentage = (v * 100 / sum).toFixed(0);
-                                return percentage > 4 ? percentage + "%" : "";
+                                return percentage > 4 ? percentage + "%" : ""; // Ocultar si es muy pequeño visualmente
                             }
                         }
                     }
