@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V13.6 - CLEAN</title>
+    <title>FINANZAS V13.7 - PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -12,7 +12,6 @@
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     
     <style>
-        /* ESTILOS PERSONALIZADOS */
         body { font-family: system-ui, -apple-system, sans-serif; padding-bottom: 110px; -webkit-tap-highlight-color: transparent; }
         .card { background: white; border-radius: 1.25rem; padding: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 1rem; border: 1px solid #f1f5f9; }
         html.dark .card { background-color: #1e293b; border-color: #334155; color: #e2e8f0; }
@@ -43,11 +42,11 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.6</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.7</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
-        <select id="filtro-mes" onchange="cambiarMes(this.value)" class="!w-32 !h-9 !bg-slate-800 !text-white !text-xs font-black border-none text-center !rounded-full"></select>
+        <select id="filtro-mes" onchange="cambiarMes(this.value)" class="!w-32 !h-9 !bg-slate-800 !text-white !text-xs font-black border-none text-center !rounded-full focus:ring-2 ring-blue-500"></select>
     </header>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 flex justify-around z-50 pb-safe shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
@@ -62,6 +61,7 @@
             <div class="p-5 text-center bg-gradient-to-br from-slate-800 to-slate-950 border-b border-white/5">
                 <p class="text-[10px] text-blue-400 uppercase font-black tracking-[0.3em] mb-1">Disponible Real</p>
                 <h2 id="disp-real" class="text-4xl font-black tracking-tighter mb-1">0.00€</h2>
+                <p id="label-acumulado" class="hidden text-[10px] text-yellow-500 font-bold uppercase mt-1">VISUALIZANDO AÑO COMPLETO</p>
             </div>
             <div class="grid grid-cols-2 divide-x divide-y divide-white/10 bg-slate-900 text-center">
                 <div class="p-3"><p class="text-[8px] text-emerald-500 font-black uppercase tracking-wider">Ing. Fijos</p><p id="sum-ing-fijo" class="text-emerald-400 font-bold text-sm">0€</p></div>
@@ -71,7 +71,7 @@
             </div>
         </div>
 
-        <button onclick="clonarFijos()" class="w-full bg-blue-100 text-blue-700 py-2.5 rounded-xl text-[10px] font-black uppercase mb-4 border border-blue-200 hover:bg-blue-200 transition-colors"><i class="fas fa-copy mr-2"></i> Clonar Fijos Mes Anterior</button>
+        <button id="btn-clonar" onclick="clonarFijos()" class="w-full bg-blue-100 text-blue-700 py-2.5 rounded-xl text-[10px] font-black uppercase mb-4 border border-blue-200 hover:bg-blue-200 transition-colors"><i class="fas fa-copy mr-2"></i> Clonar Fijos Mes Anterior</button>
 
         <div class="card border-l-4 border-blue-500 shadow-lg" id="card-form">
             <div class="flex gap-2 mb-3">
@@ -93,6 +93,7 @@
                     <option value="DÉBITO">Débito</option>
                     <option value="CRÉDITO">Crédito</option>
                     <option value="TRANSFERENCIA">Transferencia</option>
+                    <option value="BIZUM">Bizum</option>
                 </select>
                 <div class="flex gap-2">
                     <label class="flex-1 flex items-center justify-center gap-2 bg-indigo-50 p-2 rounded-lg border border-indigo-100 cursor-pointer">
@@ -108,7 +109,7 @@
         </div>
 
         <div class="relative mb-3">
-            <input type="text" id="search-muro" placeholder="Buscar movimientos..." onkeyup="actualizarUI()" class="w-full !rounded-full shadow-sm border-none bg-white text-sm pl-10">
+            <input type="text" id="search-muro" placeholder="Buscar concepto, categoría o pago..." onkeyup="actualizarUI()" class="w-full !rounded-full shadow-sm border-none bg-white text-sm pl-10">
             <i class="fas fa-search absolute left-4 top-3.5 text-slate-400 text-sm"></i>
         </div>
         
@@ -117,7 +118,7 @@
 
     <div id="graficos" class="tab-content p-4 max-w-2xl mx-auto space-y-4">
         <div class="card h-[350px]">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center tracking-widest">Comparativa Mensual</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center tracking-widest">Comparativa (Ing vs Gas)</h3>
             <div class="h-[280px]"><canvas id="chartApilado"></canvas></div>
         </div>
         <div class="card h-[400px]">
@@ -171,9 +172,9 @@
 
     <div id="modal-hucha" class="fixed inset-0 bg-black/50 hidden z-[100] flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-5 w-full max-w-xs shadow-2xl">
-            <h3 class="font-black text-sm uppercase mb-4 text-center">Vincular a Hucha</h3>
+            <h3 class="font-black text-sm uppercase mb-4 text-center">Gestión Huchas</h3>
             <div id="modal-hucha-list" class="space-y-2"></div>
-            <button onclick="cerrarModalHucha()" class="w-full mt-4 text-[10px] font-black text-slate-400 uppercase">Cerrar</button>
+            <button onclick="cerrarModalHucha()" class="w-full mt-4 text-[10px] font-black text-slate-400 uppercase">Cancelar</button>
         </div>
     </div>
 
@@ -187,7 +188,11 @@
         if(migracion) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
         let tipoMuro = 'Ingreso';
-        let mesSeleccionado = new Date().toISOString().slice(0, 7);
+        let fechaActual = new Date();
+        // Por defecto mes actual
+        let mesSeleccionado = fechaActual.toISOString().slice(0, 7);
+        let anioActual = fechaActual.getFullYear().toString();
+
         let idEditandoMov = null;
         let charts = {};
         let movParaHucha = null;
@@ -201,6 +206,7 @@
             setTimeout(() => toast.classList.remove('show'), 2500);
         }
 
+        // --- MURO FUNCIONES ---
         function setTipoMuro(t) { tipoMuro = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectsMuro(); }
         function actualizarSelectsMuro() {
             const cats = [...new Set(db.config.filter(c => c.tipo.includes(tipoMuro)).map(c => c.categoria))].sort();
@@ -235,7 +241,7 @@
 
             if(idEditandoMov) {
                 const old = db.movs.find(m => String(m.id) === String(idEditandoMov));
-                if(old) nuevo.huchaId = old.huchaId;
+                if(old) nuevo.huchaId = old.huchaId; // Mantener hucha si se edita
                 const idx = db.movs.findIndex(m => String(m.id) === String(idEditandoMov));
                 db.movs[idx] = nuevo;
                 notificar("Movimiento Actualizado");
@@ -288,6 +294,8 @@
         }
 
         function clonarFijos() {
+            if(mesSeleccionado.startsWith('AÑO')) return notificar("No disponible en vista ANUAL");
+
             const datePasado = new Date(mesSeleccionado + "-01");
             datePasado.setMonth(datePasado.getMonth() - 1);
             const mesPasado = datePasado.toISOString().slice(0, 7);
@@ -317,19 +325,51 @@
         }
 
         function actualizarUI() {
+            // Lógica Select Meses + Opción ANUAL
             const meses = [...new Set(db.movs.map(m => m.fecha.slice(0,7)))].sort().reverse();
             const hoy = new Date().toISOString().slice(0,7);
             if(!meses.includes(hoy)) meses.unshift(hoy);
-            document.getElementById('filtro-mes').innerHTML = meses.map(m => `<option value="${m}" ${m===mesSeleccionado?'selected':''}>${m}</option>`).join('');
-            document.getElementById('mes-header').innerText = mesSeleccionado;
-
-            const q = document.getElementById('search-muro').value.toLowerCase();
-            const movsMes = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && (m.con.toLowerCase().includes(q) || m.cat.toLowerCase().includes(q) || (m.nota && m.nota.toLowerCase().includes(q))));
             
-            const iF = movsMes.filter(m => m.tipo === 'Ingreso' && !m.extra).reduce((s,m)=>s+m.valor,0);
-            const iE = movsMes.filter(m => m.tipo === 'Ingreso' && m.extra).reduce((s,m)=>s+m.valor,0);
-            const gF = movsMes.filter(m => m.tipo === 'Gasto' && !m.extra).reduce((s,m)=>s+m.valor,0);
-            const gE = movsMes.filter(m => m.tipo === 'Gasto' && m.extra).reduce((s,m)=>s+m.valor,0);
+            const select = document.getElementById('filtro-mes');
+            // Guardamos la opción Anual como value="AÑO-XXXX"
+            const valAnual = "AÑO-" + anioActual;
+            
+            let htmlOptions = `<option value="${valAnual}" class="font-bold bg-yellow-100 text-yellow-800">AÑO ${anioActual}</option>`;
+            htmlOptions += meses.map(m => `<option value="${m}">${m}</option>`).join('');
+            
+            select.innerHTML = htmlOptions;
+            select.value = mesSeleccionado;
+
+            document.getElementById('mes-header').innerText = mesSeleccionado.startsWith('AÑO') ? "RESUMEN ANUAL" : mesSeleccionado;
+            
+            // Filtro Principal (Mes o Año)
+            let movsFiltrados = [];
+            if(mesSeleccionado.startsWith('AÑO')) {
+                const y = mesSeleccionado.split('-')[1];
+                movsFiltrados = db.movs.filter(m => m.fecha.startsWith(y));
+                document.getElementById('label-acumulado').classList.remove('hidden');
+                document.getElementById('btn-clonar').classList.add('hidden');
+            } else {
+                movsFiltrados = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado));
+                document.getElementById('label-acumulado').classList.add('hidden');
+                document.getElementById('btn-clonar').classList.remove('hidden');
+            }
+
+            // Filtro Buscador (Ahora incluye PAGO)
+            const q = document.getElementById('search-muro').value.toLowerCase();
+            if(q) {
+                movsFiltrados = movsFiltrados.filter(m => 
+                    m.con.toLowerCase().includes(q) || 
+                    m.cat.toLowerCase().includes(q) || 
+                    (m.nota && m.nota.toLowerCase().includes(q)) ||
+                    (m.pago && m.pago.toLowerCase().includes(q))
+                );
+            }
+            
+            const iF = movsFiltrados.filter(m => m.tipo === 'Ingreso' && !m.extra).reduce((s,m)=>s+m.valor,0);
+            const iE = movsFiltrados.filter(m => m.tipo === 'Ingreso' && m.extra).reduce((s,m)=>s+m.valor,0);
+            const gF = movsFiltrados.filter(m => m.tipo === 'Gasto' && !m.extra).reduce((s,m)=>s+m.valor,0);
+            const gE = movsFiltrados.filter(m => m.tipo === 'Gasto' && m.extra).reduce((s,m)=>s+m.valor,0);
 
             document.getElementById('disp-real').innerText = (iF+iE - (gF+gE)).toFixed(2) + "€";
             document.getElementById('sum-ing-fijo').innerText = iF.toFixed(0) + "€";
@@ -337,7 +377,7 @@
             document.getElementById('sum-gas-fijo').innerText = gF.toFixed(0) + "€";
             document.getElementById('sum-gas-extra').innerText = gE.toFixed(0) + "€";
 
-            const sortedMovs = movsMes.sort((a,b) => {
+            const sortedMovs = movsFiltrados.sort((a,b) => {
                 const dateDiff = new Date(b.fecha) - new Date(a.fecha);
                 if (dateDiff !== 0) return dateDiff; 
                 return b.id - a.id; 
@@ -349,14 +389,14 @@
                         <div class="truncate flex-1 pr-2">
                             <div class="flex items-center gap-2 mb-1">
                                 <button onclick="filtrarMuro('${m.cat}')" class="text-[9px] font-black text-slate-500 bg-slate-100 px-1.5 rounded uppercase hover:bg-slate-200 cursor-pointer active:scale-95 transition-transform">${m.cat}</button>
-                                <span class="text-[10px] text-slate-500 font-bold">${m.fecha.slice(8,10)}/${m.fecha.slice(5,7)}</span>
+                                <span class="text-[10px] text-slate-500 font-bold">${m.fecha.slice(8,10)}/${m.fecha.slice(5,7)}/${m.fecha.slice(0,4)}</span>
                             </div>
                             <p class="font-black text-xs uppercase text-slate-700 leading-tight">${m.con}</p>
                             ${m.nota ? `<p class="text-[10px] text-slate-500 italic mt-0.5 truncate"><i class="fas fa-info-circle text-[8px] mr-1"></i>${m.nota}</p>` : ''}
                             <div class="flex gap-2 mt-1.5 flex-wrap">
                                 ${m.fijo?'<span class="text-[8px] font-black px-1.5 bg-indigo-50 text-indigo-600 rounded">FIJO</span>':''}
                                 ${m.extra?'<span class="text-[8px] font-black px-1.5 bg-orange-50 text-orange-600 rounded">EXTRA</span>':''}
-                                ${m.huchaId?'<span class="text-[8px] font-black px-1.5 bg-purple-50 text-purple-600 rounded">HUCHA</span>':''}
+                                ${m.huchaId?'<span class="text-[8px] font-black px-1.5 bg-purple-100 text-purple-700 rounded border border-purple-200"><i class="fas fa-piggy-bank mr-1"></i>HUCHA</span>':''}
                             </div>
                         </div>
                         <div class="text-right whitespace-nowrap">
@@ -365,27 +405,83 @@
                         </div>
                     </div>
                     <div class="flex border-t border-slate-100 dark:border-slate-800 divide-x divide-slate-100 dark:divide-slate-800">
-                        <button onclick="abrirModalHucha('${m.id}')" class="card-action-btn hover:text-purple-600 group"><i class="fas fa-piggy-bank text-sm group-hover:scale-110 transition-transform"></i></button>
+                        <button onclick="abrirModalHucha('${m.id}')" class="card-action-btn ${m.huchaId ? 'text-purple-600 bg-purple-50' : 'hover:text-purple-600'} group"><i class="fas fa-piggy-bank text-sm group-hover:scale-110 transition-transform"></i></button>
                         <button onclick="editarMov('${m.id}')" class="card-action-btn hover:text-blue-600 group"><i class="fas fa-pencil-alt text-sm group-hover:scale-110 transition-transform"></i></button>
                         <button onclick="borrarMov('${m.id}')" class="card-action-btn hover:text-rose-600 group"><i class="fas fa-trash text-sm group-hover:scale-110 transition-transform"></i></button>
                     </div>
                 </div>`).join('');
             
-            renderCharts(iF, iE, gF, gE);
+            renderCharts(iF, iE, gF, gE, movsFiltrados);
         }
 
+        // --- HUCHAS LOGIC MEJORADA ---
         function crearHucha() { const n = document.getElementById('hucha-nombre').value.toUpperCase(); const m = parseFloat(document.getElementById('hucha-meta').value); if(n && m) { db.huchas.push({id:Date.now(), nombre:n, meta:m, ahorro:0}); save(); notificar("Hucha Creada"); } }
-        function abrirModalHucha(mId) { movParaHucha = mId; document.getElementById('modal-hucha').classList.remove('hidden'); document.getElementById('modal-hucha-list').innerHTML = db.huchas.map(h => `<button onclick="vinculaMovHucha(${h.id})" class="w-full p-3 bg-purple-50 text-purple-700 rounded-xl font-bold text-xs uppercase flex justify-between"><span>${h.nombre}</span><span>${h.ahorro}€</span></button>`).join(''); }
+        
+        function abrirModalHucha(mId) { 
+            movParaHucha = mId; 
+            const mov = db.movs.find(m => m.id == mId);
+            const divList = document.getElementById('modal-hucha-list');
+            
+            // Si ya tiene hucha asignada, mostramos botón de desvincular
+            if(mov.huchaId) {
+                const huchaAsignada = db.huchas.find(h => h.id == mov.huchaId);
+                const nombreHucha = huchaAsignada ? huchaAsignada.nombre : "Hucha desconocida";
+                
+                divList.innerHTML = `
+                    <div class="p-4 bg-purple-100 rounded-xl text-center mb-4">
+                        <p class="text-xs text-purple-800 font-bold mb-1">Actualmente vinculado a:</p>
+                        <p class="text-lg font-black text-purple-900 uppercase">${nombreHucha}</p>
+                    </div>
+                    <button onclick="desvincularHucha()" class="w-full p-3 bg-red-50 text-red-600 rounded-xl font-black text-xs uppercase border border-red-200">
+                        <i class="fas fa-unlink mr-2"></i> Desvincular (Restaurar saldo)
+                    </button>
+                `;
+            } else {
+                // Si no tiene hucha, mostramos lista para elegir
+                divList.innerHTML = db.huchas.map(h => `<button onclick="vinculaMovHucha(${h.id})" class="w-full p-3 bg-purple-50 text-purple-700 rounded-xl font-bold text-xs uppercase flex justify-between mb-2 hover:bg-purple-100"><span>${h.nombre}</span><span>${h.ahorro}€</span></button>`).join('');
+                if(db.huchas.length === 0) divList.innerHTML = `<p class="text-center text-xs text-slate-400 font-bold py-4">No hay huchas creadas.</p>`;
+            }
+            
+            document.getElementById('modal-hucha').classList.remove('hidden'); 
+        }
+        
         function cerrarModalHucha() { document.getElementById('modal-hucha').classList.add('hidden'); }
-        function vinculaMovHucha(hId) { const m = db.movs.find(x => x.id == movParaHucha); const h = db.huchas.find(x => x.id == hId); if(m && h) { m.huchaId = hId; h.ahorro -= m.valor; save(); notificar("Vinculado a Hucha"); } cerrarModalHucha(); }
+        
+        function vinculaMovHucha(hId) { 
+            const m = db.movs.find(x => x.id == movParaHucha); 
+            const h = db.huchas.find(x => x.id == hId); 
+            if(m && h) { 
+                m.huchaId = hId; 
+                h.ahorro -= m.valor; // Gasto reduce ahorro
+                save(); 
+                notificar("Vinculado: Saldo actualizado"); 
+            } 
+            cerrarModalHucha(); 
+        }
+
+        function desvincularHucha() {
+            const m = db.movs.find(x => x.id == movParaHucha);
+            if(m && m.huchaId) {
+                const h = db.huchas.find(x => x.id == m.huchaId);
+                if(h) {
+                    h.ahorro += m.valor; // Devolvemos el dinero a la hucha
+                }
+                m.huchaId = null;
+                save();
+                notificar("Desvinculado: Saldo restaurado");
+            }
+            cerrarModalHucha();
+        }
+
         function opHucha(id, cant) { const h = db.huchas.find(x=>x.id==id); if(h) { h.ahorro += cant; save(); notificar("Hucha Actualizada"); } }
+        
         function renderHuchas() { const list = document.getElementById('lista-huchas'); list.innerHTML = (db.huchas || []).map(h => { const movs = db.movs.filter(m => m.huchaId == h.id); return `<div class="card p-3"><div class="flex justify-between items-start mb-2"><div><h4 class="font-black text-xs uppercase text-purple-700">${h.nombre}</h4><p class="text-[10px] text-slate-400 font-bold">${h.ahorro.toFixed(0)}€ / ${h.meta}€</p></div><div class="flex gap-1"><button onclick="opHucha(${h.id}, 50)" class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 font-bold text-xs">+50</button><button onclick="borrarHucha(${h.id})" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 text-xs"><i class="fas fa-trash"></i></button></div></div><div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-purple-500" style="width: ${Math.min(100,(h.ahorro/h.meta)*100)}%"></div></div><button onclick="toggleAcc('hdet-${h.id}')" class="mt-3 text-[9px] font-bold text-slate-400 uppercase">Consultar Historial (${movs.length}) <i class="fas fa-chevron-down ml-1"></i></button><div id="acc-hdet-${h.id}" class="accordion-content mt-2 space-y-1">${movs.map(m => `<div class="flex justify-between text-[9px] bg-slate-50 p-1 rounded font-bold text-slate-500 uppercase"><span>${m.fecha.slice(8,10)} ${m.con}</span><span>-${m.valor}€</span></div>`).join('')}</div></div>`; }).join(''); }
         
         function renderTendencia() { const ctx = document.getElementById('chartTendencia'); if(!ctx) return; const labels = []; for(let i=5; i>=0; i--) { const d = new Date(); d.setMonth(d.getMonth()-i); labels.push(d.toISOString().slice(0,7)); } const dataIng = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Ingreso').reduce((s,x)=>s+x.valor,0)); const dataGas = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Gasto').reduce((s,x)=>s+x.valor,0)); if(charts.tendencia) charts.tendencia.destroy(); charts.tendencia = new Chart(ctx, { type:'line', data:{ labels, datasets:[{label:'Ingresos', data:dataIng, borderColor:'#10b981', tension:0.3, fill:false}, {label:'Gastos', data:dataGas, borderColor:'#f43f5e', tension:0.3, fill:false}]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{display:false} }}}); }
 
-        function renderDonut() {
+        function renderDonut(movs) {
             const ctx = document.getElementById('chartDonut'); if(!ctx) return;
-            const gastosMes = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && m.tipo === 'Gasto');
+            const gastosMes = movs.filter(m => m.tipo === 'Gasto');
             
             let totalGasto = 0;
             const porCat = {};
@@ -447,16 +543,40 @@
         function borrarTodo() { if(confirm("¿ELIMINAR TODO?")) { localStorage.clear(); location.reload(); } }
         function cambiarMes(m) { mesSeleccionado = m; actualizarUI(); }
         function toggleAcc(id) { const el = document.getElementById('acc-'+id); el.style.maxHeight = el.style.maxHeight ? null : el.scrollHeight + "px"; }
-        function borrarMov(id) { if(confirm("¿Borrar?")) { db.movs = db.movs.filter(m => String(m.id) !== String(id)); save(); notificar("Eliminado"); } }
+        
+        function borrarMov(id) { 
+            if(confirm("¿Borrar?")) { 
+                const m = db.movs.find(x => String(x.id) === String(id));
+                // Si borramos un movimiento vinculado a hucha, devolvemos el dinero a la hucha
+                if(m && m.huchaId) {
+                    const h = db.huchas.find(x => x.id == m.huchaId);
+                    if(h) {
+                         h.ahorro += m.valor;
+                         notificar("Hucha restaurada");
+                    }
+                }
+                db.movs = db.movs.filter(m => String(m.id) !== String(id)); 
+                save(); 
+                notificar("Eliminado"); 
+            } 
+        }
+        
         function borrarCfg(id) { if(confirm("¿Borrar?")) { db.config = db.config.filter(c => String(c.id) !== String(id)); save(); notificar("Eliminado"); } }
         function borrarHucha(id) { if(confirm("¿Borrar?")) { db.huchas = db.huchas.filter(h => h.id != id); save(); notificar("Hucha eliminada"); } }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
         function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); 
-            if(t==='graficos') { renderTendencia(); renderDonut(); actualizarUI(); } 
+            if(t==='graficos') { renderTendencia(); actualizarUI(); } 
             if(t==='huchas') renderHuchas(); 
             if(t==='config') renderConfigList(); 
         }
-        function renderCharts(iF, iE, gF, gE) { const ctx = document.getElementById('chartApilado'); if(!ctx) return; if(charts.apilado) charts.apilado.destroy(); charts.apilado = new Chart(ctx, { type:'bar', data:{ labels:['INGRESOS','GASTOS'], datasets:[ { label:'Ordinario', data:[iF, gF], backgroundColor:['#10b981','#f43f5e'], borderRadius:4, stack:'S0' }, { label:'Extra', data:[iE, gE], backgroundColor:['#22d3ee','#f97316'], borderRadius:4, stack:'S0' }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{color:'#fff', font:{weight:'bold', size:9}, formatter:(v)=>v>0?v+'€':''}}}}); }
+        function renderCharts(iF, iE, gF, gE, movsData) { 
+            const ctx = document.getElementById('chartApilado'); 
+            if(ctx) {
+                if(charts.apilado) charts.apilado.destroy(); 
+                charts.apilado = new Chart(ctx, { type:'bar', data:{ labels:['INGRESOS','GASTOS'], datasets:[ { label:'Ordinario', data:[iF, gF], backgroundColor:['#10b981','#f43f5e'], borderRadius:4, stack:'S0' }, { label:'Extra', data:[iE, gE], backgroundColor:['#22d3ee','#f97316'], borderRadius:4, stack:'S0' }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{color:'#fff', font:{weight:'bold', size:9}, formatter:(v)=>v>0?v+'€':''}}}}); 
+            }
+            renderDonut(movsData);
+        }
 
         document.getElementById('in-fecha').valueAsDate = new Date();
         setTipoMuro('Ingreso');
