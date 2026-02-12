@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V13.7 - PRO</title>
+    <title>FINANZAS V13.8 - CASH FLOW</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -42,7 +42,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.7</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.8</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -133,12 +133,12 @@
 
     <div id="huchas" class="tab-content p-4 max-w-2xl mx-auto">
         <div class="card border-l-4 border-purple-500">
-            <h3 class="text-[10px] font-black text-purple-500 uppercase mb-3">Nueva Meta de Ahorro</h3>
+            <h3 class="text-[10px] font-black text-purple-500 uppercase mb-3">Nueva Cuenta / Hucha</h3>
             <div class="flex gap-2 mb-2">
-                <input type="text" id="hucha-nombre" placeholder="Nombre" class="font-bold text-xs uppercase">
-                <input type="number" id="hucha-meta" placeholder="Meta €" class="font-bold text-xs w-24">
+                <input type="text" id="hucha-nombre" placeholder="Nombre (Ej: Efectivo)" class="font-bold text-xs uppercase">
+                <input type="number" id="hucha-meta" placeholder="Saldo Inicial €" class="font-bold text-xs w-24">
             </div>
-            <button onclick="crearHucha()" class="w-full bg-purple-600 text-white py-2 rounded-lg font-black text-[10px] uppercase">Crear Hucha</button>
+            <button onclick="crearHucha()" class="w-full bg-purple-600 text-white py-2 rounded-lg font-black text-[10px] uppercase">Crear</button>
         </div>
         <div id="lista-huchas" class="space-y-3 pb-24"></div>
     </div>
@@ -189,7 +189,6 @@
 
         let tipoMuro = 'Ingreso';
         let fechaActual = new Date();
-        // Por defecto mes actual
         let mesSeleccionado = fechaActual.toISOString().slice(0, 7);
         let anioActual = fechaActual.getFullYear().toString();
 
@@ -241,7 +240,7 @@
 
             if(idEditandoMov) {
                 const old = db.movs.find(m => String(m.id) === String(idEditandoMov));
-                if(old) nuevo.huchaId = old.huchaId; // Mantener hucha si se edita
+                if(old) nuevo.huchaId = old.huchaId; 
                 const idx = db.movs.findIndex(m => String(m.id) === String(idEditandoMov));
                 db.movs[idx] = nuevo;
                 notificar("Movimiento Actualizado");
@@ -295,7 +294,6 @@
 
         function clonarFijos() {
             if(mesSeleccionado.startsWith('AÑO')) return notificar("No disponible en vista ANUAL");
-
             const datePasado = new Date(mesSeleccionado + "-01");
             datePasado.setMonth(datePasado.getMonth() - 1);
             const mesPasado = datePasado.toISOString().slice(0, 7);
@@ -325,24 +323,19 @@
         }
 
         function actualizarUI() {
-            // Lógica Select Meses + Opción ANUAL
             const meses = [...new Set(db.movs.map(m => m.fecha.slice(0,7)))].sort().reverse();
             const hoy = new Date().toISOString().slice(0,7);
             if(!meses.includes(hoy)) meses.unshift(hoy);
             
             const select = document.getElementById('filtro-mes');
-            // Guardamos la opción Anual como value="AÑO-XXXX"
             const valAnual = "AÑO-" + anioActual;
-            
             let htmlOptions = `<option value="${valAnual}" class="font-bold bg-yellow-100 text-yellow-800">AÑO ${anioActual}</option>`;
             htmlOptions += meses.map(m => `<option value="${m}">${m}</option>`).join('');
-            
             select.innerHTML = htmlOptions;
             select.value = mesSeleccionado;
 
             document.getElementById('mes-header').innerText = mesSeleccionado.startsWith('AÑO') ? "RESUMEN ANUAL" : mesSeleccionado;
             
-            // Filtro Principal (Mes o Año)
             let movsFiltrados = [];
             if(mesSeleccionado.startsWith('AÑO')) {
                 const y = mesSeleccionado.split('-')[1];
@@ -355,7 +348,6 @@
                 document.getElementById('btn-clonar').classList.remove('hidden');
             }
 
-            // Filtro Buscador (Ahora incluye PAGO)
             const q = document.getElementById('search-muro').value.toLowerCase();
             if(q) {
                 movsFiltrados = movsFiltrados.filter(m => 
@@ -414,128 +406,99 @@
             renderCharts(iF, iE, gF, gE, movsFiltrados);
         }
 
-        // --- HUCHAS LOGIC MEJORADA ---
-        function crearHucha() { const n = document.getElementById('hucha-nombre').value.toUpperCase(); const m = parseFloat(document.getElementById('hucha-meta').value); if(n && m) { db.huchas.push({id:Date.now(), nombre:n, meta:m, ahorro:0}); save(); notificar("Hucha Creada"); } }
+        // --- HUCHAS / CASH FLOW MEJORADO ---
+        function crearHucha() { 
+            const n = document.getElementById('hucha-nombre').value.toUpperCase(); 
+            const m = parseFloat(document.getElementById('hucha-meta').value); 
+            if(n && !isNaN(m)) { 
+                // AHORA: meta es el saldo inicial, ahorro es el saldo actual.
+                // Para simplificar, si el usuario lo usa como wallet, la "meta" es meramente referencial o el tope de la caja.
+                // Inicia con el saldo que indique.
+                db.huchas.push({id:Date.now(), nombre:n, meta:m, ahorro:m}); // Ahorro inicia igual a la meta (saldo inicial)
+                save(); 
+                notificar("Cuenta/Hucha Creada"); 
+            } 
+        }
         
         function abrirModalHucha(mId) { 
             movParaHucha = mId; 
             const mov = db.movs.find(m => m.id == mId);
             const divList = document.getElementById('modal-hucha-list');
             
-            // Si ya tiene hucha asignada, mostramos botón de desvincular
             if(mov.huchaId) {
                 const huchaAsignada = db.huchas.find(h => h.id == mov.huchaId);
                 const nombreHucha = huchaAsignada ? huchaAsignada.nombre : "Hucha desconocida";
-                
                 divList.innerHTML = `
                     <div class="p-4 bg-purple-100 rounded-xl text-center mb-4">
-                        <p class="text-xs text-purple-800 font-bold mb-1">Actualmente vinculado a:</p>
+                        <p class="text-xs text-purple-800 font-bold mb-1">Vinculado a:</p>
                         <p class="text-lg font-black text-purple-900 uppercase">${nombreHucha}</p>
                     </div>
-                    <button onclick="desvincularHucha()" class="w-full p-3 bg-red-50 text-red-600 rounded-xl font-black text-xs uppercase border border-red-200">
-                        <i class="fas fa-unlink mr-2"></i> Desvincular (Restaurar saldo)
-                    </button>
-                `;
+                    <button onclick="desvincularHucha()" class="w-full p-3 bg-red-50 text-red-600 rounded-xl font-black text-xs uppercase border border-red-200"><i class="fas fa-unlink mr-2"></i> Desvincular (Restaurar saldo)</button>`;
             } else {
-                // Si no tiene hucha, mostramos lista para elegir
-                divList.innerHTML = db.huchas.map(h => `<button onclick="vinculaMovHucha(${h.id})" class="w-full p-3 bg-purple-50 text-purple-700 rounded-xl font-bold text-xs uppercase flex justify-between mb-2 hover:bg-purple-100"><span>${h.nombre}</span><span>${h.ahorro}€</span></button>`).join('');
+                divList.innerHTML = db.huchas.map(h => `<button onclick="vinculaMovHucha(${h.id})" class="w-full p-3 bg-purple-50 text-purple-700 rounded-xl font-bold text-xs uppercase flex justify-between mb-2 hover:bg-purple-100"><span>${h.nombre}</span><span>${h.ahorro.toFixed(2)}€</span></button>`).join('');
                 if(db.huchas.length === 0) divList.innerHTML = `<p class="text-center text-xs text-slate-400 font-bold py-4">No hay huchas creadas.</p>`;
             }
-            
             document.getElementById('modal-hucha').classList.remove('hidden'); 
         }
-        
         function cerrarModalHucha() { document.getElementById('modal-hucha').classList.add('hidden'); }
-        
-        function vinculaMovHucha(hId) { 
-            const m = db.movs.find(x => x.id == movParaHucha); 
-            const h = db.huchas.find(x => x.id == hId); 
-            if(m && h) { 
-                m.huchaId = hId; 
-                h.ahorro -= m.valor; // Gasto reduce ahorro
-                save(); 
-                notificar("Vinculado: Saldo actualizado"); 
-            } 
-            cerrarModalHucha(); 
-        }
+        function vinculaMovHucha(hId) { const m = db.movs.find(x => x.id == movParaHucha); const h = db.huchas.find(x => x.id == hId); if(m && h) { m.huchaId = hId; h.ahorro -= m.valor; save(); notificar("Saldo actualizado"); } cerrarModalHucha(); }
+        function desvincularHucha() { const m = db.movs.find(x => x.id == movParaHucha); if(m && m.huchaId) { const h = db.huchas.find(x => x.id == m.huchaId); if(h) { h.ahorro += m.valor; } m.huchaId = null; save(); notificar("Saldo restaurado"); } cerrarModalHucha(); }
 
-        function desvincularHucha() {
-            const m = db.movs.find(x => x.id == movParaHucha);
-            if(m && m.huchaId) {
-                const h = db.huchas.find(x => x.id == m.huchaId);
-                if(h) {
-                    h.ahorro += m.valor; // Devolvemos el dinero a la hucha
-                }
-                m.huchaId = null;
-                save();
-                notificar("Desvinculado: Saldo restaurado");
-            }
-            cerrarModalHucha();
-        }
+        // --- NUEVA FUNCIÓN DE EDICIÓN (RECARGA) ---
+        function editarHucha(id) {
+            const h = db.huchas.find(x => x.id == id);
+            if(!h) return;
+            
+            const nuevoNombre = prompt("Editar Nombre:", h.nombre);
+            if(nuevoNombre === null) return;
+            
+            const nuevaMeta = prompt("Editar Tope / Meta:", h.meta);
+            if(nuevaMeta === null) return;
 
-        function opHucha(id, cant) { const h = db.huchas.find(x=>x.id==id); if(h) { h.ahorro += cant; save(); notificar("Hucha Actualizada"); } }
+            // AQUÍ ESTÁ LA MAGIA PARA TU CASO:
+            const nuevoSaldo = prompt("SALDO ACTUAL REAL (Lo que tienes en mano):", h.ahorro);
+            if(nuevoSaldo === null) return;
+
+            h.nombre = nuevoNombre.toUpperCase();
+            h.meta = parseFloat(nuevaMeta) || 0;
+            h.ahorro = parseFloat(nuevoSaldo) || 0;
+            
+            save();
+            notificar("Hucha/Caja Recalibrada");
+        }
         
-        function renderHuchas() { const list = document.getElementById('lista-huchas'); list.innerHTML = (db.huchas || []).map(h => { const movs = db.movs.filter(m => m.huchaId == h.id); return `<div class="card p-3"><div class="flex justify-between items-start mb-2"><div><h4 class="font-black text-xs uppercase text-purple-700">${h.nombre}</h4><p class="text-[10px] text-slate-400 font-bold">${h.ahorro.toFixed(0)}€ / ${h.meta}€</p></div><div class="flex gap-1"><button onclick="opHucha(${h.id}, 50)" class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 font-bold text-xs">+50</button><button onclick="borrarHucha(${h.id})" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 text-xs"><i class="fas fa-trash"></i></button></div></div><div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-purple-500" style="width: ${Math.min(100,(h.ahorro/h.meta)*100)}%"></div></div><button onclick="toggleAcc('hdet-${h.id}')" class="mt-3 text-[9px] font-bold text-slate-400 uppercase">Consultar Historial (${movs.length}) <i class="fas fa-chevron-down ml-1"></i></button><div id="acc-hdet-${h.id}" class="accordion-content mt-2 space-y-1">${movs.map(m => `<div class="flex justify-between text-[9px] bg-slate-50 p-1 rounded font-bold text-slate-500 uppercase"><span>${m.fecha.slice(8,10)} ${m.con}</span><span>-${m.valor}€</span></div>`).join('')}</div></div>`; }).join(''); }
+        function renderHuchas() { 
+            const list = document.getElementById('lista-huchas'); 
+            list.innerHTML = (db.huchas || []).map(h => { 
+                const movs = db.movs.filter(m => m.huchaId == h.id); 
+                // Calculo de barra: Si meta es 0, evitar division por cero
+                const pct = h.meta > 0 ? (h.ahorro / h.meta) * 100 : 0;
+                
+                return `
+                <div class="card p-3">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-purple-700">${h.nombre}</h4>
+                            <p class="text-[10px] text-slate-400 font-bold">Saldo: ${h.ahorro.toFixed(2)}€ <span class="text-slate-300">/ ${h.meta}€</span></p>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="editarHucha(${h.id})" class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-bold text-xs"><i class="fas fa-edit"></i></button>
+                            <button onclick="borrarHucha(${h.id})" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 text-xs"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-purple-500" style="width: ${Math.min(100, pct)}%"></div>
+                    </div>
+                    <button onclick="toggleAcc('hdet-${h.id}')" class="mt-3 text-[9px] font-bold text-slate-400 uppercase">Consultar Historial (${movs.length}) <i class="fas fa-chevron-down ml-1"></i></button>
+                    <div id="acc-hdet-${h.id}" class="accordion-content mt-2 space-y-1">
+                        ${movs.map(m => `<div class="flex justify-between text-[9px] bg-slate-50 p-1 rounded font-bold text-slate-500 uppercase"><span>${m.fecha.slice(8,10)} ${m.con}</span><span>-${m.valor.toFixed(2)}€</span></div>`).join('')}
+                    </div>
+                </div>`; 
+            }).join(''); 
+        }
         
         function renderTendencia() { const ctx = document.getElementById('chartTendencia'); if(!ctx) return; const labels = []; for(let i=5; i>=0; i--) { const d = new Date(); d.setMonth(d.getMonth()-i); labels.push(d.toISOString().slice(0,7)); } const dataIng = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Ingreso').reduce((s,x)=>s+x.valor,0)); const dataGas = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Gasto').reduce((s,x)=>s+x.valor,0)); if(charts.tendencia) charts.tendencia.destroy(); charts.tendencia = new Chart(ctx, { type:'line', data:{ labels, datasets:[{label:'Ingresos', data:dataIng, borderColor:'#10b981', tension:0.3, fill:false}, {label:'Gastos', data:dataGas, borderColor:'#f43f5e', tension:0.3, fill:false}]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{display:false} }}}); }
-
-        function renderDonut(movs) {
-            const ctx = document.getElementById('chartDonut'); if(!ctx) return;
-            const gastosMes = movs.filter(m => m.tipo === 'Gasto');
-            
-            let totalGasto = 0;
-            const porCat = {};
-            gastosMes.forEach(m => { 
-                porCat[m.cat] = (porCat[m.cat] || 0) + m.valor; 
-                totalGasto += m.valor;
-            });
-            
-            const labels = [];
-            const data = [];
-            let otrosSum = 0;
-            const baseColors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'];
-            
-            Object.entries(porCat).sort((a,b)=>b[1]-a[1]).forEach(([cat, val]) => {
-                if(totalGasto > 0 && (val / totalGasto) < 0.05) {
-                    otrosSum += val;
-                } else {
-                    labels.push(`${cat} ${val.toFixed(0)}€`);
-                    data.push(val);
-                }
-            });
-
-            if(otrosSum > 0) {
-                labels.push(`OTROS ${otrosSum.toFixed(0)}€`);
-                data.push(otrosSum);
-            }
-
-            const bgColors = data.map((_, i) => {
-                if(labels[i].startsWith("OTROS")) return '#94a3b8';
-                return baseColors[i % baseColors.length];
-            });
-
-            if(charts.donut) charts.donut.destroy();
-            charts.donut = new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: data, backgroundColor: bgColors, borderWidth: 0 }] },
-                options: {
-                    responsive: true, maintainAspectRatio: false, cutout: '65%',
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, padding: 10 } },
-                        tooltip: { callbacks: { label: function(context) { return context.label; } } },
-                        datalabels: { 
-                            color: '#fff', font: { weight: 'bold', size: 9 }, 
-                            formatter: (v, ctx) => {
-                                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                let percentage = (v * 100 / sum).toFixed(0);
-                                return percentage > 4 ? percentage + "%" : "";
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
+        function renderDonut(movs) { const ctx = document.getElementById('chartDonut'); if(!ctx) return; const gastosMes = movs.filter(m => m.tipo === 'Gasto'); let totalGasto = 0; const porCat = {}; gastosMes.forEach(m => { porCat[m.cat] = (porCat[m.cat] || 0) + m.valor; totalGasto += m.valor; }); const labels = []; const data = []; let otrosSum = 0; const baseColors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b']; Object.entries(porCat).sort((a,b)=>b[1]-a[1]).forEach(([cat, val]) => { if(totalGasto > 0 && (val / totalGasto) < 0.05) { otrosSum += val; } else { labels.push(`${cat} ${val.toFixed(0)}€`); data.push(val); } }); if(otrosSum > 0) { labels.push(`OTROS ${otrosSum.toFixed(0)}€`); data.push(otrosSum); } const bgColors = data.map((_, i) => { if(labels[i].startsWith("OTROS")) return '#94a3b8'; return baseColors[i % baseColors.length]; }); if(charts.donut) charts.donut.destroy(); charts.donut = new Chart(ctx, { type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: bgColors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, padding: 10 } }, tooltip: { callbacks: { label: function(context) { return context.label; } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 9 }, formatter: (v, ctx) => { let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); let percentage = (v * 100 / sum).toFixed(0); return percentage > 4 ? percentage + "%" : ""; } } } } }); }
         function guardarConfig() { const t = document.getElementById('cfg-tipo').value; const cat = document.getElementById('cfg-cat').value.toUpperCase(); const con = document.getElementById('cfg-con').value.toUpperCase(); const imp = parseFloat(document.getElementById('cfg-imp').value) || 0; if(cat && con) { db.config.push({id:Date.now(), tipo:t, categoria:cat, concepto:con, importe:imp}); save(); notificar("Presupuesto Guardado"); } }
         function renderConfigList() { const list = document.getElementById('lista-config-acordeon'); const grouped = {}; db.config.forEach(c => { if(!grouped[c.categoria]) grouped[c.categoria] = []; grouped[c.categoria].push(c); }); list.innerHTML = Object.keys(grouped).sort().map(cat => { const items = grouped[cat].sort((a,b)=>a.concepto.localeCompare(b.concepto)); return `<div class="card p-0 overflow-hidden mb-2"><button onclick="toggleAcc('cfg-${cat.replace(/\s+/g,'-')}')" class="w-full p-4 flex justify-between bg-slate-50 font-black text-xs uppercase tracking-widest">${cat} <i class="fas fa-chevron-down"></i></button><div id="acc-cfg-${cat.replace(/\s+/g,'-')}" class="accordion-content">${items.map(c => { const gastado = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && m.cat === c.categoria && m.con === c.concepto).reduce((s,m)=>s+m.valor,0); const pct = c.importe > 0 ? Math.min(100, (gastado/c.importe)*100) : 0; return `<div class="p-4 border-t border-slate-100"><div class="flex justify-between items-center mb-1"><p class="font-bold text-xs text-slate-700">${c.concepto}</p><span class="text-[9px] font-black ${gastado>c.importe?'text-rose-500':'text-slate-400'}">${gastado.toFixed(0)}€ / ${c.importe}€</span></div><div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full ${pct>=100?'bg-rose-500':pct>75?'bg-amber-500':'bg-emerald-500'}" style="width:${pct}%"></div></div><button onclick="borrarCfg('${c.id}')" class="mt-2 text-[8px] text-rose-400 font-bold uppercase">Eliminar</button></div>`; }).join('')}</div></div>`; }).join(''); }
         function exportarTodo() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos"); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.config), "Presupuestos"); if(db.huchas.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.huchas), "Huchas"); XLSX.writeFile(wb, `Backup_Finanzas_V13_${new Date().toISOString().slice(0,10)}.xlsx`); }
@@ -543,40 +506,12 @@
         function borrarTodo() { if(confirm("¿ELIMINAR TODO?")) { localStorage.clear(); location.reload(); } }
         function cambiarMes(m) { mesSeleccionado = m; actualizarUI(); }
         function toggleAcc(id) { const el = document.getElementById('acc-'+id); el.style.maxHeight = el.style.maxHeight ? null : el.scrollHeight + "px"; }
-        
-        function borrarMov(id) { 
-            if(confirm("¿Borrar?")) { 
-                const m = db.movs.find(x => String(x.id) === String(id));
-                // Si borramos un movimiento vinculado a hucha, devolvemos el dinero a la hucha
-                if(m && m.huchaId) {
-                    const h = db.huchas.find(x => x.id == m.huchaId);
-                    if(h) {
-                         h.ahorro += m.valor;
-                         notificar("Hucha restaurada");
-                    }
-                }
-                db.movs = db.movs.filter(m => String(m.id) !== String(id)); 
-                save(); 
-                notificar("Eliminado"); 
-            } 
-        }
-        
+        function borrarMov(id) { if(confirm("¿Borrar?")) { const m = db.movs.find(x => String(x.id) === String(id)); if(m && m.huchaId) { const h = db.huchas.find(x => x.id == m.huchaId); if(h) { h.ahorro += m.valor; notificar("Hucha restaurada"); } } db.movs = db.movs.filter(m => String(m.id) !== String(id)); save(); notificar("Eliminado"); } }
         function borrarCfg(id) { if(confirm("¿Borrar?")) { db.config = db.config.filter(c => String(c.id) !== String(id)); save(); notificar("Eliminado"); } }
         function borrarHucha(id) { if(confirm("¿Borrar?")) { db.huchas = db.huchas.filter(h => h.id != id); save(); notificar("Hucha eliminada"); } }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
-        function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); 
-            if(t==='graficos') { renderTendencia(); actualizarUI(); } 
-            if(t==='huchas') renderHuchas(); 
-            if(t==='config') renderConfigList(); 
-        }
-        function renderCharts(iF, iE, gF, gE, movsData) { 
-            const ctx = document.getElementById('chartApilado'); 
-            if(ctx) {
-                if(charts.apilado) charts.apilado.destroy(); 
-                charts.apilado = new Chart(ctx, { type:'bar', data:{ labels:['INGRESOS','GASTOS'], datasets:[ { label:'Ordinario', data:[iF, gF], backgroundColor:['#10b981','#f43f5e'], borderRadius:4, stack:'S0' }, { label:'Extra', data:[iE, gE], backgroundColor:['#22d3ee','#f97316'], borderRadius:4, stack:'S0' }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{color:'#fff', font:{weight:'bold', size:9}, formatter:(v)=>v>0?v+'€':''}}}}); 
-            }
-            renderDonut(movsData);
-        }
+        function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); if(t==='graficos') { renderTendencia(); actualizarUI(); } if(t==='huchas') renderHuchas(); if(t==='config') renderConfigList(); }
+        function renderCharts(iF, iE, gF, gE, movsData) { const ctx = document.getElementById('chartApilado'); if(ctx) { if(charts.apilado) charts.apilado.destroy(); charts.apilado = new Chart(ctx, { type:'bar', data:{ labels:['INGRESOS','GASTOS'], datasets:[ { label:'Ordinario', data:[iF, gF], backgroundColor:['#10b981','#f43f5e'], borderRadius:4, stack:'S0' }, { label:'Extra', data:[iE, gE], backgroundColor:['#22d3ee','#f97316'], borderRadius:4, stack:'S0' }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{color:'#fff', font:{weight:'bold', size:9}, formatter:(v)=>v>0?v+'€':''}}}}); } renderDonut(movsData); }
 
         document.getElementById('in-fecha').valueAsDate = new Date();
         setTipoMuro('Ingreso');
