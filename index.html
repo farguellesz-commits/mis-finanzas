@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V13.8 - CASH FLOW</title>
+    <title>FINANZAS V13.9 - CONTROL MENSUAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -42,7 +42,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.8</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.9</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -411,10 +411,7 @@
             const n = document.getElementById('hucha-nombre').value.toUpperCase(); 
             const m = parseFloat(document.getElementById('hucha-meta').value); 
             if(n && !isNaN(m)) { 
-                // AHORA: meta es el saldo inicial, ahorro es el saldo actual.
-                // Para simplificar, si el usuario lo usa como wallet, la "meta" es meramente referencial o el tope de la caja.
-                // Inicia con el saldo que indique.
-                db.huchas.push({id:Date.now(), nombre:n, meta:m, ahorro:m}); // Ahorro inicia igual a la meta (saldo inicial)
+                db.huchas.push({id:Date.now(), nombre:n, meta:m, ahorro:m}); 
                 save(); 
                 notificar("Cuenta/Hucha Creada"); 
             } 
@@ -444,25 +441,19 @@
         function vinculaMovHucha(hId) { const m = db.movs.find(x => x.id == movParaHucha); const h = db.huchas.find(x => x.id == hId); if(m && h) { m.huchaId = hId; h.ahorro -= m.valor; save(); notificar("Saldo actualizado"); } cerrarModalHucha(); }
         function desvincularHucha() { const m = db.movs.find(x => x.id == movParaHucha); if(m && m.huchaId) { const h = db.huchas.find(x => x.id == m.huchaId); if(h) { h.ahorro += m.valor; } m.huchaId = null; save(); notificar("Saldo restaurado"); } cerrarModalHucha(); }
 
-        // --- NUEVA FUNCIÓN DE EDICIÓN (RECARGA) ---
         function editarHucha(id) {
             const h = db.huchas.find(x => x.id == id);
             if(!h) return;
-            
             const nuevoNombre = prompt("Editar Nombre:", h.nombre);
             if(nuevoNombre === null) return;
-            
             const nuevaMeta = prompt("Editar Tope / Meta:", h.meta);
             if(nuevaMeta === null) return;
-
-            // AQUÍ ESTÁ LA MAGIA PARA TU CASO:
             const nuevoSaldo = prompt("SALDO ACTUAL REAL (Lo que tienes en mano):", h.ahorro);
             if(nuevoSaldo === null) return;
 
             h.nombre = nuevoNombre.toUpperCase();
             h.meta = parseFloat(nuevaMeta) || 0;
             h.ahorro = parseFloat(nuevoSaldo) || 0;
-            
             save();
             notificar("Hucha/Caja Recalibrada");
         }
@@ -471,9 +462,17 @@
             const list = document.getElementById('lista-huchas'); 
             list.innerHTML = (db.huchas || []).map(h => { 
                 const movs = db.movs.filter(m => m.huchaId == h.id); 
-                // Calculo de barra: Si meta es 0, evitar division por cero
                 const pct = h.meta > 0 ? (h.ahorro / h.meta) * 100 : 0;
                 
+                // Obtener meses únicos con movimientos
+                const meses = [...new Set(movs.map(m => m.fecha.slice(0, 7)))].sort().reverse();
+                const currentMonth = new Date().toISOString().slice(0,7);
+                const defaultMonth = meses.includes(currentMonth) ? currentMonth : (meses[0] || currentMonth);
+                
+                // Generar select HTML
+                let options = meses.map(m => `<option value="${m}" ${m===defaultMonth?'selected':''}>${m}</option>`).join('');
+                if(meses.length === 0) options = `<option value="">Sin movimientos</option>`;
+
                 return `
                 <div class="card p-3">
                     <div class="flex justify-between items-start mb-2">
@@ -489,12 +488,64 @@
                     <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                         <div class="h-full bg-purple-500" style="width: ${Math.min(100, pct)}%"></div>
                     </div>
-                    <button onclick="toggleAcc('hdet-${h.id}')" class="mt-3 text-[9px] font-bold text-slate-400 uppercase">Consultar Historial (${movs.length}) <i class="fas fa-chevron-down ml-1"></i></button>
-                    <div id="acc-hdet-${h.id}" class="accordion-content mt-2 space-y-1">
-                        ${movs.map(m => `<div class="flex justify-between text-[9px] bg-slate-50 p-1 rounded font-bold text-slate-500 uppercase"><span>${m.fecha.slice(8,10)} ${m.con}</span><span>-${m.valor.toFixed(2)}€</span></div>`).join('')}
+                    <button onclick="toggleAcc('hdet-${h.id}')" class="mt-3 text-[9px] font-bold text-slate-400 uppercase w-full flex justify-between">
+                        <span>Consultar Historial</span> <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="acc-hdet-${h.id}" class="accordion-content mt-2 bg-slate-50/50 rounded-lg">
+                        <div class="p-2 border-b border-slate-100 flex items-center gap-2">
+                            <i class="fas fa-filter text-slate-300 text-xs"></i>
+                            <select id="sel-hucha-${h.id}" onchange="filtrarHistorialHucha(${h.id})" class="!h-8 !text-[10px] !py-0 font-bold uppercase bg-white !border-slate-200">
+                                ${options}
+                            </select>
+                        </div>
+                        <div id="list-hucha-${h.id}" class="p-1 space-y-1 max-h-60 overflow-y-auto">
+                            </div>
+                        <div id="footer-hucha-${h.id}" class="p-2 text-center text-[9px] font-black text-slate-400 border-t border-slate-100"></div>
                     </div>
                 </div>`; 
             }).join(''); 
+            
+            // Inicializar listas
+            db.huchas.forEach(h => filtrarHistorialHucha(h.id));
+        }
+
+        function filtrarHistorialHucha(hId) {
+            const sel = document.getElementById(`sel-hucha-${hId}`);
+            const listDiv = document.getElementById(`list-hucha-${hId}`);
+            const footerDiv = document.getElementById(`footer-hucha-${hId}`);
+            const val = sel.value;
+            
+            if(!val) {
+                listDiv.innerHTML = '<p class="text-center text-[9px] text-slate-400 py-2">Sin datos</p>';
+                footerDiv.innerText = "";
+                return;
+            }
+
+            // Filtrar movimientos de esta hucha y del mes seleccionado
+            const movs = db.movs.filter(m => m.huchaId == hId && m.fecha.startsWith(val));
+            
+            // Ordenar por fecha (día) descendente
+            movs.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+
+            const totalMes = movs.reduce((sum, m) => sum + m.valor, 0);
+
+            listDiv.innerHTML = movs.map(m => `
+                <div class="flex justify-between items-center text-[9px] bg-white p-2 rounded shadow-sm border border-slate-100">
+                    <div>
+                        <span class="text-purple-400 font-bold mr-1">${m.fecha.slice(8,10)}</span>
+                        <span class="font-bold text-slate-600 uppercase">${m.con}</span>
+                    </div>
+                    <span class="font-black text-rose-500">-${m.valor.toFixed(2)}€</span>
+                </div>
+            `).join('');
+            
+            footerDiv.innerHTML = `GASTO TOTAL ${val}: <span class="text-rose-500">${totalMes.toFixed(2)}€</span>`;
+            
+            // Ajustar altura acordeón si está abierto
+            const acc = document.getElementById(`acc-hdet-${hId}`);
+            if(acc.style.maxHeight) {
+                acc.style.maxHeight = acc.scrollHeight + "px";
+            }
         }
         
         function renderTendencia() { const ctx = document.getElementById('chartTendencia'); if(!ctx) return; const labels = []; for(let i=5; i>=0; i--) { const d = new Date(); d.setMonth(d.getMonth()-i); labels.push(d.toISOString().slice(0,7)); } const dataIng = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Ingreso').reduce((s,x)=>s+x.valor,0)); const dataGas = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Gasto').reduce((s,x)=>s+x.valor,0)); if(charts.tendencia) charts.tendencia.destroy(); charts.tendencia = new Chart(ctx, { type:'line', data:{ labels, datasets:[{label:'Ingresos', data:dataIng, borderColor:'#10b981', tension:0.3, fill:false}, {label:'Gastos', data:dataGas, borderColor:'#f43f5e', tension:0.3, fill:false}]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{display:false} }}}); }
