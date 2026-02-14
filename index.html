@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V15.0 - TRICOLOR</title>
+    <title>FINANZAS V16.0</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👛</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -42,7 +45,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V15.0</h1>
+                <h1 class="font-black italic text-xl uppercase text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 leading-none">V16.0</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -51,7 +54,7 @@
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 flex justify-around z-50 pb-safe shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
         <button onclick="showTab('muro')" id="nav-muro" class="flex-1 py-3 text-center nav-active"><i class="fas fa-wallet text-lg mb-1"></i><br><span class="text-[9px] uppercase font-black">Muro</span></button>
-        <button onclick="showTab('graficos')" id="nav-graficos" class="flex-1 py-3 text-center text-slate-400"><i class="fas fa-chart-line text-lg mb-1"></i><br><span class="text-[9px] uppercase font-black">Gráficos</span></button>
+        <button onclick="showTab('graficos')" id="nav-graficos" class="flex-1 py-3 text-center text-slate-400"><i class="fas fa-chart-pie text-lg mb-1"></i><br><span class="text-[9px] uppercase font-black">Gráficos</span></button>
         <button onclick="showTab('huchas')" id="nav-huchas" class="flex-1 py-3 text-center text-slate-400"><i class="fas fa-piggy-bank text-lg mb-1"></i><br><span class="text-[9px] uppercase font-black">Huchas</span></button>
         <button onclick="showTab('config')" id="nav-config" class="flex-1 py-3 text-center text-slate-400"><i class="fas fa-sliders-h text-lg mb-1"></i><br><span class="text-[9px] uppercase font-black">Ajustes</span></button>
     </nav>
@@ -185,8 +188,36 @@
     </div>
 
     <div id="config" class="tab-content p-4 max-w-2xl mx-auto">
-        <div class="card bg-blue-50/50">
-            <h3 class="text-[10px] font-black text-blue-600 uppercase mb-3 tracking-widest">Presupuestos</h3>
+        
+        <div class="card border-dashed border-2 border-emerald-500/30 bg-emerald-50/50">
+            <h3 class="text-[10px] font-black text-emerald-600 uppercase mb-3 text-center"><i class="fas fa-shield-alt mr-1"></i> Copias de Seguridad</h3>
+            
+            <div class="grid grid-cols-2 gap-3 mb-2">
+                <button onclick="descargarBackupJSON()" class="bg-emerald-600 text-white py-3 rounded-xl font-black text-[9px] uppercase shadow-lg flex flex-col items-center justify-center">
+                    <i class="fas fa-save text-lg mb-1"></i>
+                    Backup Total
+                    <span class="text-[7px] opacity-75">(Todo)</span>
+                </button>
+                <button onclick="document.getElementById('file-json').click()" class="bg-blue-600 text-white py-3 rounded-xl font-black text-[9px] uppercase shadow-lg flex flex-col items-center justify-center">
+                    <i class="fas fa-file-import text-lg mb-1"></i>
+                    Restaurar
+                    <span class="text-[7px] opacity-75">(Backup Total)</span>
+                </button>
+                <input type="file" id="file-json" class="hidden" accept=".json" onchange="cargarBackupJSON(event)">
+            </div>
+            
+            <button onclick="exportarExcel()" class="w-full bg-white text-slate-600 border border-slate-200 py-2 rounded-lg font-bold text-[9px] uppercase hover:bg-slate-50 mt-2">
+                <i class="fas fa-file-excel text-green-600 mr-1"></i> Descargar Excel (Solo para ver)
+            </button>
+            <div class="mt-3 pt-3 border-t border-slate-200">
+                <p class="text-[8px] text-slate-400 text-center mb-2">OPCIONES ANTIGUAS (Importar Excel)</p>
+                <input type="file" id="file-excel" class="hidden" accept=".xlsx, .xls, .csv" onchange="importarExcel(event)">
+                 <button onclick="document.getElementById('file-excel').click()" class="w-full text-slate-400 py-1 text-[8px] font-bold uppercase hover:text-slate-600">Importar Excel Antiguo (Solo Movs)</button>
+            </div>
+        </div>
+
+        <div class="card bg-blue-50/50 mt-4">
+            <h3 class="text-[10px] font-black text-blue-600 uppercase mb-3 tracking-widest">Nuevo Presupuesto / Concepto</h3>
             <div class="grid grid-cols-2 gap-2 mb-2">
                 <select id="cfg-tipo" class="text-[10px] font-black uppercase"><option value="Ingreso">Ingreso</option><option value="Gasto">Gasto</option></select>
                 <input type="number" id="cfg-imp" placeholder="Presupuesto €" class="text-xs font-bold">
@@ -199,16 +230,8 @@
         </div>
         
         <div id="lista-config-acordeon" class="space-y-2 mb-8"></div>
-
-        <div class="card border-dashed border-2 border-slate-200 bg-slate-50/50">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center">Datos</h3>
-            <div class="grid grid-cols-2 gap-3 mb-3">
-                <button onclick="exportarTodo()" class="bg-emerald-600 text-white py-3 rounded-xl font-black text-[9px] uppercase shadow-lg"><i class="fas fa-download mb-1 block text-sm"></i>Backup</button>
-                <button onclick="document.getElementById('file-in').click()" class="bg-blue-600 text-white py-3 rounded-xl font-black text-[9px] uppercase shadow-lg"><i class="fas fa-upload mb-1 block text-sm"></i>Restaurar</button>
-                <input type="file" id="file-in" class="hidden" accept=".xlsx, .xls, .csv" onchange="importarTodo(event)">
-            </div>
-            <button onclick="borrarTodo()" class="w-full py-3 text-rose-500 font-black text-[9px] uppercase border border-rose-200 rounded-xl hover:bg-rose-50 transition-colors">Borrar Todos los Datos</button>
-        </div>
+        
+        <button onclick="borrarTodo()" class="w-full py-3 text-rose-500 font-black text-[9px] uppercase border border-rose-200 rounded-xl hover:bg-rose-50 transition-colors mt-8">Borrar Todos los Datos</button>
     </div>
 
     <div id="modal-hucha" class="fixed inset-0 bg-black/50 hidden z-[100] flex items-center justify-center p-4">
@@ -221,9 +244,25 @@
 
     <script>
         Chart.register(ChartDataLabels);
-        const DB_KEY = 'FINANZAS_V15_MASTER'; 
-        let db = JSON.parse(localStorage.getItem(DB_KEY)) || { movs: [], config: [], huchas: [] };
         
+        // ESTABILIZAMOS LA CLAVE DE LA BASE DE DATOS PARA SIEMPRE
+        const DB_KEY = 'FINANZAS_MASTER_DB_V1'; 
+        
+        // Intento de recuperación silenciosa de datos de la sesión anterior si existen
+        let db = JSON.parse(localStorage.getItem(DB_KEY));
+        if (!db) {
+            // Si no hay datos en la clave maestra, buscamos si hay restos de V15 o anteriores
+            const oldV15 = localStorage.getItem('FINANZAS_V15_MASTER');
+            if(oldV15) {
+                db = JSON.parse(oldV15);
+                localStorage.setItem(DB_KEY, JSON.stringify(db)); // Migrar a la clave definitiva
+            } else {
+                // Base de datos nueva
+                db = { movs: [], config: [], huchas: [] };
+            }
+        }
+
+        // Migración de datos antiguos (pagos nulos)
         let migracion = false;
         db.movs.forEach(m => { if(!m.pago) { m.pago = "EFECTIVO"; migracion = true; } });
         if(migracion) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
@@ -239,19 +278,78 @@
         function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); actualizarUI(); renderHuchas(); }
         function notificar(msg) { const t=document.getElementById('toast-container'); document.getElementById('toast-text').innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
+        // --- SISTEMA DE BACKUP NUEVO (JSON) ---
+        function descargarBackupJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            const fecha = new Date().toISOString().slice(0,10);
+            downloadAnchorNode.setAttribute("download", "Backup_Finanzas_Total_" + fecha + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            notificar("Backup Total Descargado");
+        }
+
+        function cargarBackupJSON(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const contenido = JSON.parse(e.target.result);
+                    // Validar estructura básica
+                    if (contenido.movs && Array.isArray(contenido.movs)) {
+                        db = contenido;
+                        // Asegurar estructuras si faltan
+                        if(!db.huchas) db.huchas = [];
+                        if(!db.config) db.config = [];
+                        save();
+                        notificar("Backup Restaurado con Éxito");
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        notificar("Archivo JSON no válido");
+                    }
+                } catch (error) {
+                    notificar("Error al leer el archivo");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- EXPORTAR EXCEL (SOLO PARA VER/REPORTING) ---
+        function exportarExcel() { 
+            const wb = XLSX.utils.book_new(); 
+            // Hoja Movimientos
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos"); 
+            // Hoja Huchas
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.huchas), "Huchas");
+            XLSX.writeFile(wb, "Finanzas_Reporte.xlsx"); 
+        }
+
+        // --- IMPORTAR EXCEL ANTIGUO (LEGACY) ---
+        async function importarExcel(e) { 
+            const f=e.target.files[0]; if(!f)return; 
+            const d=await f.arrayBuffer(); 
+            const wb=XLSX.read(d); 
+            // Solo importamos la primera hoja como movimientos, respetando lo que ya existe si se quiere fusionar o sobreescribir
+            // Aquí asumimos sobreescritura de movimientos, pero mantenemos huchas/config si existen en memoria
+            const nuevosMovs = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]); 
+            if(confirm("Esto sobreescribirá tus movimientos actuales con los del Excel. ¿Seguir?")) {
+                db.movs = nuevosMovs;
+                save(); 
+                notificar("Excel Antiguo Importado"); 
+            }
+        }
+
         // --- MURO FUNCIONES ---
         function setTipoMuro(t) { tipoMuro = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectsMuro(); }
         
         function checkLogic(changed) {
             const f = document.getElementById('in-fijo');
             const e = document.getElementById('in-extra');
-            
-            // Si marco Fijo, desmarco Extra (y viceversa) para evitar conflictos, 
-            // pero permito que AMBOS estén desmarcados (Variable)
             if(changed === 'fijo' && f.checked) e.checked = false;
             if(changed === 'extra' && e.checked) f.checked = false;
-
-            // Mostrar etiqueta visual "Variable"
             if(!f.checked && !e.checked) {
                 document.getElementById('label-variable').classList.remove('hidden');
             } else {
@@ -289,7 +387,6 @@
                 extra: document.getElementById('in-extra').checked,
                 huchaId: null 
             };
-            // Si fijo=false y extra=false, es variable implícitamente
 
             if(idEditandoMov) {
                 const old = db.movs.find(m => String(m.id) === String(idEditandoMov));
@@ -322,7 +419,7 @@
             
             document.getElementById('in-fijo').checked = m.fijo;
             document.getElementById('in-extra').checked = m.extra;
-            checkLogic('init'); // Actualizar visualmente la etiqueta Variable
+            checkLogic('init');
 
             document.getElementById('btn-guardar').innerText = "ACTUALIZAR";
             document.getElementById('btn-guardar').classList.remove('bg-slate-900');
@@ -406,16 +503,14 @@
                 );
             }
             
-            // CALCULOS TRICOLOR (Fijo, Variable, Extra)
             const calc = (tipo, esFijo, esExtra) => movsFiltrados.filter(m => m.tipo === tipo && m.fijo === esFijo && m.extra === esExtra).reduce((s,m)=>s+m.valor,0);
             
             const iF = calc('Ingreso', true, false);
             const iE = calc('Ingreso', false, true);
-            const iV = calc('Ingreso', false, false); // Ni fijo ni extra
-
+            const iV = calc('Ingreso', false, false);
             const gF = calc('Gasto', true, false);
             const gE = calc('Gasto', false, true);
-            const gV = calc('Gasto', false, false); // Ni fijo ni extra
+            const gV = calc('Gasto', false, false);
 
             const totalIng = iF + iE + iV;
             const totalGas = gF + gE + gV;
@@ -440,11 +535,10 @@
             });
 
             document.getElementById('lista-movs').innerHTML = sortedMovs.map(m => {
-                // Etiqueta lógica
                 let tag = '';
                 if(m.fijo) tag = '<span class="text-[8px] font-black px-1.5 bg-indigo-50 text-indigo-600 rounded">FIJO</span>';
                 else if(m.extra) tag = '<span class="text-[8px] font-black px-1.5 bg-orange-50 text-orange-600 rounded">EXTRA</span>';
-                else tag = '<span class="text-[8px] font-black px-1.5 bg-slate-100 text-slate-500 rounded">VAR</span>'; // Variable
+                else tag = '<span class="text-[8px] font-black px-1.5 bg-slate-100 text-slate-500 rounded">VAR</span>';
 
                 return `
                 <div class="card p-0 overflow-hidden border-l-4 ${m.tipo==='Ingreso'?'border-emerald-500':'border-rose-500'}">
@@ -477,7 +571,6 @@
             renderCharts(iF, iE, iV, gF, gE, gV, movsFiltrados);
         }
 
-        // --- HUCHAS ---
         function crearHucha() { const n = document.getElementById('hucha-nombre').value.toUpperCase(); const m = parseFloat(document.getElementById('hucha-meta').value); if(n && !isNaN(m)) { db.huchas.push({id:Date.now(), nombre:n, meta:m, ahorro:m}); save(); notificar("Creada"); } }
         function abrirModalHucha(mId) { movParaHucha = mId; const mov = db.movs.find(m => m.id == mId); const divList = document.getElementById('modal-hucha-list'); if(mov.huchaId) { const h = db.huchas.find(x => x.id == mov.huchaId); divList.innerHTML = `<p class="text-center font-bold text-purple-800 mb-2">Vinculado a: ${h?h.nombre:'?'}</p><button onclick="desvincularHucha()" class="w-full bg-red-100 text-red-600 p-2 rounded font-bold uppercase text-xs">Desvincular</button>`; } else { divList.innerHTML = db.huchas.map(h => `<button onclick="vinculaMovHucha(${h.id})" class="w-full p-2 bg-purple-50 mb-1 rounded text-left text-xs font-bold text-purple-700 flex justify-between"><span>${h.nombre}</span><span>${h.ahorro.toFixed(0)}€</span></button>`).join(''); } document.getElementById('modal-hucha').classList.remove('hidden'); }
         function cerrarModalHucha() { document.getElementById('modal-hucha').classList.add('hidden'); }
@@ -485,7 +578,6 @@
         function desvincularHucha() { const m = db.movs.find(x => x.id == movParaHucha); if(m && m.huchaId) { const h = db.huchas.find(x => x.id == m.huchaId); if(h) h.ahorro += m.valor; m.huchaId = null; save(); notificar("Desvinculado"); } cerrarModalHucha(); }
         function renderHuchas() { const list = document.getElementById('lista-huchas'); list.innerHTML = (db.huchas || []).map(h => { const pct = h.meta > 0 ? (h.ahorro / h.meta) * 100 : 0; return `<div class="card p-3"><div class="flex justify-between"><div><h4 class="font-black text-xs uppercase text-purple-700">${h.nombre}</h4><p class="text-[10px] text-slate-400 font-bold">${h.ahorro.toFixed(2)}€ / ${h.meta}€</p></div><button onclick="borrarHucha(${h.id})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash"></i></button></div><div class="w-full h-2 bg-slate-100 rounded-full mt-2"><div class="h-full bg-purple-500" style="width:${Math.min(100,pct)}%"></div></div></div>`; }).join(''); }
 
-        // --- CHARTS ---
         function renderTendencia() {
             const ctx = document.getElementById('chartTendencia'); if(!ctx) return;
             const labels = []; for(let i=5; i>=0; i--) { const d = new Date(); d.setMonth(d.getMonth()-i); labels.push(d.toISOString().slice(0,7)); }
@@ -499,7 +591,6 @@
             const ctx = document.getElementById('chartApilado');
             if(ctx) {
                 if(charts.apilado) charts.apilado.destroy();
-                // 3 CAPAS: Fijo (Base), Variable (Medio), Extra (Tope)
                 charts.apilado = new Chart(ctx, {
                     type:'bar',
                     data:{
@@ -522,9 +613,7 @@
         function renderConfigList() { document.getElementById('lista-config-acordeon').innerHTML = db.config.map(c => `<div class="card p-3 mb-2 flex justify-between items-center"><span class="text-[10px] font-black uppercase text-slate-600">${c.categoria} - ${c.concepto}</span> <button onclick="borrarCfg(${c.id})" class="text-red-400 text-xs"><i class="fas fa-trash"></i></button></div>`).join(''); }
         function borrarCfg(id) { db.config=db.config.filter(c=>c.id!=id); save(); renderConfigList(); }
         
-        function exportarTodo() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos"); XLSX.writeFile(wb, "Backup.xlsx"); }
-        async function importarTodo(e) { const f=e.target.files[0]; if(!f)return; const d=await f.arrayBuffer(); const wb=XLSX.read(d); db.movs=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]); save(); notificar("Importado"); }
-        function borrarTodo() { if(confirm("¿Seguro?")) { localStorage.clear(); location.reload(); } }
+        function borrarTodo() { if(confirm("¿Seguro? Se borrará TODO.")) { localStorage.clear(); location.reload(); } }
         function cambiarMes(m) { mesSeleccionado = m; actualizarUI(); }
         function borrarMov(id) { if(confirm("¿Borrar?")) { const m = db.movs.find(x => String(x.id) === String(id)); if(m && m.huchaId) { const h = db.huchas.find(x => x.id == m.huchaId); if(h) h.ahorro += m.valor; } db.movs = db.movs.filter(m => String(m.id) !== String(id)); save(); notificar("Eliminado"); } }
         function borrarHucha(id) { if(confirm("¿Borrar?")) { db.huchas = db.huchas.filter(h => h.id != id); save(); notificar("Eliminado"); } }
