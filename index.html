@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V14.0 - PATRIMONIO</title>
+    <title>FINANZAS V15.0 - TRICOLOR</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -42,7 +42,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V14.0</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V15.0</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -61,20 +61,41 @@
             <div class="p-5 text-center bg-gradient-to-br from-slate-800 to-slate-950 border-b border-white/5 relative">
                 <p class="text-[10px] text-blue-400 uppercase font-black tracking-[0.3em] mb-1">Disponible Real</p>
                 <h2 id="disp-real" class="text-4xl font-black tracking-tighter mb-2">0.00€</h2>
-                
                 <div class="inline-flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700">
                     <i class="fas fa-landmark text-[10px] text-yellow-500"></i>
-                    <span class="text-[10px] text-slate-400 uppercase font-bold">TOTAL PATRIMONIO:</span>
+                    <span class="text-[10px] text-slate-400 uppercase font-bold">PATRIMONIO:</span>
                     <span id="patrimonio-total" class="text-xs font-black text-white">0.00€</span>
                 </div>
-
-                <p id="label-acumulado" class="hidden text-[10px] text-yellow-500 font-bold uppercase mt-2">VISUALIZANDO AÑO COMPLETO</p>
+                <p id="label-acumulado" class="hidden text-[10px] text-yellow-500 font-bold uppercase mt-2">AÑO COMPLETO</p>
             </div>
-            <div class="grid grid-cols-2 divide-x divide-y divide-white/10 bg-slate-900 text-center">
-                <div class="p-3"><p class="text-[8px] text-emerald-500 font-black uppercase tracking-wider">Ing. Fijos</p><p id="sum-ing-fijo" class="text-emerald-400 font-bold text-sm">0€</p></div>
-                <div class="p-3"><p class="text-[8px] text-cyan-400 font-black uppercase tracking-wider">Ing. Extra</p><p id="sum-ing-extra" class="text-cyan-300 font-bold text-sm">0€</p></div>
-                <div class="p-3"><p class="text-[8px] text-rose-500 font-black uppercase tracking-wider">Gas. Fijos</p><p id="sum-gas-fijo" class="text-rose-400 font-bold text-sm">0€</p></div>
-                <div class="p-3"><p class="text-[8px] text-amber-500 font-black uppercase tracking-wider">Gas. Extra</p><p id="sum-gas-extra" class="text-amber-400 font-bold text-sm">0€</p></div>
+            
+            <div class="grid grid-cols-3 divide-x divide-white/10 border-b border-white/10 bg-slate-900/50">
+                <div class="p-2 text-center bg-emerald-900/10">
+                    <p class="text-[8px] text-emerald-500 font-black uppercase">ING. FIJO</p>
+                    <p id="sum-ing-fijo" class="text-emerald-400 font-bold text-xs">0€</p>
+                </div>
+                <div class="p-2 text-center bg-emerald-900/10">
+                    <p class="text-[8px] text-teal-400 font-black uppercase">ING. VAR</p>
+                    <p id="sum-ing-var" class="text-teal-300 font-bold text-xs">0€</p>
+                </div>
+                <div class="p-2 text-center bg-emerald-900/10">
+                    <p class="text-[8px] text-cyan-400 font-black uppercase">ING. EXTRA</p>
+                    <p id="sum-ing-extra" class="text-cyan-300 font-bold text-xs">0€</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 divide-x divide-white/10 bg-slate-900">
+                <div class="p-2 text-center">
+                    <p class="text-[8px] text-rose-500 font-black uppercase">GAS. FIJO</p>
+                    <p id="sum-gas-fijo" class="text-rose-400 font-bold text-xs">0€</p>
+                </div>
+                <div class="p-2 text-center">
+                    <p class="text-[8px] text-orange-400 font-black uppercase">GAS. VAR</p>
+                    <p id="sum-gas-var" class="text-orange-300 font-bold text-xs">0€</p>
+                </div>
+                <div class="p-2 text-center">
+                    <p class="text-[8px] text-amber-500 font-black uppercase">GAS. EXTRA</p>
+                    <p id="sum-gas-extra" class="text-amber-400 font-bold text-xs">0€</p>
+                </div>
             </div>
         </div>
 
@@ -102,21 +123,34 @@
                     <option value="TRANSFERENCIA">Transferencia</option>
                     <option value="BIZUM">Bizum</option>
                 </select>
-                <div class="flex gap-2">
-                    <label class="flex-1 flex items-center justify-center gap-2 bg-indigo-50 p-2 rounded-lg border border-indigo-100 cursor-pointer">
-                        <input type="checkbox" id="in-fijo" class="w-4 h-4"><span class="text-[9px] font-black uppercase text-indigo-700">Fijo</span>
-                    </label>
-                    <label class="flex-1 flex items-center justify-center gap-2 bg-orange-50 p-2 rounded-lg border border-orange-100 cursor-pointer">
-                        <input type="checkbox" id="in-extra" class="w-4 h-4"><span class="text-[9px] font-black uppercase text-orange-700">Extra</span>
-                    </label>
+                
+                <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <p class="text-[8px] font-black uppercase text-slate-400 mb-2 text-center">TIPO DE MOVIMIENTO</p>
+                    <div class="flex gap-2">
+                        <label class="flex-1 flex flex-col items-center justify-center gap-1 p-1 rounded cursor-pointer hover:bg-indigo-50 transition-colors">
+                            <input type="checkbox" id="in-fijo" class="w-4 h-4 accent-indigo-600" onchange="checkLogic('fijo')">
+                            <span class="text-[9px] font-black uppercase text-indigo-700">Fijo</span>
+                        </label>
+                        <div class="flex items-center justify-center">
+                            <span class="text-[8px] text-slate-300 font-black">O</span>
+                        </div>
+                        <label class="flex-1 flex flex-col items-center justify-center gap-1 p-1 rounded cursor-pointer hover:bg-orange-50 transition-colors">
+                            <input type="checkbox" id="in-extra" class="w-4 h-4 accent-orange-500" onchange="checkLogic('extra')">
+                            <span class="text-[9px] font-black uppercase text-orange-700">Extra</span>
+                        </label>
+                    </div>
+                    <div id="label-variable" class="mt-1 text-center hidden">
+                        <span class="text-[9px] font-black uppercase text-slate-500 bg-slate-200 px-2 py-0.5 rounded">Variable / Común</span>
+                    </div>
                 </div>
+
             </div>
             <button onclick="guardarRegistro()" id="btn-guardar" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-xs uppercase mt-4 shadow-lg active:scale-95 transition-all">Guardar Movimiento</button>
             <button onclick="cancelarEdicion()" id="btn-cancelar" class="hidden w-full bg-slate-200 text-slate-500 py-3 rounded-xl font-black text-xs uppercase mt-2">Cancelar Edición</button>
         </div>
 
         <div class="relative mb-3">
-            <input type="text" id="search-muro" placeholder="Buscar concepto, categoría o pago..." onkeyup="actualizarUI()" class="w-full !rounded-full shadow-sm border-none bg-white text-sm pl-10">
+            <input type="text" id="search-muro" placeholder="Buscar..." onkeyup="actualizarUI()" class="w-full !rounded-full shadow-sm border-none bg-white text-sm pl-10">
             <i class="fas fa-search absolute left-4 top-3.5 text-slate-400 text-sm"></i>
         </div>
         
@@ -125,15 +159,15 @@
 
     <div id="graficos" class="tab-content p-4 max-w-2xl mx-auto space-y-4">
         <div class="card h-[350px]">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center tracking-widest">Comparativa (Ing vs Gas)</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center tracking-widest">Comparativa (Fijo / Var / Extra)</h3>
             <div class="h-[280px]"><canvas id="chartApilado"></canvas></div>
         </div>
         <div class="card h-[400px]">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-2 text-center tracking-widest">Desglose de Gastos (>5%)</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-2 text-center tracking-widest">Desglose Gastos</h3>
             <div class="h-[320px]"><canvas id="chartDonut"></canvas></div>
         </div>
         <div class="card h-[350px]">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center tracking-widest">Tendencia 6 Meses</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center tracking-widest">Tendencia</h3>
             <div class="h-[280px]"><canvas id="chartTendencia"></canvas></div>
         </div>
     </div>
@@ -152,9 +186,9 @@
 
     <div id="config" class="tab-content p-4 max-w-2xl mx-auto">
         <div class="card bg-blue-50/50">
-            <h3 class="text-[10px] font-black text-blue-600 uppercase mb-3 tracking-widest">Presupuestos y Categorías</h3>
+            <h3 class="text-[10px] font-black text-blue-600 uppercase mb-3 tracking-widest">Presupuestos</h3>
             <div class="grid grid-cols-2 gap-2 mb-2">
-                <select id="cfg-tipo" class="text-[10px] font-black uppercase"><option value="Ingreso">Ingreso (Fijo)</option><option value="IngresoExtra">Ingreso (Extra)</option><option value="Gasto">Gasto (Fijo)</option><option value="GastoExtra">Gasto (Extra)</option></select>
+                <select id="cfg-tipo" class="text-[10px] font-black uppercase"><option value="Ingreso">Ingreso</option><option value="Gasto">Gasto</option></select>
                 <input type="number" id="cfg-imp" placeholder="Presupuesto €" class="text-xs font-bold">
             </div>
             <div class="grid grid-cols-2 gap-2 mb-2">
@@ -167,9 +201,9 @@
         <div id="lista-config-acordeon" class="space-y-2 mb-8"></div>
 
         <div class="card border-dashed border-2 border-slate-200 bg-slate-50/50">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center">Copia de Seguridad y Datos</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 text-center">Datos</h3>
             <div class="grid grid-cols-2 gap-3 mb-3">
-                <button onclick="exportarTodo()" class="bg-emerald-600 text-white py-3 rounded-xl font-black text-[9px] uppercase shadow-lg"><i class="fas fa-download mb-1 block text-sm"></i>Backup (XLSX)</button>
+                <button onclick="exportarTodo()" class="bg-emerald-600 text-white py-3 rounded-xl font-black text-[9px] uppercase shadow-lg"><i class="fas fa-download mb-1 block text-sm"></i>Backup</button>
                 <button onclick="document.getElementById('file-in').click()" class="bg-blue-600 text-white py-3 rounded-xl font-black text-[9px] uppercase shadow-lg"><i class="fas fa-upload mb-1 block text-sm"></i>Restaurar</button>
                 <input type="file" id="file-in" class="hidden" accept=".xlsx, .xls, .csv" onchange="importarTodo(event)">
             </div>
@@ -187,7 +221,7 @@
 
     <script>
         Chart.register(ChartDataLabels);
-        const DB_KEY = 'FINANZAS_V14_MASTER'; 
+        const DB_KEY = 'FINANZAS_V15_MASTER'; 
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || { movs: [], config: [], huchas: [] };
         
         let migracion = false;
@@ -198,22 +232,33 @@
         let fechaActual = new Date();
         let mesSeleccionado = fechaActual.toISOString().slice(0, 7);
         let anioActual = fechaActual.getFullYear().toString();
-
         let idEditandoMov = null;
         let charts = {};
         let movParaHucha = null;
 
         function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); actualizarUI(); renderHuchas(); }
-        
-        function notificar(msg) {
-            const toast = document.getElementById('toast-container');
-            document.getElementById('toast-text').innerText = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2500);
-        }
+        function notificar(msg) { const t=document.getElementById('toast-container'); document.getElementById('toast-text').innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
         // --- MURO FUNCIONES ---
         function setTipoMuro(t) { tipoMuro = t; document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); actualizarSelectsMuro(); }
+        
+        function checkLogic(changed) {
+            const f = document.getElementById('in-fijo');
+            const e = document.getElementById('in-extra');
+            
+            // Si marco Fijo, desmarco Extra (y viceversa) para evitar conflictos, 
+            // pero permito que AMBOS estén desmarcados (Variable)
+            if(changed === 'fijo' && f.checked) e.checked = false;
+            if(changed === 'extra' && e.checked) f.checked = false;
+
+            // Mostrar etiqueta visual "Variable"
+            if(!f.checked && !e.checked) {
+                document.getElementById('label-variable').classList.remove('hidden');
+            } else {
+                document.getElementById('label-variable').classList.add('hidden');
+            }
+        }
+
         function actualizarSelectsMuro() {
             const cats = [...new Set(db.config.filter(c => c.tipo.includes(tipoMuro)).map(c => c.categoria))].sort();
             document.getElementById('in-cat').innerHTML = `<option value="">CATEGORÍA...</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -244,16 +289,17 @@
                 extra: document.getElementById('in-extra').checked,
                 huchaId: null 
             };
+            // Si fijo=false y extra=false, es variable implícitamente
 
             if(idEditandoMov) {
                 const old = db.movs.find(m => String(m.id) === String(idEditandoMov));
                 if(old) nuevo.huchaId = old.huchaId; 
                 const idx = db.movs.findIndex(m => String(m.id) === String(idEditandoMov));
                 db.movs[idx] = nuevo;
-                notificar("Movimiento Actualizado");
+                notificar("Actualizado");
             } else {
                 db.movs.push(nuevo);
-                notificar("Movimiento Guardado");
+                notificar("Guardado");
             }
             cancelarEdicion();
             save();
@@ -273,8 +319,10 @@
             document.getElementById('in-con').value = m.con;
             document.getElementById('in-nota').value = m.nota || "";
             document.getElementById('in-pago').value = m.pago || 'EFECTIVO';
+            
             document.getElementById('in-fijo').checked = m.fijo;
             document.getElementById('in-extra').checked = m.extra;
+            checkLogic('init'); // Actualizar visualmente la etiqueta Variable
 
             document.getElementById('btn-guardar').innerText = "ACTUALIZAR";
             document.getElementById('btn-guardar').classList.remove('bg-slate-900');
@@ -292,6 +340,7 @@
             document.getElementById('in-nota').value = "";
             document.getElementById('in-fijo').checked = false;
             document.getElementById('in-extra').checked = false;
+            checkLogic('init');
             
             document.getElementById('btn-guardar').innerText = "GUARDAR MOVIMIENTO";
             document.getElementById('btn-guardar').classList.add('bg-slate-900');
@@ -323,11 +372,7 @@
             else { notificar("Nada nuevo que clonar"); }
         }
 
-        function filtrarMuro(txt) {
-            document.getElementById('search-muro').value = txt;
-            actualizarUI();
-            notificar("Filtro: " + txt);
-        }
+        function filtrarMuro(txt) { document.getElementById('search-muro').value = txt; actualizarUI(); notificar("Filtro: " + txt); }
 
         function actualizarUI() {
             const meses = [...new Set(db.movs.map(m => m.fecha.slice(0,7)))].sort().reverse();
@@ -340,7 +385,6 @@
             htmlOptions += meses.map(m => `<option value="${m}">${m}</option>`).join('');
             select.innerHTML = htmlOptions;
             select.value = mesSeleccionado;
-
             document.getElementById('mes-header').innerText = mesSeleccionado.startsWith('AÑO') ? "RESUMEN ANUAL" : mesSeleccionado;
             
             let movsFiltrados = [];
@@ -358,56 +402,68 @@
             const q = document.getElementById('search-muro').value.toLowerCase();
             if(q) {
                 movsFiltrados = movsFiltrados.filter(m => 
-                    m.con.toLowerCase().includes(q) || 
-                    m.cat.toLowerCase().includes(q) || 
-                    (m.nota && m.nota.toLowerCase().includes(q)) ||
-                    (m.pago && m.pago.toLowerCase().includes(q))
+                    m.con.toLowerCase().includes(q) || m.cat.toLowerCase().includes(q) || (m.nota && m.nota.toLowerCase().includes(q))
                 );
             }
             
-            const iF = movsFiltrados.filter(m => m.tipo === 'Ingreso' && !m.extra).reduce((s,m)=>s+m.valor,0);
-            const iE = movsFiltrados.filter(m => m.tipo === 'Ingreso' && m.extra).reduce((s,m)=>s+m.valor,0);
-            const gF = movsFiltrados.filter(m => m.tipo === 'Gasto' && !m.extra).reduce((s,m)=>s+m.valor,0);
-            const gE = movsFiltrados.filter(m => m.tipo === 'Gasto' && m.extra).reduce((s,m)=>s+m.valor,0);
+            // CALCULOS TRICOLOR (Fijo, Variable, Extra)
+            const calc = (tipo, esFijo, esExtra) => movsFiltrados.filter(m => m.tipo === tipo && m.fijo === esFijo && m.extra === esExtra).reduce((s,m)=>s+m.valor,0);
+            
+            const iF = calc('Ingreso', true, false);
+            const iE = calc('Ingreso', false, true);
+            const iV = calc('Ingreso', false, false); // Ni fijo ni extra
 
-            const disponibleReal = iF+iE - (gF+gE);
+            const gF = calc('Gasto', true, false);
+            const gE = calc('Gasto', false, true);
+            const gV = calc('Gasto', false, false); // Ni fijo ni extra
+
+            const totalIng = iF + iE + iV;
+            const totalGas = gF + gE + gV;
+            const disponibleReal = totalIng - totalGas;
+            
             document.getElementById('disp-real').innerText = disponibleReal.toFixed(2) + "€";
             
-            // CALCULO PATRIMONIO TOTAL
             const totalHuchas = (db.huchas || []).reduce((sum, h) => sum + (h.ahorro || 0), 0);
-            const patrimonio = disponibleReal + totalHuchas;
-            document.getElementById('patrimonio-total').innerText = patrimonio.toFixed(2) + "€";
+            document.getElementById('patrimonio-total').innerText = (disponibleReal + totalHuchas).toFixed(2) + "€";
 
             document.getElementById('sum-ing-fijo').innerText = iF.toFixed(0) + "€";
+            document.getElementById('sum-ing-var').innerText = iV.toFixed(0) + "€";
             document.getElementById('sum-ing-extra').innerText = iE.toFixed(0) + "€";
+
             document.getElementById('sum-gas-fijo').innerText = gF.toFixed(0) + "€";
+            document.getElementById('sum-gas-var').innerText = gV.toFixed(0) + "€";
             document.getElementById('sum-gas-extra').innerText = gE.toFixed(0) + "€";
 
             const sortedMovs = movsFiltrados.sort((a,b) => {
                 const dateDiff = new Date(b.fecha) - new Date(a.fecha);
-                if (dateDiff !== 0) return dateDiff; 
-                return b.id - a.id; 
+                return dateDiff !== 0 ? dateDiff : b.id - a.id; 
             });
 
-            document.getElementById('lista-movs').innerHTML = sortedMovs.map(m => `
+            document.getElementById('lista-movs').innerHTML = sortedMovs.map(m => {
+                // Etiqueta lógica
+                let tag = '';
+                if(m.fijo) tag = '<span class="text-[8px] font-black px-1.5 bg-indigo-50 text-indigo-600 rounded">FIJO</span>';
+                else if(m.extra) tag = '<span class="text-[8px] font-black px-1.5 bg-orange-50 text-orange-600 rounded">EXTRA</span>';
+                else tag = '<span class="text-[8px] font-black px-1.5 bg-slate-100 text-slate-500 rounded">VAR</span>'; // Variable
+
+                return `
                 <div class="card p-0 overflow-hidden border-l-4 ${m.tipo==='Ingreso'?'border-emerald-500':'border-rose-500'}">
                     <div class="p-3 flex justify-between items-start">
                         <div class="truncate flex-1 pr-2">
                             <div class="flex items-center gap-2 mb-1">
                                 <button onclick="filtrarMuro('${m.cat}')" class="text-[9px] font-black text-slate-500 bg-slate-100 px-1.5 rounded uppercase hover:bg-slate-200 cursor-pointer active:scale-95 transition-transform">${m.cat}</button>
-                                <span class="text-[10px] text-slate-500 font-bold">${m.fecha.slice(8,10)}/${m.fecha.slice(5,7)}/${m.fecha.slice(0,4)}</span>
+                                <span class="text-[10px] text-slate-500 font-bold">${m.fecha.slice(8,10)}/${m.fecha.slice(5,7)}</span>
                             </div>
                             <p class="font-black text-xs uppercase text-slate-700 leading-tight">${m.con}</p>
                             ${m.nota ? `<p class="text-[10px] text-slate-500 italic mt-0.5 truncate"><i class="fas fa-info-circle text-[8px] mr-1"></i>${m.nota}</p>` : ''}
-                            <div class="flex gap-2 mt-1.5 flex-wrap">
-                                ${m.fijo?'<span class="text-[8px] font-black px-1.5 bg-indigo-50 text-indigo-600 rounded">FIJO</span>':''}
-                                ${m.extra?'<span class="text-[8px] font-black px-1.5 bg-orange-50 text-orange-600 rounded">EXTRA</span>':''}
+                            <div class="flex gap-2 mt-1.5 flex-wrap items-center">
+                                ${tag}
                                 ${m.huchaId?'<span class="text-[8px] font-black px-1.5 bg-purple-100 text-purple-700 rounded border border-purple-200"><i class="fas fa-piggy-bank mr-1"></i>HUCHA</span>':''}
+                                <span class="text-[8px] text-slate-400 font-bold uppercase ml-auto">${m.pago}</span>
                             </div>
                         </div>
                         <div class="text-right whitespace-nowrap">
                             <span class="font-black text-lg block ${m.tipo==='Ingreso'?'text-emerald-600':'text-rose-600'}">${m.valor.toFixed(2)}€</span>
-                            <span class="text-[9px] text-slate-400 font-bold uppercase block mt-1">${m.pago}</span>
                         </div>
                     </div>
                     <div class="flex border-t border-slate-100 dark:border-slate-800 divide-x divide-slate-100 dark:divide-slate-800">
@@ -415,205 +471,67 @@
                         <button onclick="editarMov('${m.id}')" class="card-action-btn hover:text-blue-600 group"><i class="fas fa-pencil-alt text-sm group-hover:scale-110 transition-transform"></i></button>
                         <button onclick="borrarMov('${m.id}')" class="card-action-btn hover:text-rose-600 group"><i class="fas fa-trash text-sm group-hover:scale-110 transition-transform"></i></button>
                     </div>
-                </div>`).join('');
+                </div>`;
+            }).join('');
             
-            renderCharts(iF, iE, gF, gE, movsFiltrados);
+            renderCharts(iF, iE, iV, gF, gE, gV, movsFiltrados);
         }
 
-        // --- HUCHAS / CASH FLOW ---
-        function crearHucha() { 
-            const n = document.getElementById('hucha-nombre').value.toUpperCase(); 
-            const m = parseFloat(document.getElementById('hucha-meta').value); 
-            if(n && !isNaN(m)) { 
-                db.huchas.push({id:Date.now(), nombre:n, meta:m, ahorro:m}); 
-                save(); 
-                notificar("Cuenta/Hucha Creada"); 
-            } 
-        }
-        
-        function abrirModalHucha(mId) { 
-            movParaHucha = mId; 
-            const mov = db.movs.find(m => m.id == mId);
-            const divList = document.getElementById('modal-hucha-list');
-            
-            if(mov.huchaId) {
-                const huchaAsignada = db.huchas.find(h => h.id == mov.huchaId);
-                const nombreHucha = huchaAsignada ? huchaAsignada.nombre : "Hucha desconocida";
-                divList.innerHTML = `
-                    <div class="p-4 bg-purple-100 rounded-xl text-center mb-4">
-                        <p class="text-xs text-purple-800 font-bold mb-1">Vinculado a:</p>
-                        <p class="text-lg font-black text-purple-900 uppercase">${nombreHucha}</p>
-                    </div>
-                    <button onclick="desvincularHucha()" class="w-full p-3 bg-red-50 text-red-600 rounded-xl font-black text-xs uppercase border border-red-200"><i class="fas fa-unlink mr-2"></i> Desvincular (Restaurar saldo)</button>`;
-            } else {
-                divList.innerHTML = db.huchas.map(h => `<button onclick="vinculaMovHucha(${h.id})" class="w-full p-3 bg-purple-50 text-purple-700 rounded-xl font-bold text-xs uppercase flex justify-between mb-2 hover:bg-purple-100"><span>${h.nombre}</span><span>${h.ahorro.toFixed(2)}€</span></button>`).join('');
-                if(db.huchas.length === 0) divList.innerHTML = `<p class="text-center text-xs text-slate-400 font-bold py-4">No hay huchas creadas.</p>`;
-            }
-            document.getElementById('modal-hucha').classList.remove('hidden'); 
-        }
+        // --- HUCHAS ---
+        function crearHucha() { const n = document.getElementById('hucha-nombre').value.toUpperCase(); const m = parseFloat(document.getElementById('hucha-meta').value); if(n && !isNaN(m)) { db.huchas.push({id:Date.now(), nombre:n, meta:m, ahorro:m}); save(); notificar("Creada"); } }
+        function abrirModalHucha(mId) { movParaHucha = mId; const mov = db.movs.find(m => m.id == mId); const divList = document.getElementById('modal-hucha-list'); if(mov.huchaId) { const h = db.huchas.find(x => x.id == mov.huchaId); divList.innerHTML = `<p class="text-center font-bold text-purple-800 mb-2">Vinculado a: ${h?h.nombre:'?'}</p><button onclick="desvincularHucha()" class="w-full bg-red-100 text-red-600 p-2 rounded font-bold uppercase text-xs">Desvincular</button>`; } else { divList.innerHTML = db.huchas.map(h => `<button onclick="vinculaMovHucha(${h.id})" class="w-full p-2 bg-purple-50 mb-1 rounded text-left text-xs font-bold text-purple-700 flex justify-between"><span>${h.nombre}</span><span>${h.ahorro.toFixed(0)}€</span></button>`).join(''); } document.getElementById('modal-hucha').classList.remove('hidden'); }
         function cerrarModalHucha() { document.getElementById('modal-hucha').classList.add('hidden'); }
-        function vinculaMovHucha(hId) { const m = db.movs.find(x => x.id == movParaHucha); const h = db.huchas.find(x => x.id == hId); if(m && h) { m.huchaId = hId; h.ahorro -= m.valor; save(); notificar("Saldo actualizado"); } cerrarModalHucha(); }
-        function desvincularHucha() { const m = db.movs.find(x => x.id == movParaHucha); if(m && m.huchaId) { const h = db.huchas.find(x => x.id == m.huchaId); if(h) { h.ahorro += m.valor; } m.huchaId = null; save(); notificar("Saldo restaurado"); } cerrarModalHucha(); }
+        function vinculaMovHucha(hId) { const m = db.movs.find(x => x.id == movParaHucha); const h = db.huchas.find(x => x.id == hId); if(m && h) { m.huchaId = hId; h.ahorro -= m.valor; save(); notificar("Vinculado"); } cerrarModalHucha(); }
+        function desvincularHucha() { const m = db.movs.find(x => x.id == movParaHucha); if(m && m.huchaId) { const h = db.huchas.find(x => x.id == m.huchaId); if(h) h.ahorro += m.valor; m.huchaId = null; save(); notificar("Desvinculado"); } cerrarModalHucha(); }
+        function renderHuchas() { const list = document.getElementById('lista-huchas'); list.innerHTML = (db.huchas || []).map(h => { const pct = h.meta > 0 ? (h.ahorro / h.meta) * 100 : 0; return `<div class="card p-3"><div class="flex justify-between"><div><h4 class="font-black text-xs uppercase text-purple-700">${h.nombre}</h4><p class="text-[10px] text-slate-400 font-bold">${h.ahorro.toFixed(2)}€ / ${h.meta}€</p></div><button onclick="borrarHucha(${h.id})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash"></i></button></div><div class="w-full h-2 bg-slate-100 rounded-full mt-2"><div class="h-full bg-purple-500" style="width:${Math.min(100,pct)}%"></div></div></div>`; }).join(''); }
 
-        function editarHucha(id) {
-            const h = db.huchas.find(x => x.id == id);
-            if(!h) return;
-            const nuevoNombre = prompt("Editar Nombre:", h.nombre);
-            if(nuevoNombre === null) return;
-            const nuevaMeta = prompt("Editar Tope / Meta:", h.meta);
-            if(nuevaMeta === null) return;
-            const nuevoSaldo = prompt("SALDO ACTUAL REAL (Lo que tienes en mano):", h.ahorro);
-            if(nuevoSaldo === null) return;
-
-            h.nombre = nuevoNombre.toUpperCase();
-            h.meta = parseFloat(nuevaMeta) || 0;
-            h.ahorro = parseFloat(nuevoSaldo) || 0;
-            save();
-            notificar("Hucha/Caja Recalibrada");
-        }
-        
-        function renderHuchas() { 
-            const list = document.getElementById('lista-huchas'); 
-            list.innerHTML = (db.huchas || []).map(h => { 
-                const movs = db.movs.filter(m => m.huchaId == h.id); 
-                const pct = h.meta > 0 ? (h.ahorro / h.meta) * 100 : 0;
-                
-                const meses = [...new Set(movs.map(m => m.fecha.slice(0, 7)))].sort().reverse();
-                const currentMonth = new Date().toISOString().slice(0,7);
-                const defaultMonth = meses.includes(currentMonth) ? currentMonth : (meses[0] || currentMonth);
-                
-                let options = meses.map(m => `<option value="${m}" ${m===defaultMonth?'selected':''}>${m}</option>`).join('');
-                if(meses.length === 0) options = `<option value="">Sin movimientos</option>`;
-
-                return `
-                <div class="card p-3">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h4 class="font-black text-xs uppercase text-purple-700">${h.nombre}</h4>
-                            <p class="text-[10px] text-slate-400 font-bold">Saldo: ${h.ahorro.toFixed(2)}€ <span class="text-slate-300">/ ${h.meta}€</span></p>
-                        </div>
-                        <div class="flex gap-1">
-                            <button onclick="editarHucha(${h.id})" class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-bold text-xs"><i class="fas fa-edit"></i></button>
-                            <button onclick="borrarHucha(${h.id})" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 text-xs"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-purple-500" style="width: ${Math.min(100, pct)}%"></div>
-                    </div>
-                    <button onclick="toggleAcc('hdet-${h.id}')" class="mt-3 text-[9px] font-bold text-slate-400 uppercase w-full flex justify-between">
-                        <span>Consultar Historial</span> <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div id="acc-hdet-${h.id}" class="accordion-content mt-2 bg-slate-50/50 rounded-lg">
-                        <div class="p-2 border-b border-slate-100 flex items-center gap-2">
-                            <i class="fas fa-filter text-slate-300 text-xs"></i>
-                            <select id="sel-hucha-${h.id}" onchange="filtrarHistorialHucha(${h.id})" class="!h-8 !text-[10px] !py-0 font-bold uppercase bg-white !border-slate-200">
-                                ${options}
-                            </select>
-                        </div>
-                        <div id="list-hucha-${h.id}" class="p-1 space-y-1 max-h-60 overflow-y-auto"></div>
-                        <div id="footer-hucha-${h.id}" class="p-2 text-center text-[9px] font-black text-slate-400 border-t border-slate-100"></div>
-                    </div>
-                </div>`; 
-            }).join(''); 
-            
-            db.huchas.forEach(h => filtrarHistorialHucha(h.id));
+        // --- CHARTS ---
+        function renderTendencia() {
+            const ctx = document.getElementById('chartTendencia'); if(!ctx) return;
+            const labels = []; for(let i=5; i>=0; i--) { const d = new Date(); d.setMonth(d.getMonth()-i); labels.push(d.toISOString().slice(0,7)); }
+            const dataIng = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Ingreso').reduce((s,x)=>s+x.valor,0));
+            const dataGas = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Gasto').reduce((s,x)=>s+x.valor,0));
+            if(charts.tendencia) charts.tendencia.destroy();
+            charts.tendencia = new Chart(ctx, { type:'line', data:{ labels, datasets:[{label:'Ingresos', data:dataIng, borderColor:'#10b981', tension:0.3}, {label:'Gastos', data:dataGas, borderColor:'#f43f5e', tension:0.3}]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ datalabels:{display:false} } } });
         }
 
-        function filtrarHistorialHucha(hId) {
-            const sel = document.getElementById(`sel-hucha-${hId}`);
-            const listDiv = document.getElementById(`list-hucha-${hId}`);
-            const footerDiv = document.getElementById(`footer-hucha-${hId}`);
-            const val = sel.value;
-            
-            if(!val) {
-                listDiv.innerHTML = '<p class="text-center text-[9px] text-slate-400 py-2">Sin datos</p>';
-                footerDiv.innerText = "";
-                return;
+        function renderCharts(iF, iE, iV, gF, gE, gV, movsData) {
+            const ctx = document.getElementById('chartApilado');
+            if(ctx) {
+                if(charts.apilado) charts.apilado.destroy();
+                // 3 CAPAS: Fijo (Base), Variable (Medio), Extra (Tope)
+                charts.apilado = new Chart(ctx, {
+                    type:'bar',
+                    data:{
+                        labels:['INGRESOS','GASTOS'],
+                        datasets:[
+                            { label:'Fijo', data:[iF, gF], backgroundColor:['#065f46','#9f1239'], stack:'S0' },
+                            { label:'Variable', data:[iV, gV], backgroundColor:['#10b981','#f43f5e'], stack:'S0' },
+                            { label:'Extra', data:[iE, gE], backgroundColor:['#6ee7b7','#fb7185'], stack:'S0', borderRadius:4 }
+                        ]
+                    },
+                    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{ color:'#fff', font:{size:9, weight:'bold'}, formatter:(v)=>v>10?Math.round(v):'' } } }
+                });
             }
-
-            const movs = db.movs.filter(m => m.huchaId == hId && m.fecha.startsWith(val));
-            movs.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-            const totalMes = movs.reduce((sum, m) => sum + m.valor, 0);
-
-            listDiv.innerHTML = movs.map(m => `
-                <div class="flex justify-between items-center text-[9px] bg-white p-2 rounded shadow-sm border border-slate-100">
-                    <div>
-                        <span class="text-purple-400 font-bold mr-1">${m.fecha.slice(8,10)}</span>
-                        <span class="font-bold text-slate-600 uppercase">${m.con}</span>
-                    </div>
-                    <span class="font-black text-rose-500">-${m.valor.toFixed(2)}€</span>
-                </div>
-            `).join('');
-            
-            footerDiv.innerHTML = `GASTO TOTAL ${val}: <span class="text-rose-500">${totalMes.toFixed(2)}€</span>`;
-            
-            const acc = document.getElementById(`acc-hdet-${hId}`);
-            if(acc.style.maxHeight) { acc.style.maxHeight = acc.scrollHeight + "px"; }
+            renderDonut(movsData);
         }
+
+        function renderDonut(movs) { const ctx = document.getElementById('chartDonut'); if(!ctx) return; const dataMap = {}; movs.filter(m=>m.tipo==='Gasto').forEach(m => dataMap[m.cat] = (dataMap[m.cat]||0)+m.valor); const labels = Object.keys(dataMap); const data = Object.values(dataMap); if(charts.donut) charts.donut.destroy(); charts.donut = new Chart(ctx, { type:'doughnut', data:{ labels, datasets:[{ data, backgroundColor:['#f43f5e','#3b82f6','#10b981','#f59e0b','#8b5cf6'], borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{display:false} } } }); }
+
+        function guardarConfig() { const t=document.getElementById('cfg-tipo').value; const c=document.getElementById('cfg-cat').value.toUpperCase(); const co=document.getElementById('cfg-con').value.toUpperCase(); const i=parseFloat(document.getElementById('cfg-imp').value)||0; if(c&&co) { db.config.push({id:Date.now(), tipo:t, categoria:c, concepto:co, importe:i}); save(); notificar("Config Guardada"); } }
+        function renderConfigList() { document.getElementById('lista-config-acordeon').innerHTML = db.config.map(c => `<div class="card p-3 mb-2 flex justify-between items-center"><span class="text-[10px] font-black uppercase text-slate-600">${c.categoria} - ${c.concepto}</span> <button onclick="borrarCfg(${c.id})" class="text-red-400 text-xs"><i class="fas fa-trash"></i></button></div>`).join(''); }
+        function borrarCfg(id) { db.config=db.config.filter(c=>c.id!=id); save(); renderConfigList(); }
         
-        // --- CHARTS FIX ---
-        function renderTendencia() { 
-            const ctx = document.getElementById('chartTendencia'); if(!ctx) return; 
-            const labels = []; for(let i=5; i>=0; i--) { const d = new Date(); d.setMonth(d.getMonth()-i); labels.push(d.toISOString().slice(0,7)); } 
-            const dataIng = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Ingreso').reduce((s,x)=>s+x.valor,0)); 
-            const dataGas = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Gasto').reduce((s,x)=>s+x.valor,0)); 
-            if(charts.tendencia) charts.tendencia.destroy(); 
-            charts.tendencia = new Chart(ctx, { 
-                type:'line', 
-                data:{ labels, datasets:[{label:'Ingresos', data:dataIng, borderColor:'#10b981', tension:0.3, fill:false}, {label:'Gastos', data:dataGas, borderColor:'#f43f5e', tension:0.3, fill:false}]}, 
-                options:{ 
-                    responsive:true, maintainAspectRatio:false, 
-                    interaction: { mode: 'index', intersect: false }, // TOOLTIP FIX
-                    plugins:{ 
-                        legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, 
-                        datalabels:{display:false},
-                        tooltip: { // TOOLTIP FIX
-                            callbacks: {
-                                label: function(context) { return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '€'; }
-                            }
-                        }
-                    }
-                }
-            }); 
-        }
-
-        function renderCharts(iF, iE, gF, gE, movsData) { 
-            const ctx = document.getElementById('chartApilado'); 
-            if(ctx) { 
-                if(charts.apilado) charts.apilado.destroy(); 
-                charts.apilado = new Chart(ctx, { 
-                    type:'bar', 
-                    data:{ labels:['INGRESOS','GASTOS'], datasets:[ { label:'Ordinario', data:[iF, gF], backgroundColor:['#10b981','#f43f5e'], borderRadius:4, stack:'S0' }, { label:'Extra', data:[iE, gE], backgroundColor:['#22d3ee','#f97316'], borderRadius:4, stack:'S0' }]}, 
-                    options:{ 
-                        responsive:true, maintainAspectRatio:false, 
-                        plugins:{ 
-                            legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, 
-                            datalabels:{ // DECIMAL FIX
-                                color:'#fff', font:{weight:'bold', size:9}, 
-                                formatter:(v)=>v>0?Math.round(v)+'€':'' 
-                            }
-                        }
-                    }
-                }); 
-            } 
-            renderDonut(movsData); 
-        }
-
-        function renderDonut(movs) { const ctx = document.getElementById('chartDonut'); if(!ctx) return; const gastosMes = movs.filter(m => m.tipo === 'Gasto'); let totalGasto = 0; const porCat = {}; gastosMes.forEach(m => { porCat[m.cat] = (porCat[m.cat] || 0) + m.valor; totalGasto += m.valor; }); const labels = []; const data = []; let otrosSum = 0; const baseColors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b']; Object.entries(porCat).sort((a,b)=>b[1]-a[1]).forEach(([cat, val]) => { if(totalGasto > 0 && (val / totalGasto) < 0.05) { otrosSum += val; } else { labels.push(`${cat} ${val.toFixed(0)}€`); data.push(val); } }); if(otrosSum > 0) { labels.push(`OTROS ${otrosSum.toFixed(0)}€`); data.push(otrosSum); } const bgColors = data.map((_, i) => { if(labels[i].startsWith("OTROS")) return '#94a3b8'; return baseColors[i % baseColors.length]; }); if(charts.donut) charts.donut.destroy(); charts.donut = new Chart(ctx, { type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: bgColors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, padding: 10 } }, tooltip: { callbacks: { label: function(context) { return context.label; } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 9 }, formatter: (v, ctx) => { let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); let percentage = (v * 100 / sum).toFixed(0); return percentage > 4 ? percentage + "%" : ""; } } } } }); }
-        
-        function guardarConfig() { const t = document.getElementById('cfg-tipo').value; const cat = document.getElementById('cfg-cat').value.toUpperCase(); const con = document.getElementById('cfg-con').value.toUpperCase(); const imp = parseFloat(document.getElementById('cfg-imp').value) || 0; if(cat && con) { db.config.push({id:Date.now(), tipo:t, categoria:cat, concepto:con, importe:imp}); save(); notificar("Presupuesto Guardado"); } }
-        function renderConfigList() { const list = document.getElementById('lista-config-acordeon'); const grouped = {}; db.config.forEach(c => { if(!grouped[c.categoria]) grouped[c.categoria] = []; grouped[c.categoria].push(c); }); list.innerHTML = Object.keys(grouped).sort().map(cat => { const items = grouped[cat].sort((a,b)=>a.concepto.localeCompare(b.concepto)); return `<div class="card p-0 overflow-hidden mb-2"><button onclick="toggleAcc('cfg-${cat.replace(/\s+/g,'-')}')" class="w-full p-4 flex justify-between bg-slate-50 font-black text-xs uppercase tracking-widest">${cat} <i class="fas fa-chevron-down"></i></button><div id="acc-cfg-${cat.replace(/\s+/g,'-')}" class="accordion-content">${items.map(c => { const gastado = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && m.cat === c.categoria && m.con === c.concepto).reduce((s,m)=>s+m.valor,0); const pct = c.importe > 0 ? Math.min(100, (gastado/c.importe)*100) : 0; return `<div class="p-4 border-t border-slate-100"><div class="flex justify-between items-center mb-1"><p class="font-bold text-xs text-slate-700">${c.concepto}</p><span class="text-[9px] font-black ${gastado>c.importe?'text-rose-500':'text-slate-400'}">${gastado.toFixed(0)}€ / ${c.importe}€</span></div><div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full ${pct>=100?'bg-rose-500':pct>75?'bg-amber-500':'bg-emerald-500'}" style="width:${pct}%"></div></div><button onclick="borrarCfg('${c.id}')" class="mt-2 text-[8px] text-rose-400 font-bold uppercase">Eliminar</button></div>`; }).join('')}</div></div>`; }).join(''); }
-        function exportarTodo() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos"); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.config), "Presupuestos"); if(db.huchas.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.huchas), "Huchas"); XLSX.writeFile(wb, `Backup_Finanzas_V14_${new Date().toISOString().slice(0,10)}.xlsx`); }
-        async function importarTodo(e) { try { const f = e.target.files[0]; if(!f) return; const data = await f.arrayBuffer(); const wb = XLSX.read(data); db.movs = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]); db.config = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[1]]); if(wb.SheetNames[2]) db.huchas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[2]]); save(); notificar("Datos Restaurados"); } catch(err) { notificar("Error al importar"); } }
-        function borrarTodo() { if(confirm("¿ELIMINAR TODO?")) { localStorage.clear(); location.reload(); } }
+        function exportarTodo() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos"); XLSX.writeFile(wb, "Backup.xlsx"); }
+        async function importarTodo(e) { const f=e.target.files[0]; if(!f)return; const d=await f.arrayBuffer(); const wb=XLSX.read(d); db.movs=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]); save(); notificar("Importado"); }
+        function borrarTodo() { if(confirm("¿Seguro?")) { localStorage.clear(); location.reload(); } }
         function cambiarMes(m) { mesSeleccionado = m; actualizarUI(); }
-        function toggleAcc(id) { const el = document.getElementById('acc-'+id); el.style.maxHeight = el.style.maxHeight ? null : el.scrollHeight + "px"; }
-        function borrarMov(id) { if(confirm("¿Borrar?")) { const m = db.movs.find(x => String(x.id) === String(id)); if(m && m.huchaId) { const h = db.huchas.find(x => x.id == m.huchaId); if(h) { h.ahorro += m.valor; notificar("Hucha restaurada"); } } db.movs = db.movs.filter(m => String(m.id) !== String(id)); save(); notificar("Eliminado"); } }
-        function borrarCfg(id) { if(confirm("¿Borrar?")) { db.config = db.config.filter(c => String(c.id) !== String(id)); save(); notificar("Eliminado"); } }
-        function borrarHucha(id) { if(confirm("¿Borrar?")) { db.huchas = db.huchas.filter(h => h.id != id); save(); notificar("Hucha eliminada"); } }
+        function borrarMov(id) { if(confirm("¿Borrar?")) { const m = db.movs.find(x => String(x.id) === String(id)); if(m && m.huchaId) { const h = db.huchas.find(x => x.id == m.huchaId); if(h) h.ahorro += m.valor; } db.movs = db.movs.filter(m => String(m.id) !== String(id)); save(); notificar("Eliminado"); } }
+        function borrarHucha(id) { if(confirm("¿Borrar?")) { db.huchas = db.huchas.filter(h => h.id != id); save(); notificar("Eliminado"); } }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
         function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); if(t==='graficos') { renderTendencia(); actualizarUI(); } if(t==='huchas') renderHuchas(); if(t==='config') renderConfigList(); }
 
+        checkLogic('init');
         document.getElementById('in-fecha').valueAsDate = new Date();
         setTipoMuro('Ingreso');
         actualizarUI();
