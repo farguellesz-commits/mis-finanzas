@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FINANZAS V13.9 - CONTROL MENSUAL</title>
+    <title>FINANZAS V14.0 - PATRIMONIO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script> tailwind.config = { darkMode: 'class' } </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -42,7 +42,7 @@
         <div class="flex items-center gap-3">
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-yellow-400"><i id="theme-icon" class="fas fa-moon"></i></button>
             <div>
-                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V13.9</h1>
+                <h1 class="font-black italic text-xl uppercase text-blue-400 leading-none">V14.0</h1>
                 <p id="mes-header" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
             </div>
         </div>
@@ -58,10 +58,17 @@
 
     <div id="muro" class="tab-content active p-3 max-w-2xl mx-auto">
         <div class="card bg-slate-900 text-white border-none p-0 overflow-hidden shadow-2xl mb-4">
-            <div class="p-5 text-center bg-gradient-to-br from-slate-800 to-slate-950 border-b border-white/5">
+            <div class="p-5 text-center bg-gradient-to-br from-slate-800 to-slate-950 border-b border-white/5 relative">
                 <p class="text-[10px] text-blue-400 uppercase font-black tracking-[0.3em] mb-1">Disponible Real</p>
-                <h2 id="disp-real" class="text-4xl font-black tracking-tighter mb-1">0.00€</h2>
-                <p id="label-acumulado" class="hidden text-[10px] text-yellow-500 font-bold uppercase mt-1">VISUALIZANDO AÑO COMPLETO</p>
+                <h2 id="disp-real" class="text-4xl font-black tracking-tighter mb-2">0.00€</h2>
+                
+                <div class="inline-flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700">
+                    <i class="fas fa-landmark text-[10px] text-yellow-500"></i>
+                    <span class="text-[10px] text-slate-400 uppercase font-bold">TOTAL PATRIMONIO:</span>
+                    <span id="patrimonio-total" class="text-xs font-black text-white">0.00€</span>
+                </div>
+
+                <p id="label-acumulado" class="hidden text-[10px] text-yellow-500 font-bold uppercase mt-2">VISUALIZANDO AÑO COMPLETO</p>
             </div>
             <div class="grid grid-cols-2 divide-x divide-y divide-white/10 bg-slate-900 text-center">
                 <div class="p-3"><p class="text-[8px] text-emerald-500 font-black uppercase tracking-wider">Ing. Fijos</p><p id="sum-ing-fijo" class="text-emerald-400 font-bold text-sm">0€</p></div>
@@ -180,7 +187,7 @@
 
     <script>
         Chart.register(ChartDataLabels);
-        const DB_KEY = 'FINANZAS_V13_MASTER'; 
+        const DB_KEY = 'FINANZAS_V14_MASTER'; 
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || { movs: [], config: [], huchas: [] };
         
         let migracion = false;
@@ -363,7 +370,14 @@
             const gF = movsFiltrados.filter(m => m.tipo === 'Gasto' && !m.extra).reduce((s,m)=>s+m.valor,0);
             const gE = movsFiltrados.filter(m => m.tipo === 'Gasto' && m.extra).reduce((s,m)=>s+m.valor,0);
 
-            document.getElementById('disp-real').innerText = (iF+iE - (gF+gE)).toFixed(2) + "€";
+            const disponibleReal = iF+iE - (gF+gE);
+            document.getElementById('disp-real').innerText = disponibleReal.toFixed(2) + "€";
+            
+            // CALCULO PATRIMONIO TOTAL
+            const totalHuchas = (db.huchas || []).reduce((sum, h) => sum + (h.ahorro || 0), 0);
+            const patrimonio = disponibleReal + totalHuchas;
+            document.getElementById('patrimonio-total').innerText = patrimonio.toFixed(2) + "€";
+
             document.getElementById('sum-ing-fijo').innerText = iF.toFixed(0) + "€";
             document.getElementById('sum-ing-extra').innerText = iE.toFixed(0) + "€";
             document.getElementById('sum-gas-fijo').innerText = gF.toFixed(0) + "€";
@@ -406,7 +420,7 @@
             renderCharts(iF, iE, gF, gE, movsFiltrados);
         }
 
-        // --- HUCHAS / CASH FLOW MEJORADO ---
+        // --- HUCHAS / CASH FLOW ---
         function crearHucha() { 
             const n = document.getElementById('hucha-nombre').value.toUpperCase(); 
             const m = parseFloat(document.getElementById('hucha-meta').value); 
@@ -464,12 +478,10 @@
                 const movs = db.movs.filter(m => m.huchaId == h.id); 
                 const pct = h.meta > 0 ? (h.ahorro / h.meta) * 100 : 0;
                 
-                // Obtener meses únicos con movimientos
                 const meses = [...new Set(movs.map(m => m.fecha.slice(0, 7)))].sort().reverse();
                 const currentMonth = new Date().toISOString().slice(0,7);
                 const defaultMonth = meses.includes(currentMonth) ? currentMonth : (meses[0] || currentMonth);
                 
-                // Generar select HTML
                 let options = meses.map(m => `<option value="${m}" ${m===defaultMonth?'selected':''}>${m}</option>`).join('');
                 if(meses.length === 0) options = `<option value="">Sin movimientos</option>`;
 
@@ -498,14 +510,12 @@
                                 ${options}
                             </select>
                         </div>
-                        <div id="list-hucha-${h.id}" class="p-1 space-y-1 max-h-60 overflow-y-auto">
-                            </div>
+                        <div id="list-hucha-${h.id}" class="p-1 space-y-1 max-h-60 overflow-y-auto"></div>
                         <div id="footer-hucha-${h.id}" class="p-2 text-center text-[9px] font-black text-slate-400 border-t border-slate-100"></div>
                     </div>
                 </div>`; 
             }).join(''); 
             
-            // Inicializar listas
             db.huchas.forEach(h => filtrarHistorialHucha(h.id));
         }
 
@@ -521,12 +531,8 @@
                 return;
             }
 
-            // Filtrar movimientos de esta hucha y del mes seleccionado
             const movs = db.movs.filter(m => m.huchaId == hId && m.fecha.startsWith(val));
-            
-            // Ordenar por fecha (día) descendente
             movs.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-
             const totalMes = movs.reduce((sum, m) => sum + m.valor, 0);
 
             listDiv.innerHTML = movs.map(m => `
@@ -541,18 +547,63 @@
             
             footerDiv.innerHTML = `GASTO TOTAL ${val}: <span class="text-rose-500">${totalMes.toFixed(2)}€</span>`;
             
-            // Ajustar altura acordeón si está abierto
             const acc = document.getElementById(`acc-hdet-${hId}`);
-            if(acc.style.maxHeight) {
-                acc.style.maxHeight = acc.scrollHeight + "px";
-            }
+            if(acc.style.maxHeight) { acc.style.maxHeight = acc.scrollHeight + "px"; }
         }
         
-        function renderTendencia() { const ctx = document.getElementById('chartTendencia'); if(!ctx) return; const labels = []; for(let i=5; i>=0; i--) { const d = new Date(); d.setMonth(d.getMonth()-i); labels.push(d.toISOString().slice(0,7)); } const dataIng = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Ingreso').reduce((s,x)=>s+x.valor,0)); const dataGas = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Gasto').reduce((s,x)=>s+x.valor,0)); if(charts.tendencia) charts.tendencia.destroy(); charts.tendencia = new Chart(ctx, { type:'line', data:{ labels, datasets:[{label:'Ingresos', data:dataIng, borderColor:'#10b981', tension:0.3, fill:false}, {label:'Gastos', data:dataGas, borderColor:'#f43f5e', tension:0.3, fill:false}]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{display:false} }}}); }
+        // --- CHARTS FIX ---
+        function renderTendencia() { 
+            const ctx = document.getElementById('chartTendencia'); if(!ctx) return; 
+            const labels = []; for(let i=5; i>=0; i--) { const d = new Date(); d.setMonth(d.getMonth()-i); labels.push(d.toISOString().slice(0,7)); } 
+            const dataIng = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Ingreso').reduce((s,x)=>s+x.valor,0)); 
+            const dataGas = labels.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo==='Gasto').reduce((s,x)=>s+x.valor,0)); 
+            if(charts.tendencia) charts.tendencia.destroy(); 
+            charts.tendencia = new Chart(ctx, { 
+                type:'line', 
+                data:{ labels, datasets:[{label:'Ingresos', data:dataIng, borderColor:'#10b981', tension:0.3, fill:false}, {label:'Gastos', data:dataGas, borderColor:'#f43f5e', tension:0.3, fill:false}]}, 
+                options:{ 
+                    responsive:true, maintainAspectRatio:false, 
+                    interaction: { mode: 'index', intersect: false }, // TOOLTIP FIX
+                    plugins:{ 
+                        legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, 
+                        datalabels:{display:false},
+                        tooltip: { // TOOLTIP FIX
+                            callbacks: {
+                                label: function(context) { return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '€'; }
+                            }
+                        }
+                    }
+                }
+            }); 
+        }
+
+        function renderCharts(iF, iE, gF, gE, movsData) { 
+            const ctx = document.getElementById('chartApilado'); 
+            if(ctx) { 
+                if(charts.apilado) charts.apilado.destroy(); 
+                charts.apilado = new Chart(ctx, { 
+                    type:'bar', 
+                    data:{ labels:['INGRESOS','GASTOS'], datasets:[ { label:'Ordinario', data:[iF, gF], backgroundColor:['#10b981','#f43f5e'], borderRadius:4, stack:'S0' }, { label:'Extra', data:[iE, gE], backgroundColor:['#22d3ee','#f97316'], borderRadius:4, stack:'S0' }]}, 
+                    options:{ 
+                        responsive:true, maintainAspectRatio:false, 
+                        plugins:{ 
+                            legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, 
+                            datalabels:{ // DECIMAL FIX
+                                color:'#fff', font:{weight:'bold', size:9}, 
+                                formatter:(v)=>v>0?Math.round(v)+'€':'' 
+                            }
+                        }
+                    }
+                }); 
+            } 
+            renderDonut(movsData); 
+        }
+
         function renderDonut(movs) { const ctx = document.getElementById('chartDonut'); if(!ctx) return; const gastosMes = movs.filter(m => m.tipo === 'Gasto'); let totalGasto = 0; const porCat = {}; gastosMes.forEach(m => { porCat[m.cat] = (porCat[m.cat] || 0) + m.valor; totalGasto += m.valor; }); const labels = []; const data = []; let otrosSum = 0; const baseColors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b']; Object.entries(porCat).sort((a,b)=>b[1]-a[1]).forEach(([cat, val]) => { if(totalGasto > 0 && (val / totalGasto) < 0.05) { otrosSum += val; } else { labels.push(`${cat} ${val.toFixed(0)}€`); data.push(val); } }); if(otrosSum > 0) { labels.push(`OTROS ${otrosSum.toFixed(0)}€`); data.push(otrosSum); } const bgColors = data.map((_, i) => { if(labels[i].startsWith("OTROS")) return '#94a3b8'; return baseColors[i % baseColors.length]; }); if(charts.donut) charts.donut.destroy(); charts.donut = new Chart(ctx, { type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: bgColors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, padding: 10 } }, tooltip: { callbacks: { label: function(context) { return context.label; } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 9 }, formatter: (v, ctx) => { let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); let percentage = (v * 100 / sum).toFixed(0); return percentage > 4 ? percentage + "%" : ""; } } } } }); }
+        
         function guardarConfig() { const t = document.getElementById('cfg-tipo').value; const cat = document.getElementById('cfg-cat').value.toUpperCase(); const con = document.getElementById('cfg-con').value.toUpperCase(); const imp = parseFloat(document.getElementById('cfg-imp').value) || 0; if(cat && con) { db.config.push({id:Date.now(), tipo:t, categoria:cat, concepto:con, importe:imp}); save(); notificar("Presupuesto Guardado"); } }
         function renderConfigList() { const list = document.getElementById('lista-config-acordeon'); const grouped = {}; db.config.forEach(c => { if(!grouped[c.categoria]) grouped[c.categoria] = []; grouped[c.categoria].push(c); }); list.innerHTML = Object.keys(grouped).sort().map(cat => { const items = grouped[cat].sort((a,b)=>a.concepto.localeCompare(b.concepto)); return `<div class="card p-0 overflow-hidden mb-2"><button onclick="toggleAcc('cfg-${cat.replace(/\s+/g,'-')}')" class="w-full p-4 flex justify-between bg-slate-50 font-black text-xs uppercase tracking-widest">${cat} <i class="fas fa-chevron-down"></i></button><div id="acc-cfg-${cat.replace(/\s+/g,'-')}" class="accordion-content">${items.map(c => { const gastado = db.movs.filter(m => m.fecha.startsWith(mesSeleccionado) && m.cat === c.categoria && m.con === c.concepto).reduce((s,m)=>s+m.valor,0); const pct = c.importe > 0 ? Math.min(100, (gastado/c.importe)*100) : 0; return `<div class="p-4 border-t border-slate-100"><div class="flex justify-between items-center mb-1"><p class="font-bold text-xs text-slate-700">${c.concepto}</p><span class="text-[9px] font-black ${gastado>c.importe?'text-rose-500':'text-slate-400'}">${gastado.toFixed(0)}€ / ${c.importe}€</span></div><div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full ${pct>=100?'bg-rose-500':pct>75?'bg-amber-500':'bg-emerald-500'}" style="width:${pct}%"></div></div><button onclick="borrarCfg('${c.id}')" class="mt-2 text-[8px] text-rose-400 font-bold uppercase">Eliminar</button></div>`; }).join('')}</div></div>`; }).join(''); }
-        function exportarTodo() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos"); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.config), "Presupuestos"); if(db.huchas.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.huchas), "Huchas"); XLSX.writeFile(wb, `Backup_Finanzas_V13_${new Date().toISOString().slice(0,10)}.xlsx`); }
+        function exportarTodo() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.movs), "Movimientos"); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.config), "Presupuestos"); if(db.huchas.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.huchas), "Huchas"); XLSX.writeFile(wb, `Backup_Finanzas_V14_${new Date().toISOString().slice(0,10)}.xlsx`); }
         async function importarTodo(e) { try { const f = e.target.files[0]; if(!f) return; const data = await f.arrayBuffer(); const wb = XLSX.read(data); db.movs = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]); db.config = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[1]]); if(wb.SheetNames[2]) db.huchas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[2]]); save(); notificar("Datos Restaurados"); } catch(err) { notificar("Error al importar"); } }
         function borrarTodo() { if(confirm("¿ELIMINAR TODO?")) { localStorage.clear(); location.reload(); } }
         function cambiarMes(m) { mesSeleccionado = m; actualizarUI(); }
@@ -562,7 +613,6 @@
         function borrarHucha(id) { if(confirm("¿Borrar?")) { db.huchas = db.huchas.filter(h => h.id != id); save(); notificar("Hucha eliminada"); } }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
         function showTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active')); document.getElementById('nav-'+t).classList.add('nav-active'); if(t==='graficos') { renderTendencia(); actualizarUI(); } if(t==='huchas') renderHuchas(); if(t==='config') renderConfigList(); }
-        function renderCharts(iF, iE, gF, gE, movsData) { const ctx = document.getElementById('chartApilado'); if(ctx) { if(charts.apilado) charts.apilado.destroy(); charts.apilado = new Chart(ctx, { type:'bar', data:{ labels:['INGRESOS','GASTOS'], datasets:[ { label:'Ordinario', data:[iF, gF], backgroundColor:['#10b981','#f43f5e'], borderRadius:4, stack:'S0' }, { label:'Extra', data:[iE, gE], backgroundColor:['#22d3ee','#f97316'], borderRadius:4, stack:'S0' }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom', labels:{boxWidth:10, font:{size:9}}}, datalabels:{color:'#fff', font:{weight:'bold', size:9}, formatter:(v)=>v>0?v+'€':''}}}}); } renderDonut(movsData); }
 
         document.getElementById('in-fecha').valueAsDate = new Date();
         setTipoMuro('Ingreso');
