@@ -7,380 +7,210 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0f172a">
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Finanzas V17","short_name":"Finanzas","display":"standalone","start_url":".","background_color":"#f8fafc","theme_color":"#0f172a","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2489/2489756.png","sizes":"512x512","type":"image/png"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Finanzas V17","short_name":"Finanzas","display":"standalone","start_url":".","background_color":"#0f172a","theme_color":"#0f172a","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2489/2489756.png","sizes":"512x512","type":"image/png"}]}'>
 
-    <title>FINANZAS V17.1</title>
+    <title>FINANZAS V17.2</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background: #f1f5f9; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
-        .card { background: white; border-radius: 1.25rem; padding: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 1rem; border: 1px solid #e2e8f0; }
-        .btn-tipo { flex: 1; padding: 12px; border-radius: 0.75rem; font-weight: 800; text-transform: uppercase; font-size: 0.7rem; background: #f8fafc; color: #64748b; transition: 0.2s; border: 1px solid #e2e8f0; }
-        .btn-tipo.active { background: #1e293b; color: white; border-color: #1e293b; }
-        input, select { height: 48px; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0 12px; width: 100%; outline: none; font-size: 16px; background: #fff; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; padding-bottom: 100px; }
+        .card { background: white; border-radius: 1.5rem; padding: 1.5rem; shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin-bottom: 1rem; border: 1px solid #e2e8f0; }
+        .btn-tipo { flex: 1; padding: 14px; border-radius: 1rem; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; background: #f1f5f9; color: #64748b; transition: 0.3s; }
+        .btn-tipo.active { background: #1e293b; color: white; scale: 1.05; }
+        input, select { height: 52px; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 0 16px; width: 100%; outline: none; font-size: 16px; transition: 0.2s; }
+        input:focus { border-color: #3b82f6; ring: 2px #3b82f6; }
         .nav-btn { color: #94a3b8; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
         .nav-btn.active { color: #3b82f6; }
-        .tab-content { display: none; max-width: 600px; margin: 0 auto; padding: 1rem; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        .tab-content { display: none; max-width: 600px; margin: 0 auto; padding: 1rem; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
         
-        /* ESTILOS CALCULADORA */
-        #calc-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .calc-btn { background: #334155; color: white; padding: 15px; border-radius: 10px; font-size: 1.2rem; font-weight: bold; }
-        .calc-btn.op { background: #f59e0b; }
+        /* CALCULADORA MODAL */
+        #calc-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: #1e293b; padding: 20px; border-radius: 2rem; width: 90%; max-width: 320px; }
+        .calc-btn { background: #334155; color: white; height: 60px; border-radius: 1rem; font-size: 1.25rem; font-weight: bold; active:scale-90 transition: 0.1s; }
+        .calc-btn.op { background: #3b82f6; }
         .calc-btn.ok { background: #10b981; grid-column: span 2; }
         .calc-btn.clear { background: #ef4444; }
 
-        /* ESTILOS ACORDEÓN PRESUPUESTO */
-        details > summary { list-style: none; cursor: pointer; outline: none; }
-        details > summary::-webkit-details-marker { display: none; }
-        details[open] summary ~ * { animation: sweep .3s ease-in-out; }
-        @keyframes sweep { 0% {opacity: 0; transform: translateY(-10px)} 100% {opacity: 1; transform: translateY(0)} }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <header class="bg-slate-900 text-white p-5 sticky top-0 z-50 flex justify-between items-center shadow-xl pt-[env(safe-area-inset-top)]">
+    <header class="bg-slate-900 text-white p-6 sticky top-0 z-50 flex justify-between items-center shadow-2xl pt-[env(safe-area-inset-top)]">
         <div>
-            <h1 class="text-xl font-black italic tracking-tighter">FINANZAS <span class="text-emerald-400">V17.1</span></h1>
-            <p id="header-date" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"></p>
+            <h1 class="text-xl font-black tracking-tighter italic text-emerald-400">V17.2 <span class="text-white">FINANZAS</span></h1>
+            <p id="header-date" class="text-[10px] font-bold uppercase opacity-50 tracking-widest"></p>
         </div>
-        <select id="filtro-mes" onchange="cambiarMes(this.value)" class="!w-32 !h-9 !bg-slate-800 !text-white !text-xs font-black border-none !rounded-full text-center"></select>
+        <select id="filtro-mes" onchange="cambiarMes(this.value)" class="!w-32 !h-10 !bg-slate-800 !text-white !text-xs font-black border-none !rounded-full text-center"></select>
     </header>
 
     <main id="tab-muro" class="tab-content active">
-        <div class="card bg-slate-900 text-white border-none overflow-hidden relative">
-            <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fas fa-wallet text-6xl"></i></div>
+        <div class="card bg-slate-900 text-white border-none relative overflow-hidden mb-6">
             <div class="relative z-10">
-                <p class="text-[10px] text-emerald-400 font-black uppercase tracking-widest mb-1">Disponible Real</p>
-                <h2 id="saldo-total" class="text-4xl font-black tracking-tight mb-4">0.00€</h2>
-                <div class="flex gap-4">
-                    <div class="flex-1 bg-white/5 p-2 rounded-lg border border-white/10">
-                        <p class="text-[8px] text-emerald-400 font-black uppercase">Ingresos</p>
-                        <p id="total-ing" class="font-bold text-sm">0€</p>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400 mb-1">Disponible Real</p>
+                <h2 id="saldo-total" class="text-5xl font-black mb-6 tracking-tighter">0€</h2>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white/5 p-3 rounded-2xl border border-white/10">
+                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Ingresos</p>
+                        <p id="total-ing" class="text-lg font-bold text-emerald-400">0€</p>
                     </div>
-                    <div class="flex-1 bg-white/5 p-2 rounded-lg border border-white/10">
-                        <p class="text-[8px] text-rose-400 font-black uppercase">Gastos</p>
-                        <p id="total-gas" class="font-bold text-sm">0€</p>
+                    <div class="bg-white/5 p-3 rounded-2xl border border-white/10">
+                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Gastos</p>
+                        <p id="total-gas" class="text-lg font-bold text-rose-400">0€</p>
+                    </div>
+                    <div class="bg-white/5 p-3 rounded-2xl border border-white/10">
+                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Gastos Fijos</p>
+                        <p id="total-fijos" class="text-lg font-bold text-blue-400">0€</p>
+                    </div>
+                    <div class="bg-white/5 p-3 rounded-2xl border border-white/10">
+                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Extras/Ocio</p>
+                        <p id="total-extras" class="text-lg font-bold text-amber-400">0€</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card shadow-sm">
             <div class="flex gap-2 mb-4">
-                <button onclick="setTipo('Ingreso')" id="t-ing" class="btn-tipo active">Ingreso</button>
-                <button onclick="setTipo('Gasto')" id="t-gas" class="btn-tipo">Gasto</button>
+                <button onclick="setTipo('Ingreso')" id="t-ing" class="btn-tipo active text-emerald-600">Ingreso</button>
+                <button onclick="setTipo('Gasto')" id="t-gas" class="btn-tipo text-rose-600">Gasto</button>
             </div>
-            <div class="flex gap-2 mb-3">
-                <input type="date" id="in-fecha" class="font-bold text-sm w-1/3">
-                <div class="relative flex-1">
-                    <input type="number" id="in-valor" placeholder="0.00 €" class="font-black text-lg text-blue-600 text-right pr-12">
-                    <button onclick="abrirCalc()" class="absolute right-2 top-2 text-slate-400 p-2 hover:text-blue-600">
-                        <i class="fas fa-calculator"></i>
-                    </button>
-                </div>
-            </div>
+            
             <div class="space-y-3">
-                <select id="in-cat" class="font-bold text-xs uppercase"></select>
-                <input type="text" id="in-nota" placeholder="Concepto / Nota..." class="font-medium text-sm">
-                <button onclick="guardar()" id="btn-main" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase shadow-lg active:scale-95 transition-all">Guardar Movimiento</button>
-                <button onclick="cancelarEdicion()" id="btn-cancel" class="hidden w-full bg-slate-200 text-slate-500 py-3 rounded-xl font-bold text-xs uppercase">Cancelar</button>
+                <div class="flex gap-2">
+                    <input type="date" id="in-fecha" class="font-bold text-sm w-2/5">
+                    <div class="relative flex-1">
+                        <input type="number" id="in-valor" placeholder="0.00" class="font-black text-xl text-right pr-12 text-slate-800">
+                        <button onclick="abrirCalc()" class="absolute right-3 top-3 text-blue-500"><i class="fas fa-calculator text-lg"></i></button>
+                    </div>
+                </div>
+                <select id="in-cat" class="font-black text-xs uppercase tracking-wider"></select>
+                <input type="text" id="in-nota" placeholder="¿En qué lo has gastado?" class="text-sm font-medium">
+                <button onclick="guardar()" id="btn-main" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all">Guardar Datos</button>
+                <button onclick="cancelarEdicion()" id="btn-cancel" class="hidden w-full py-2 text-xs font-bold text-slate-400">CANCELAR EDICIÓN</button>
             </div>
         </div>
 
-        <div id="lista-movs" class="space-y-3 mt-6"></div>
+        <div class="relative mb-4">
+            <i class="fas fa-search absolute left-4 top-4 text-slate-400"></i>
+            <input type="text" id="buscador" onkeyup="render()" placeholder="Buscar por concepto, categoría o importe..." class="pl-12 !h-12 text-sm bg-white border-none shadow-sm font-bold uppercase">
+        </div>
+
+        <div id="lista-movs" class="space-y-3"></div>
     </main>
 
+    <div id="tab-huchas" class="tab-content">
+        <div class="card">
+            <h3 class="font-black text-xs uppercase mb-4 tracking-widest text-slate-400">Mis Huchas</h3>
+            <div class="space-y-4" id="lista-huchas-render"></div>
+        </div>
+    </div>
+
     <div id="tab-graficos" class="tab-content">
-        <div class="card">
-            <h3 class="text-center font-black text-slate-400 text-[10px] uppercase mb-4">Distribución de Gastos</h3>
-            <div class="h-64"><canvas id="chart-pie"></canvas></div>
-        </div>
-        <div class="card">
-            <h3 class="text-center font-black text-slate-400 text-[10px] uppercase mb-4">Evolución Anual</h3>
-            <div class="h-48"><canvas id="chart-bar"></canvas></div>
-        </div>
+        <div class="card"><canvas id="chart-pie"></canvas></div>
+        <div class="card"><canvas id="chart-bar"></canvas></div>
     </div>
 
     <div id="tab-ajustes" class="tab-content">
-        
-        <div class="card border-l-4 border-blue-500">
-            <h3 class="font-black text-blue-600 text-xs uppercase mb-3">📊 Control Presupuestario</h3>
-            <p class="text-[10px] text-slate-400 mb-2">Define tu meta mensual. Pulsa en la categoría para ver detalles.</p>
-            <div id="lista-presupuestos" class="space-y-2"></div>
-        </div>
-
         <div class="card">
-            <h3 class="font-black text-slate-800 text-xs uppercase mb-3">Gestionar Categorías</h3>
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="new-cat" placeholder="Nueva..." class="text-xs uppercase font-bold">
-                <button onclick="addCat()" class="bg-blue-600 text-white px-4 rounded-xl font-bold">+</button>
-            </div>
-            <div id="lista-cats" class="space-y-2"></div>
+            <h3 class="font-black text-blue-600 text-xs uppercase mb-4">📊 Control Presupuestario</h3>
+            <div id="lista-presupuestos" class="space-y-3"></div>
         </div>
-
-        <div class="card mt-4 border-l-4 border-emerald-500">
-             <h3 class="font-black text-emerald-600 text-xs uppercase mb-3">🛠️ Zona de Datos</h3>
-             <button onclick="exportar()" class="w-full bg-slate-800 text-white py-3 rounded-lg font-bold text-[10px] uppercase mb-2"><i class="fas fa-download mr-2"></i> Crear Copia Seguridad</button>
-             <button onclick="forzarCargaExcel()" class="w-full bg-emerald-100 text-emerald-700 py-2 rounded-lg font-bold text-[10px] uppercase mb-2">Restaurar Datos Excel</button>
-             <button onclick="borrarTodo()" class="w-full bg-rose-100 text-rose-600 py-2 rounded-lg font-bold text-[10px] uppercase">Reset Fábrica</button>
+        <div class="card mt-4">
+             <button onclick="exportar()" class="w-full bg-slate-100 text-slate-600 py-4 rounded-xl font-black text-[10px] uppercase mb-2">Copia de Seguridad</button>
+             <button onclick="borrarTodo()" class="w-full text-rose-400 font-bold text-[10px] uppercase">Resetear App</button>
         </div>
     </div>
 
-    <nav class="fixed bottom-0 w-full bg-white border-t border-slate-200 flex justify-around py-3 pb-[env(safe-area-inset-bottom)] z-50">
+    <nav class="fixed bottom-0 w-full bg-white/80 backdrop-blur-lg border-t border-slate-100 flex justify-around py-4 pb-[env(safe-area-inset-bottom)] z-50">
         <button onclick="ir('muro')" id="n-muro" class="nav-btn active"><i class="fas fa-wallet text-xl"></i>Muro</button>
+        <button onclick="ir('huchas')" id="n-huchas" class="nav-btn"><i class="fas fa-piggy-bank text-xl"></i>Huchas</button>
         <button onclick="ir('graficos')" id="n-graficos" class="nav-btn"><i class="fas fa-chart-pie text-xl"></i>Gráficos</button>
         <button onclick="ir('ajustes')" id="n-ajustes" class="nav-btn"><i class="fas fa-cog text-xl"></i>Ajustes</button>
     </nav>
 
     <div id="calc-modal">
-        <div class="bg-slate-800 p-5 rounded-2xl w-80 shadow-2xl">
-            <div class="bg-slate-900 text-white text-right text-3xl font-mono p-4 rounded-lg mb-4 break-all" id="calc-display">0</div>
-            <div class="calc-grid">
-                <button onclick="calcInput('7')" class="calc-btn">7</button>
-                <button onclick="calcInput('8')" class="calc-btn">8</button>
-                <button onclick="calcInput('9')" class="calc-btn">9</button>
-                <button onclick="calcOp('/')" class="calc-btn op">÷</button>
-                <button onclick="calcInput('4')" class="calc-btn">4</button>
-                <button onclick="calcInput('5')" class="calc-btn">5</button>
-                <button onclick="calcInput('6')" class="calc-btn">6</button>
-                <button onclick="calcOp('*')" class="calc-btn op">×</button>
-                <button onclick="calcInput('1')" class="calc-btn">1</button>
-                <button onclick="calcInput('2')" class="calc-btn">2</button>
-                <button onclick="calcInput('3')" class="calc-btn">3</button>
-                <button onclick="calcOp('-')" class="calc-btn op">-</button>
-                <button onclick="calcInput('0')" class="calc-btn">0</button>
-                <button onclick="calcInput('.')" class="calc-btn">.</button>
-                <button onclick="calcClear()" class="calc-btn clear">C</button>
-                <button onclick="calcOp('+')" class="calc-btn op">+</button>
-                <button onclick="calcOk()" class="calc-btn ok">OK</button>
-                <button onclick="cerrarCalc()" class="calc-btn" style="background:#64748b; grid-column:span 2">Cerrar</button>
-            </div>
+        <div class="calc-grid">
+            <div class="col-span-4 bg-slate-900 text-white text-right text-3xl font-mono p-4 rounded-xl mb-2 overflow-hidden" id="calc-display">0</div>
+            <button onclick="calcInput('7')" class="calc-btn">7</button>
+            <button onclick="calcInput('8')" class="calc-btn">8</button>
+            <button onclick="calcInput('9')" class="calc-btn">9</button>
+            <button onclick="calcOp('/')" class="calc-btn op">÷</button>
+            <button onclick="calcInput('4')" class="calc-btn">4</button>
+            <button onclick="calcInput('5')" class="calc-btn">5</button>
+            <button onclick="calcInput('6')" class="calc-btn">6</button>
+            <button onclick="calcOp('*')" class="calc-btn op">×</button>
+            <button onclick="calcInput('1')" class="calc-btn">1</button>
+            <button onclick="calcInput('2')" class="calc-btn">2</button>
+            <button onclick="calcInput('3')" class="calc-btn">3</button>
+            <button onclick="calcOp('-')" class="calc-btn op">-</button>
+            <button onclick="calcClear()" class="calc-btn clear">C</button>
+            <button onclick="calcInput('0')" class="calc-btn">0</button>
+            <button onclick="calcInput('.')" class="calc-btn">.</button>
+            <button onclick="calcOp('+')" class="calc-btn op">+</button>
+            <button onclick="cerrarCalc()" class="calc-btn col-span-2 bg-slate-600">CERRAR</button>
+            <button onclick="calcOk()" class="calc-btn ok col-span-2">OK</button>
         </div>
     </div>
 
     <script>
-        // --- TUS DATOS RECUPERADOS ---
-        const DATOS_EXCEL = {
+        // --- BASE DE DATOS ---
+        const DB_NAME = 'FINANZAS_V17_RECOVERED';
+        let db = JSON.parse(localStorage.getItem(DB_NAME)) || { 
+            movs: [], 
             cats: ['COMPRAS', 'PENSION', 'PISO P. SÁNC', 'VIDA DIARIA', 'FUENTIDUEÑA', 'COCHE', 'PERSONALES', 'FAMILIA', 'ALQUILERES', 'GARAJE EMV', 'GARAJE FLEM', 'PISO CHILE', 'EMPRESA', 'VARIOS', 'SALUD', 'INVERSIONES MAPFRE'],
-            movs: [
-                {id: 1770322401801, fecha: "2026-01-02", tipo: "Gasto", cat: "COMPRAS", nota: "MUEBLES Y E - Lavavajillas F", valor: 484.00},
-                {id: 1770322401802, fecha: "2026-01-25", tipo: "Ingreso", cat: "PENSION", nota: "FERNANDO", valor: 2534.14},
-                {id: 1770322401803, fecha: "2026-01-25", tipo: "Ingreso", cat: "PENSION", nota: "LOLI", valor: 883.61},
-                {id: 1770322401804, fecha: "2026-01-02", tipo: "Gasto", cat: "PISO P. SÁNC", nota: "CDAD. PROPIETARIOS", valor: 35.00},
-                {id: 1770322401805, fecha: "2026-01-09", tipo: "Gasto", cat: "VIDA DIARIA", nota: "ALIMENTACIÓN", valor: 49.90},
-                {id: 1770322401806, fecha: "2026-01-20", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "CANALES PAGO TV Y MUSI", valor: 1.99},
-                {id: 1770322401807, fecha: "2026-01-22", tipo: "Gasto", cat: "COCHE", nota: "COMBUSTIBLE", valor: 50.78},
-                {id: 1770322401808, fecha: "2026-01-05", tipo: "Gasto", cat: "PERSONALES", nota: "ROPA Y COM LOLI - Pendier", valor: 268.00},
-                {id: 1770322401809, fecha: "2026-01-05", tipo: "Gasto", cat: "PERSONALES", nota: "ROPA Y COMPLEMENTOS", valor: 25.49},
-                {id: 1770322401810, fecha: "2026-01-05", tipo: "Gasto", cat: "PERSONALES", nota: "ROPA Y COMPLEMENTOS", valor: 52.84},
-                {id: 1770322401811, fecha: "2026-01-15", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "CALEFACCIÓN", valor: 622.25},
-                {id: 1770322401812, fecha: "2026-01-15", tipo: "Gasto", cat: "PERSONALES", nota: "ROPA Y COM", valor: 7.00},
-                {id: 1770322401813, fecha: "2026-01-05", tipo: "Gasto", cat: "FAMILIA", nota: "IVAN", valor: 600.00},
-                {id: 1770322401814, fecha: "2026-01-05", tipo: "Gasto", cat: "FAMILIA", nota: "CRISTINA", valor: 400.00},
-                {id: 1770322401815, fecha: "2026-01-20", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "CANALES PAGO TV Y MUSI", valor: 13.99},
-                {id: 1770322401816, fecha: "2026-01-21", tipo: "Gasto", cat: "VIDA DIARIA", nota: "ALIMENTACIÓN MERCADONA", valor: 88.35},
-                {id: 1770322401817, fecha: "2026-01-21", tipo: "Gasto", cat: "VIDA DIARIA", nota: "ALIMENTACIÓN MERCADONA", valor: 109.39},
-                {id: 1770322401818, fecha: "2026-02-01", tipo: "Gasto", cat: "FAMILIA", nota: "CRISTINA - Jose y Alex", valor: 20.00},
-                {id: 1770322401819, fecha: "2026-01-29", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "TELÉFONO E INTERNET", valor: 44.00},
-                {id: 1770322401820, fecha: "2026-01-21", tipo: "Gasto", cat: "PISO CHILE", nota: "MANTENIMIENTO CALDER", valor: 11.31},
-                {id: 1770322401821, fecha: "2026-01-20", tipo: "Ingreso", cat: "ALQUILERES", nota: "GARAJE EMVICOSA", valor: 55.00},
-                {id: 1770322401822, fecha: "2026-01-19", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "REPSOL ELECTRICIDAD", valor: 116.32},
-                {id: 1770322401823, fecha: "2026-01-13", tipo: "Ingreso", cat: "ALQUILERES", nota: "PISO P. SÁNCHEZ", valor: 625.00},
-                {id: 1770322401824, fecha: "2026-01-05", tipo: "Ingreso", cat: "ALQUILERES", nota: "PISO CHILE", valor: 750.00},
-                {id: 1770322401825, fecha: "2026-01-05", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "SECURITAS DIRECT", valor: 53.16},
-                {id: 1770322401826, fecha: "2026-01-05", tipo: "Gasto", cat: "GARAJE EMV", nota: "CDAD. PROPIETARIOS", valor: 23.72},
-                {id: 1770322401827, fecha: "2026-01-05", tipo: "Gasto", cat: "PISO CHILE", nota: "CDAD. PROPIETARIOS", valor: 60.00},
-                {id: 1770322401828, fecha: "2026-01-05", tipo: "Gasto", cat: "GARAJE FLEM", nota: "CDAD. PROPIETARIOS", valor: 50.00},
-                {id: 1770322401829, fecha: "2026-01-05", tipo: "Ingreso", cat: "ALQUILERES", nota: "GARAJE FLEMING", valor: 60.00},
-                {id: 1770322401830, fecha: "2026-01-05", tipo: "Gasto", cat: "PERSONALES", nota: "ROPA Y COMPLEMENTOS", valor: 90.23},
-                {id: 1770322401831, fecha: "2026-01-05", tipo: "Gasto", cat: "PERSONALES", nota: "ROPA Y COMPLEMENTOS", valor: 16.00},
-                {id: 1770322401832, fecha: "2026-01-21", tipo: "Gasto", cat: "VIDA DIARIA", nota: "RESTAURANTES Y BARES", valor: 20.00},
-                {id: 1770322401833, fecha: "2026-01-23", tipo: "Gasto", cat: "VIDA DIARIA", nota: "RESTAURANTES Y BARES", valor: 10.00},
-                {id: 1770322401834, fecha: "2026-01-24", tipo: "Gasto", cat: "VIDA DIARIA", nota: "ALIMENTACION LOLI", valor: 100.00},
-                {id: 1770322401835, fecha: "2026-01-25", tipo: "Gasto", cat: "VIDA DIARIA", nota: "RESTAURANTES Y BARES", valor: 50.00},
-                {id: 1770322401836, fecha: "2026-01-30", tipo: "Gasto", cat: "VIDA DIARIA", nota: "ALIMENTACIÓN", valor: 100.00},
-                {id: 1770322401837, fecha: "2026-01-28", tipo: "Gasto", cat: "VIDA DIARIA", nota: "ALIMENTACION LOLI", valor: 50.00},
-                {id: 1770322401838, fecha: "2026-01-28", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "REPARACION Propina arreg", valor: 30.00},
-                {id: 1770322401839, fecha: "2026-01-31", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "COMPRAS Astillas leña", valor: 13.99},
-                {id: 1770322401840, fecha: "2026-01-08", tipo: "Ingreso", cat: "EMPRESA", nota: "TRABAJOS Quos 2025", valor: 10200.00},
-                {id: 1770322401841, fecha: "2026-01-29", tipo: "Gasto", cat: "VARIOS", nota: "INVERSIONES Fondos Mapf", valor: 12000.00},
-                {id: 1770322401842, fecha: "2026-02-03", tipo: "Gasto", cat: "VARIOS", nota: "INVERSIONES Mensual MAI", valor: 666.00},
-                {id: 1770322401843, fecha: "2026-02-03", tipo: "Gasto", cat: "PERSONALES", nota: "ROPA Y COM Colonia Jack&", valor: 59.98},
-                {id: 17703755760, fecha: "2026-02-06", tipo: "Gasto", cat: "COCHE", nota: "COMBUSTIBLE", valor: 43.82},
-                {id: 17703800784, fecha: "2026-01-28", tipo: "Gasto", cat: "PERSONALES", nota: "ROPA Y COM Arreglos ropa", valor: 50.00},
-                {id: 17703804834, fecha: "2026-02-06", tipo: "Gasto", cat: "VIDA DIARIA", nota: "ALIMENTACION LOLI", valor: 100.00},
-                {id: 17703818755, fecha: "2026-02-06", tipo: "Gasto", cat: "VIDA DIARIA", nota: "FERNANDO", valor: 70.00},
-                {id: 17704585223, fecha: "2026-02-06", tipo: "Gasto", cat: "VIDA DIARIA", nota: "RESTAURANTES Y BARES", valor: 8.00},
-                {id: 17704625319, fecha: "2026-02-02", tipo: "Ingreso", cat: "ALQUILERES", nota: "GARAJE FLEM", valor: 60.00},
-                {id: 17704627031, fecha: "2026-01-15", tipo: "Gasto", cat: "COCHE", nota: "COMPRA SUBARU", valor: 893.08},
-                {id: 17704627820, fecha: "2026-02-25", tipo: "Ingreso", cat: "PENSION", nota: "LOLI", valor: 883.61},
-                {id: 17704627821, fecha: "2026-02-02", tipo: "Gasto", cat: "PISO P. SÁNC", nota: "CDAD. PROPI", valor: 35.00},
-                {id: 17705111111, fecha: "2026-02-01", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "CANALES PAGO TV Y MUSI", valor: 1.99},
-                {id: 17705111112, fecha: "2026-02-01", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "CANALES PAGO TV Y MUSI", valor: 13.99},
-                {id: 17705111113, fecha: "2026-02-01", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "TELÉFONO E INTERNET", valor: 44.00},
-                {id: 17705111114, fecha: "2026-02-01", tipo: "Gasto", cat: "PISO CHILE", nota: "MANTENIMIENTO CALDER", valor: 11.31},
-                {id: 17704627822, fecha: "2026-02-02", tipo: "Ingreso", cat: "ALQUILERES", nota: "PISO P. SÁNC 200 € a cuent", valor: 825.00},
-                {id: 17704627823, fecha: "2026-02-06", tipo: "Ingreso", cat: "ALQUILERES", nota: "PISO CHILE", valor: 750.00},
-                {id: 17704627824, fecha: "2026-02-06", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "SECURITAS D", valor: 53.16},
-                {id: 17704627825, fecha: "2026-02-05", tipo: "Gasto", cat: "GARAJE EMV", nota: "CDAD. PROPI", valor: 23.72},
-                {id: 17704627826, fecha: "2026-02-05", tipo: "Gasto", cat: "PISO CHILE", nota: "CDAD. PROPI", valor: 60.00},
-                {id: 17705111115, fecha: "2026-02-01", tipo: "Gasto", cat: "GARAJE FLEM", nota: "CDAD. PROPIETARIOS", valor: 50.00},
-                {id: 17705111116, fecha: "2026-02-01", tipo: "Ingreso", cat: "ALQUILERES", nota: "GARAJE EMV", valor: 55.00},
-                {id: 17706357279, fecha: "2026-01-18", tipo: "Gasto", cat: "PERSONALES", nota: "ROPA Y COM PANTALONES", valor: 444.80},
-                {id: 17706358772, fecha: "2026-01-08", tipo: "Gasto", cat: "PERSONALES", nota: "ROPA Y COM ZAPATOS FEF", valor: 182.85},
-                {id: 17706361800, fecha: "2026-02-09", tipo: "Gasto", cat: "SALUD", nota: "PODÓLOGO", valor: 30.00},
-                {id: 17706362891, fecha: "2026-02-09", tipo: "Gasto", cat: "SALUD", nota: "FARMACIA - CREMA DIEN", valor: 10.00},
-                {id: 17707193340, fecha: "2026-02-09", tipo: "Gasto", cat: "VIDA DIARIA", nota: "ALIMENTACIO", valor: 10.00},
-                {id: 17707354523, fecha: "2026-02-13", tipo: "Gasto", cat: "VIDA DIARIA", nota: "FERNANDO Bar Tomás", valor: 20.00},
-                {id: 17708970079, fecha: "2026-02-08", tipo: "Gasto", cat: "PERSONALES", nota: "ROPA Y COM Corte Inglés (", valor: 182.85},
-                {id: 17708980037, fecha: "2026-01-16", tipo: "Ingreso", cat: "INVERSIONES MAPFRE", nota: "Dividendos", valor: 39.20},
-                {id: 17708981393, fecha: "2026-01-26", tipo: "Ingreso", cat: "INVERSIONES MAPFRE", nota: "Dev. factura", valor: 3.86},
-                {id: 17708983937, fecha: "2026-02-03", tipo: "Gasto", cat: "SALUD", nota: "SEGURO MÉDICO", valor: 115.94},
-                {id: 17708984097, fecha: "2026-02-03", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "SEGURO MAPFRE", valor: 53.03},
-                {id: 17708984289, fecha: "2026-02-03", tipo: "Gasto", cat: "PISO CHILE", nota: "SEGURO MAPFRE", valor: 21.31},
-                {id: 17708984469, fecha: "2026-02-03", tipo: "Gasto", cat: "PISO P. SÁNC", nota: "SEGURO MAPFRE", valor: 11.38},
-                {id: 17708984616, fecha: "2026-02-03", tipo: "Gasto", cat: "COCHE", nota: "SEGURO MAPFRE", valor: 53.72},
-                {id: 17708986359, fecha: "2026-02-11", tipo: "Gasto", cat: "FUENTIDUEÑA", nota: "REPSOL ELECTRICIDAD", valor: 97.90},
-                {id: 17709000185, fecha: "2026-02-25", tipo: "Ingreso", cat: "PENSION", nota: "FERNANDO", valor: 2534.14},
-                {id: 17709746184, fecha: "2026-02-13", tipo: "Gasto", cat: "VIDA DIARIA", nota: "ALIMENTACIÓN", valor: 100.00}
-            ],
-            presupuestos: {} 
+            presupuestos: {},
+            huchas: [{nombre: 'FONDO EMERGENCIA', meta: 1000, actual: 0}]
         };
 
-        const DB_NAME = 'FINANZAS_V17_RECOVERED';
-        let db = JSON.parse(localStorage.getItem(DB_NAME)) || { movs: [], cats: DATOS_EXCEL.cats, presupuestos: {} };
-        
         let tipoActual = 'Gasto';
         let idEditando = null;
-        let mesAct = "2026-01"; 
+        let mesAct = new Date().toISOString().slice(0,7);
         let myCharts = {};
 
-        // VARIABLES CALCULADORA
-        let calcVal = "0";
-        let calcOpPend = null;
-        let calcPrevVal = 0;
-        let nuevoNum = true;
+        // CALC
+        let calcVal = "0", calcOpPend = null, calcPrevVal = 0, nuevoNum = true;
 
         window.onload = () => {
             document.getElementById('in-fecha').valueAsDate = new Date();
             document.getElementById('header-date').innerText = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-            if(db.movs.length === 0) { db = DATOS_EXCEL; save(); }
             actualizarCats();
             render();
-            renderPresupuestos();
         };
 
-        // --- LÓGICA CALCULADORA ---
+        // --- CALCULADORA ---
         function abrirCalc() { document.getElementById('calc-modal').style.display = 'flex'; calcClear(); }
         function cerrarCalc() { document.getElementById('calc-modal').style.display = 'none'; }
-        
-        function calcInput(n) {
-            if (nuevoNum) { calcVal = n; nuevoNum = false; }
-            else { calcVal = calcVal === "0" ? n : calcVal + n; }
+        function calcInput(n) { 
+            if (nuevoNum) { calcVal = n; nuevoNum = false; } 
+            else { calcVal += n; }
             document.getElementById('calc-display').innerText = calcVal;
         }
-
         function calcOp(op) {
-            const val = parseFloat(calcVal);
+            const v = parseFloat(calcVal);
             if (calcOpPend && !nuevoNum) {
-                switch(calcOpPend) {
-                    case '+': calcPrevVal += val; break;
-                    case '-': calcPrevVal -= val; break;
-                    case '*': calcPrevVal *= val; break;
-                    case '/': calcPrevVal /= val; break;
-                }
+                if(calcOpPend==='+') calcPrevVal += v;
+                if(calcOpPend==='-') calcPrevVal -= v;
+                if(calcOpPend==='*') calcPrevVal *= v;
+                if(calcOpPend==='/') calcPrevVal /= v;
                 calcVal = String(calcPrevVal);
-            } else {
-                calcPrevVal = val;
-            }
-            nuevoNum = true;
-            calcOpPend = op;
+            } else { calcPrevVal = v; }
+            calcOpPend = op; nuevoNum = true;
             document.getElementById('calc-display').innerText = calcVal;
         }
-
-        function calcClear() {
-            calcVal = "0"; calcOpPend = null; calcPrevVal = 0; nuevoNum = true;
-            document.getElementById('calc-display').innerText = "0";
-        }
-
-        function calcOk() {
-            if(calcOpPend) calcOp('='); // Resolver última operación si queda pendiente
+        function calcClear() { calcVal="0"; calcOpPend=null; calcPrevVal=0; nuevoNum=true; document.getElementById('calc-display').innerText="0"; }
+        function calcOk() { 
+            if(calcOpPend) calcOp('=');
             document.getElementById('in-valor').value = parseFloat(calcVal).toFixed(2);
             cerrarCalc();
         }
 
-        // --- SISTEMA DE PRESUPUESTOS (NUEVO) ---
-        function renderPresupuestos() {
-            const list = document.getElementById('lista-presupuestos');
-            list.innerHTML = "";
-            
-            db.cats.sort().forEach(cat => {
-                const gastado = db.movs
-                    .filter(m => m.cat === cat && m.tipo === 'Gasto' && m.fecha.startsWith(mesAct))
-                    .reduce((sum, m) => sum + m.valor, 0);
-                
-                const presu = db.presupuestos && db.presupuestos[cat] ? db.presupuestos[cat] : 0;
-                const disponible = presu - gastado;
-                
-                // Color disponible: Verde si > 0, Rojo si < 0
-                const colorDisp = disponible >= 0 ? 'text-emerald-600' : 'text-rose-600';
-                
-                // Movimientos detallados de esta categoría
-                const movsCat = db.movs
-                    .filter(m => m.cat === cat && m.tipo === 'Gasto' && m.fecha.startsWith(mesAct))
-                    .sort((a,b) => new Date(b.fecha) - new Date(a.fecha))
-                    .map(m => `<div class="flex justify-between text-[10px] text-slate-500 py-1 border-b border-slate-100">
-                        <span>${m.fecha.split('-')[2]} - ${m.nota || 'S/N'}</span>
-                        <span class="font-bold">${m.valor.toFixed(2)}€</span>
-                    </div>`).join('');
-
-                const html = `
-                <div class="bg-slate-50 rounded-xl p-3 mb-2 border border-slate-200">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-bold text-xs uppercase text-slate-700">${cat}</span>
-                        <input type="number" value="${presu}" placeholder="Meta..." 
-                            onchange="setPresupuesto('${cat}', this.value)" 
-                            class="w-20 h-8 text-right text-xs bg-white border rounded px-1">
-                    </div>
-                    <div class="flex justify-between text-[10px] text-slate-500 uppercase font-bold mb-2">
-                        <div>Gastado: <span class="text-rose-500">${gastado.toFixed(0)}€</span></div>
-                        <div>Disponible: <span class="${colorDisp} text-sm">${disponible.toFixed(0)}€</span></div>
-                    </div>
-                    
-                    <details>
-                        <summary class="text-[10px] text-blue-500 font-bold uppercase text-center bg-blue-50 py-1 rounded cursor-pointer">
-                            Ver Movimientos <i class="fas fa-chevron-down ml-1"></i>
-                        </summary>
-                        <div class="mt-2 pl-2 border-l-2 border-blue-200">
-                            ${movsCat || '<p class="text-[9px] italic">Sin gastos este mes</p>'}
-                        </div>
-                    </details>
-                </div>`;
-                list.innerHTML += html;
-            });
-        }
-
-        function setPresupuesto(cat, val) {
-            if(!db.presupuestos) db.presupuestos = {};
-            db.presupuestos[cat] = parseFloat(val);
-            save();
-            renderPresupuestos(); // Re-renderizar para actualizar cálculo
-        }
-
-
-        // --- FUNCIONES CORE ---
-        function forzarCargaExcel() {
-            if(confirm("¿Restaurar datos originales?")) { db = DATOS_EXCEL; save(); location.reload(); }
-        }
-
+        // --- CORE ---
         function ir(tab) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-'+tab).classList.add('active');
@@ -388,111 +218,166 @@
             document.getElementById('n-'+tab).classList.add('active');
             if(tab === 'graficos') renderGraficos();
             if(tab === 'ajustes') renderPresupuestos();
+            if(tab === 'huchas') renderHuchas();
         }
 
         function setTipo(t) {
             tipoActual = t;
-            document.getElementById('t-ing').className = t === 'Ingreso' ? 'btn-tipo active' : 'btn-tipo';
-            document.getElementById('t-gas').className = t === 'Gasto' ? 'btn-tipo active' : 'btn-tipo';
+            document.getElementById('t-ing').className = t === 'Ingreso' ? 'btn-tipo active text-emerald-600' : 'btn-tipo';
+            document.getElementById('t-gas').className = t === 'Gasto' ? 'btn-tipo active text-rose-600' : 'btn-tipo';
         }
 
         function guardar() {
             const val = parseFloat(document.getElementById('in-valor').value);
             const cat = document.getElementById('in-cat').value;
             const nota = document.getElementById('in-nota').value.toUpperCase();
-            if(!val || !cat) return alert("Indica valor y categoría");
+            if(!val || !cat) return;
 
             const mov = { id: idEditando || Date.now(), fecha: document.getElementById('in-fecha').value, tipo: tipoActual, cat, nota, valor: val };
-
-            if(idEditando) {
-                const i = db.movs.findIndex(m => m.id === idEditando);
-                db.movs[i] = mov;
-                idEditando = null;
-                document.getElementById('btn-main').innerText = "Guardar Movimiento";
-                document.getElementById('btn-cancel').classList.add('hidden');
-            } else {
-                db.movs.push(mov);
-            }
+            if(idEditando) { db.movs = db.movs.map(m => m.id === idEditando ? mov : m); idEditando = null; }
+            else { db.movs.push(mov); }
 
             save();
             document.getElementById('in-valor').value = "";
             document.getElementById('in-nota').value = "";
+            document.getElementById('btn-main').innerText = "Guardar Datos";
+            document.getElementById('btn-cancel').classList.add('hidden');
             render();
-            renderPresupuestos(); // Actualizar presupuesto al guardar
         }
 
         function render() {
+            const query = document.getElementById('buscador').value.toUpperCase();
+            const filtradosMes = db.movs.filter(m => m.fecha.startsWith(mesAct));
+            
+            // Llenar combo meses
             const meses = [...new Set(db.movs.map(m => m.fecha.slice(0,7)))].sort().reverse();
-            const mesReal = new Date().toISOString().slice(0,7);
-            if(!meses.includes(mesReal)) meses.unshift(mesReal);
-            
-            const comboMes = document.getElementById('filtro-mes');
-            if(!mesAct) mesAct = meses[0];
-            
-            // Reconstruir combo preservando selección
-            const selPrev = comboMes.value || mesAct;
-            comboMes.innerHTML = meses.map(m => `<option value="${m}">${m}</option>`).join('');
-            
-            // Validar que la selección previa exista en la nueva lista
-            if(meses.includes(selPrev)) {
-                comboMes.value = selPrev;
-                mesAct = selPrev;
-            } else {
-                comboMes.value = meses[0];
-                mesAct = meses[0];
-            }
+            if(!meses.includes(mesAct)) meses.unshift(mesAct);
+            document.getElementById('filtro-mes').innerHTML = meses.map(m => `<option value="${m}" ${m===mesAct?'selected':''}>${m}</option>`).join('');
 
-            const filtrados = db.movs.filter(m => m.fecha.startsWith(mesAct));
-            let ing = 0, gas = 0;
+            let ing=0, gas=0, fijos=0, extras=0;
 
-            document.getElementById('lista-movs').innerHTML = filtrados.sort((a,b) => new Date(b.fecha)-new Date(a.fecha)).map(m => {
-                if(m.tipo === 'Ingreso') ing += m.valor; else gas += m.valor;
-                return `
-                <div class="card p-4 flex justify-between items-center border-l-4 ${m.tipo==='Ingreso'?'border-emerald-500':'border-rose-500'}">
-                    <div onclick="prepararEdicion(${m.id})" class="flex-1 cursor-pointer">
-                        <p class="text-[9px] font-black text-slate-400 uppercase">${m.cat} • ${m.fecha.split('-')[2]}</p>
-                        <p class="font-bold text-sm text-slate-700">${m.nota || 'SIN NOTA'}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-black text-lg ${m.tipo==='Ingreso'?'text-emerald-600':'text-rose-600'}">${m.valor.toFixed(2)}€</p>
-                        <button onclick="borrar(${m.id})" class="text-slate-300 text-xs hover:text-rose-500"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>`;
-            }).join('') || '<div class="text-center py-10 opacity-30 font-bold uppercase text-xs">No hay movimientos este mes</div>';
+            const html = filtradosMes
+                .filter(m => m.nota.includes(query) || m.cat.includes(query) || m.valor.toString().includes(query))
+                .sort((a,b) => new Date(b.fecha) - new Date(a.fecha))
+                .map(m => {
+                    if(m.tipo==='Ingreso') ing += m.valor;
+                    else {
+                        gas += m.valor;
+                        if(['PISO P. SÁNC', 'COCHE', 'GARAJE EMV', 'GARAJE FLEM', 'PISO CHILE', 'SALUD'].includes(m.cat)) fijos += m.valor;
+                        else extras += m.valor;
+                    }
+                    return `
+                    <div class="card p-4 flex justify-between items-center border-l-4 ${m.tipo==='Ingreso'?'border-emerald-400':'border-rose-400'}">
+                        <div onclick="prepararEdicion(${m.id})" class="flex-1">
+                            <p class="text-[9px] font-black text-slate-400 uppercase">${m.cat} • ${m.fecha.split('-')[2]}</p>
+                            <p class="font-bold text-sm text-slate-700 leading-tight">${m.nota || 'SIN CONCEPTO'}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-black text-lg ${m.tipo==='Ingreso'?'text-emerald-600':'text-rose-600'}">${m.valor.toFixed(2)}€</p>
+                            <button onclick="borrar(${m.id})" class="text-slate-300 text-[10px]"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
+                }).join('');
 
+            document.getElementById('lista-movs').innerHTML = html;
             document.getElementById('saldo-total').innerText = (ing - gas).toFixed(2) + "€";
             document.getElementById('total-ing').innerText = ing.toFixed(0) + "€";
             document.getElementById('total-gas').innerText = gas.toFixed(0) + "€";
+            document.getElementById('total-fijos').innerText = fijos.toFixed(0) + "€";
+            document.getElementById('total-extras').innerText = extras.toFixed(0) + "€";
         }
 
-        function actualizarCats() {
-            const sel = document.getElementById('in-cat');
-            sel.innerHTML = db.cats.sort().map(c => `<option value="${c}">${c}</option>`).join('');
-            document.getElementById('lista-cats').innerHTML = db.cats.map((c, i) => `
-                <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg text-[10px] font-bold">
-                    ${c} <button onclick="delCat(${i})" class="text-rose-400"><i class="fas fa-times"></i></button>
-                </div>
-            `).join('');
+        // --- HUCHAS (LÓGICA CORREGIDA) ---
+        function renderHuchas() {
+            const div = document.getElementById('lista-huchas-render');
+            div.innerHTML = db.huchas.map((h, i) => {
+                const disponible = h.meta - h.actual;
+                return `
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <div class="flex justify-between font-black text-[10px] uppercase mb-2">
+                        <span>${h.nombre}</span>
+                        <span class="text-emerald-600">Faltan: ${disponible.toFixed(0)}€</span>
+                    </div>
+                    <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden mb-3">
+                        <div class="bg-emerald-500 h-full" style="width: ${(h.actual/h.meta)*100}%"></div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="number" placeholder="Añadir..." id="h-add-${i}" class="!h-10 text-xs">
+                        <button onclick="updateHucha(${i})" class="bg-slate-900 text-white px-4 rounded-xl font-bold text-xs">OK</button>
+                    </div>
+                </div>`;
+            }).join('');
         }
-        function addCat() {
-            const val = document.getElementById('new-cat').value.toUpperCase().trim();
-            if(val) { db.cats.push(val); save(); actualizarCats(); renderPresupuestos(); document.getElementById('new-cat').value = ""; }
+        function updateHucha(i) {
+            const val = parseFloat(document.getElementById(`h-add-${i}`).value) || 0;
+            db.huchas[i].actual += val;
+            save(); renderHuchas();
         }
-        function delCat(i) { db.cats.splice(i, 1); save(); actualizarCats(); renderPresupuestos(); }
 
+        // --- PRESUPUESTOS (ACORDEÓN Y LÓGICA) ---
+        function renderPresupuestos() {
+            const list = document.getElementById('lista-presupuestos');
+            list.innerHTML = db.cats.sort().map(cat => {
+                const gastado = db.movs.filter(m => m.cat === cat && m.tipo === 'Gasto' && m.fecha.startsWith(mesAct)).reduce((a,b)=>a+b.valor,0);
+                const meta = db.presupuestos[cat] || 0;
+                const disponible = meta - gastado;
+                const movsCat = db.movs.filter(m => m.cat === cat && m.tipo === 'Gasto' && m.fecha.startsWith(mesAct));
+
+                return `
+                <details class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden">
+                    <summary class="p-4 list-none cursor-pointer">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-black text-[11px] uppercase">${cat}</span>
+                            <input type="number" value="${meta}" onchange="setPresu('${cat}', this.value)" class="!w-20 !h-8 !p-1 text-right text-xs bg-white">
+                        </div>
+                        <div class="flex justify-between text-[10px] font-bold uppercase">
+                            <span class="text-rose-400">Gasto: ${gastado.toFixed(0)}€</span>
+                            <span class="${disponible >= 0 ? 'text-emerald-500':'text-rose-600'}">Disponible: ${disponible.toFixed(0)}€</span>
+                        </div>
+                    </summary>
+                    <div class="px-4 pb-4 space-y-2 border-t border-slate-100 pt-2">
+                        ${movsCat.map(m => `<div class="flex justify-between text-[10px] text-slate-500 font-medium">
+                            <span>${m.fecha.split('-')[2]} - ${m.nota}</span>
+                            <span class="font-bold">${m.valor.toFixed(2)}€</span>
+                        </div>`).join('') || '<p class="text-[9px] italic text-center">Sin movimientos</p>'}
+                    </div>
+                </details>`;
+            }).join('');
+        }
+        function setPresu(cat, val) { db.presupuestos[cat] = parseFloat(val); save(); renderPresupuestos(); }
+
+        function renderGraficos() {
+            const gas = db.movs.filter(m => m.fecha.startsWith(mesAct) && m.tipo === 'Gasto');
+            const dataPie = {}; gas.forEach(m => dataPie[m.cat] = (dataPie[m.cat] || 0) + m.valor);
+            
+            if(myCharts.pie) myCharts.pie.destroy();
+            myCharts.pie = new Chart(document.getElementById('chart-pie'), {
+                type: 'doughnut',
+                data: { labels: Object.keys(dataPie), datasets: [{ data: Object.values(dataPie), backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'] }]}
+            });
+
+            const ultimosMeses = [...new Set(db.movs.map(m => m.fecha.slice(0,7)))].sort().slice(-5);
+            const dataBar = ultimosMeses.map(m => db.movs.filter(x => x.fecha.startsWith(m) && x.tipo === 'Gasto').reduce((a,b)=>a+b.valor,0));
+
+            if(myCharts.bar) myCharts.bar.destroy();
+            myCharts.bar = new Chart(document.getElementById('chart-bar'), {
+                type: 'bar',
+                data: { labels: ultimosMeses, datasets: [{ label: 'Gasto Mensual', data: dataBar, backgroundColor: '#1e293b', borderRadius: 10 }]}
+            });
+        }
+
+        function actualizarCats() { document.getElementById('in-cat').innerHTML = db.cats.sort().map(c => `<option value="${c}">${c}</option>`).join(''); }
+        function save() { localStorage.setItem(DB_NAME, JSON.stringify(db)); }
+        function cambiarMes(v) { mesAct = v; render(); }
+        function borrar(id) { if(confirm("¿Eliminar?")) { db.movs = db.movs.filter(m => m.id !== id); save(); render(); } }
+        function borrarTodo() { if(confirm("¡BORRAR TODO!")) { localStorage.clear(); location.reload(); } }
         function exportar() {
             const blob = new Blob([JSON.stringify(db)], {type: 'application/json'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `FINANZAS_BACKUP_${mesAct}.json`;
+            a.download = `FINANZAS_V17_2.json`;
             a.click();
         }
-
-        function save() { localStorage.setItem(DB_NAME, JSON.stringify(db)); }
-        function cambiarMes(v) { mesAct = v; render(); renderPresupuestos(); }
-        function borrar(id) { if(confirm("¿Eliminar?")) { db.movs = db.movs.filter(m => m.id !== id); save(); render(); renderPresupuestos(); } }
-        function borrarTodo() { if(confirm("¡BORRAR TODO!")) { localStorage.clear(); location.reload(); } }
-        
         function prepararEdicion(id) {
             const m = db.movs.find(x => x.id === id);
             idEditando = id;
@@ -501,48 +386,16 @@
             document.getElementById('in-nota').value = m.nota;
             document.getElementById('in-cat').value = m.cat;
             setTipo(m.tipo);
-            document.getElementById('btn-main').innerText = "Actualizar Movimiento";
+            document.getElementById('btn-main').innerText = "ACTUALIZAR DATOS";
             document.getElementById('btn-cancel').classList.remove('hidden');
             window.scrollTo(0,0);
         }
         function cancelarEdicion() {
             idEditando = null;
-            document.getElementById('btn-main').innerText = "Guardar Movimiento";
+            document.getElementById('btn-main').innerText = "Guardar Datos";
             document.getElementById('btn-cancel').classList.add('hidden');
             document.getElementById('in-valor').value = "";
             document.getElementById('in-nota').value = "";
-        }
-
-        function renderGraficos() {
-            const filtrados = db.movs.filter(m => m.fecha.startsWith(mesAct) && m.tipo === 'Gasto');
-            const totales = {};
-            filtrados.forEach(m => totales[m.cat] = (totales[m.cat] || 0) + m.valor);
-
-            if(myCharts.pie) myCharts.pie.destroy();
-            myCharts.pie = new Chart(document.getElementById('chart-pie'), {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(totales),
-                    datasets: [{ data: Object.values(totales), backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899'] }]
-                }
-            });
-
-            const mesesDisponibles = [...new Set(db.movs.map(m => m.fecha.slice(0,7)))].sort();
-            const mesesGrafico = mesesDisponibles.slice(-6);
-            
-            const dataBar = mesesGrafico.map(mes => {
-                 return db.movs.filter(x => x.fecha.startsWith(mes) && x.tipo === 'Gasto').reduce((a,b)=>a+b.valor,0);
-            });
-
-            if(myCharts.bar) myCharts.bar.destroy();
-            myCharts.bar = new Chart(document.getElementById('chart-bar'), {
-                type: 'bar',
-                data: {
-                    labels: mesesGrafico,
-                    datasets: [{ label: 'Gasto Mensual', data: dataBar, backgroundColor: '#3b82f6', borderRadius: 8 }]
-                },
-                options: { scales: { y: { beginAtZero: true } } }
-            });
         }
     </script>
 </body>
