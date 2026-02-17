@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FINANZAS V17.0</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b">
+    <link rel="apple-touch-icon" href="icon.png">
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2210%22 y=%2220%22 width=%2280%22 height=%2260%22 rx=%2210%22 fill=%22%233b82f6%22/><path d=%22M10 35 L90 35%22 stroke=%22%231e3a8a%22 stroke-width=%222%22/><circle cx=%2250%22 cy=%2255%22 r=%2212%22 fill=%22%23f59e0b%22 border=%222px solid white%22/><rect x=%2265%22 y=%2245%22 width=%2235%22 height=%2220%22 rx=%225%22 fill=%22%23ef4444%22/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2210%22 y=%2220%22 width=%2280%22 height=%2260%22 rx=%2210%22 fill=%22%233b82f6%22/><path d=%22M10 35 L90 35%22 stroke=%22%231e3a8a%22 stroke-width=%222%22/><circle cx=%2250%22 cy=%2255%22 r=%2212%22 fill=%22%23f59e0b%22 border=%222px solid white%22/><rect x=%2265%22 y=%2245%22 width=%2235%22 height=%2220%22 rx=%225%22 fill=%22%23ef4444%22/></svg>">
@@ -621,5 +624,14 @@
         setTipoMuro('Ingreso');
         actualizarUI();
     </script>
+    if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('App lista para instalar', reg))
+        .catch(err => console.log('Error', err));
+    });
+  }
+</script>
 </body>
 </html>
+
